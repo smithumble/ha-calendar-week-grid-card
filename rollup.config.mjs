@@ -10,7 +10,7 @@ const dev = process.env.ROLLUP_WATCH;
 export default {
   input: 'src/calendar-week-grid-card.ts',
   output: {
-    dir: '.',
+    dir: 'dist',
     format: 'es',
     inlineDynamicImports: true,
   },

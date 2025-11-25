@@ -2,8 +2,8 @@
   "name": "calendar-week-grid-card",
   "version": "1.0.0",
   "description": "A custom Home Assistant card that displays calendar events in a week grid format.",
-  "main": "calendar-week-grid-card.js",
-  "module": "calendar-week-grid-card.js",
+  "main": "dist/calendar-week-grid-card.js",
+  "module": "dist/calendar-week-grid-card.js",
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -c -w",

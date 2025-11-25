@@ -6,17 +6,27 @@ A custom Home Assistant card that displays calendar events in a week grid format
 
 ## Installation
 
-### HACS
+### HACS Installation (Recommended)
 
-1. Go to _HACS_ → _3 dots_ → _Custom repositories_.
-2. Add this repository.
-3. Install.
+The easiest way to install **Calendar Week Grid Card** is via **[HACS (Home Assistant Community Store)](https://hacs.xyz/)**.
 
-### Manual
+[![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=smithumble&repository=ha-calendar-week-grid-card&category=plugin)
 
-1. Download `dist/calendar-week-grid-card.js`.
+#### Steps:
+
+1. Ensure **[HACS](https://hacs.xyz/docs/setup/download)** is installed in Home Assistant.
+2. Go to **HACS → Frontend → Custom Repositories**.
+3. Add this repository: `https://github.com/smithumble/ha-calendar-week-grid-card` as type `Dashboard`
+4. Install **Calendar Week Grid Card** from HACS.
+5. **Clear your browser cache** and reload Home Assistant.
+
+### Manual Installation
+
+1. **Download** the latest release: [calendar-week-grid-card.js](https://github.com/smithumble/ha-calendar-week-grid-card/releases/latest)
 2. Place it in your `www` folder (e.g. `/config/www/calendar-week-grid-card.js`).
-3. Add a reference to `calendar-week-grid-card.js`. There are two ways to do that:
+3. Add a reference to `calendar-week-grid-card.js`.
+
+There are two ways to do that:
 
 #### Using UI
 
@@ -30,13 +40,11 @@ A custom Home Assistant card that displays calendar events in a week grid format
 
 #### Using YAML
 
-Add the following to your `configuration.yaml`:
+Add the resource to your Lovelace Dashboard:
 
 ```yaml
-lovelace:
-  resources:
-    - url: /local/calendar-week-grid-card.js
-      type: module
+url: /local/calendar-week-grid-card.js
+type: module
 ```
 
 ## Configuration
