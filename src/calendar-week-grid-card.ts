@@ -11,14 +11,22 @@ import { HomeAssistant } from 'custom-card-helpers';
 
 import styles from './styles.css';
 
-interface CellConfig {
-  height?: string;
-  icon?: string;
-  icon_size?: string;
+interface IconConfig {
+  icon: string;
+  size?: string;
   color?: string;
   opacity?: number;
-  background_color?: string;
-  background_opacity?: number;
+}
+
+interface BackgroundConfig {
+  color?: string;
+  opacity?: number;
+}
+
+interface CellConfig {
+  height?: string;
+  icon?: IconConfig;
+  background?: BackgroundConfig;
 }
 
 interface EntityConfig {
@@ -138,7 +146,7 @@ export class CalendarWeekGridCard extends LitElement {
     const primaryEvent = cellEvents[0];
 
     const height = this.getCellConfig('height', primaryEvent);
-    const size = this.getCellConfig('icon_size', primaryEvent);
+    const size = this.getCellConfig('icon.size', primaryEvent);
 
     const style = `
       ${height !== undefined ? `height: ${height};` : ''}
@@ -155,9 +163,9 @@ export class CalendarWeekGridCard extends LitElement {
   }
 
   private renderEventIcon(event?: Event): TemplateResult {
-    const icon = this.getCellConfig('icon', event, 'mdi:check-circle');
-    const opacity = this.getCellConfig('opacity', event, 1, 1);
-    const color = this.getCellConfig('color', event);
+    const icon = this.getCellConfig('icon.icon', event, 'mdi:check-circle');
+    const opacity = this.getCellConfig('icon.opacity', event, 1, 1);
+    const color = this.getCellConfig('icon.color', event);
 
     const style = `
       ${color !== undefined ? `color: ${color};` : ''}
@@ -214,8 +222,8 @@ export class CalendarWeekGridCard extends LitElement {
     const heightPct = ((end - start) / duration) * 100;
 
     const t = 'transparent';
-    const color = this.getCellConfig('background_color', evt, t, t);
-    const opacity = this.getCellConfig('background_opacity', evt, 0.2, 0.2);
+    const color = this.getCellConfig('background.color', evt, t, t);
+    const opacity = this.getCellConfig('background.opacity', evt, 0.2, 0.2);
 
     const style = `
       top: ${topPct}%;
@@ -346,21 +354,43 @@ export class CalendarWeekGridCard extends LitElement {
   }
 
   private getCellConfig(
-    configName: keyof CellConfig,
+    path: string,
     event?: Event,
     defaultEventValue?: string | number,
     defaultBlankValue?: string | number,
   ): string | number | undefined {
-    const globalConfig = this.config?.cell?.[configName];
+    const keys = path.split('.');
+
+    const getNested = (obj: CellConfig, pathKeys: string[]) => {
+      return pathKeys.reduce(
+        (
+          acc: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          key,
+        ) =>
+          acc && typeof acc === 'object' && acc[key] !== undefined
+            ? acc[key]
+            : undefined,
+        obj,
+      );
+    };
+
+    const globalConfig = this.config?.cell
+      ? getNested(this.config.cell, keys)
+      : undefined;
+
     if (event) {
-      const eventConfig = event.cell?.[configName];
-      const filledGlobalConfig = this.config?.cell_filled?.[configName];
+      const eventConfig = event.cell ? getNested(event.cell, keys) : undefined;
+      const filledGlobalConfig = this.config?.cell_filled
+        ? getNested(this.config.cell_filled, keys)
+        : undefined;
       return (
-        eventConfig || filledGlobalConfig || globalConfig || defaultEventValue
+        eventConfig ?? filledGlobalConfig ?? globalConfig ?? defaultEventValue
       );
     } else {
-      const blankGlobalConfig = this.config?.cell_blank?.[configName];
-      return blankGlobalConfig || globalConfig || defaultBlankValue;
+      const blankGlobalConfig = this.config?.cell_blank
+        ? getNested(this.config.cell_blank, keys)
+        : undefined;
+      return blankGlobalConfig ?? globalConfig ?? defaultBlankValue;
     }
   }
 

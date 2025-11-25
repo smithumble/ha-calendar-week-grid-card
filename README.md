@@ -66,12 +66,12 @@ Configuration object for `cell`, `cell_filled` and `cell_blank`:
 | Name                 | Type   | Description                            |
 | -------------------- | ------ | -------------------------------------- |
 | `height`             | string | Height of the cell (e.g., `30px`).     |
-| `icon`               | string | Icon to display.                       |
-| `icon_size`          | string | Size of the icon (e.g., `18px`).       |
-| `color`              | string | Icon color.                            |
-| `opacity`            | number | Icon opacity (0-1).                    |
-| `background_color`   | string | Background color of the event block.   |
-| `background_opacity` | number | Background opacity of the event block. |
+| `icon.icon`          | string | Icon to display.                       |
+| `icon.size`          | string | Size of the icon (e.g., `18px`).       |
+| `icon.color`         | string | Icon color.                            |
+| `icon.opacity`       | number | Icon opacity (0-1).                    |
+| `background.color`   | string | Background color of the event block.   |
+| `background.opacity` | number | Background opacity of the event block. |
 
 ### Entity Configuration
 
@@ -84,8 +84,9 @@ entities:
     name: Work
     filter: 'Meeting' # Only show events containing "Meeting"
     cell:
-      color: '#ff0000'
-      icon: 'mdi:briefcase'
+      icon:
+        color: '#ff0000'
+        icon: 'mdi:briefcase'
 ```
 
 ## Example
@@ -108,40 +109,51 @@ type: custom:calendar-week-grid-card
 language: uk
 cell:
   height: 24px
-  icon_size: 18px
+  icon:
+    size: 18px
 cell_filled:
-  icon: mdi:flash-off
-  color: var(--primary-color)
-  background_opacity: 0.2
+  icon:
+    icon: mdi:flash-off
+    color: var(--primary-color)
+  background:
+    opacity: 0.2
 cell_blank:
-  opacity: 0.2
-  icon: mdi:flash
+  icon:
+    icon: mdi:flash
+    opacity: 0.2
 entities:
   - entity: calendar.yasno_kiiv_dtek_6_1_probable_outages
     cell:
-      background_color: var(--primary-color)
+      background:
+        color: var(--primary-color)
   - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
     filter: Outage
     cell:
-      color: red
-      background_color: red
+      icon:
+        color: red
+      background:
+        color: red
   - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
     filter: Emergency Shutdowns
-    icon: mdi:flash-off
     cell:
-      color: red
-      background_color: red
-      opacity: 0.2
+      icon:
+        icon: mdi:flash-off
+        color: red
+        opacity: 0.2
+      background:
+        color: red
   - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
     filter: Waiting for Schedule
     cell:
-      icon: mdi:clock
-      color: var(--warning-color)
-      opacity: 0.2
+      icon:
+        icon: mdi:clock
+        color: var(--warning-color)
+        opacity: 0.2
   - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
     filter: Schedule Applies
     cell:
-      icon: mdi:flash
-      color: var(--error-color)
-      opacity: 0.2
+      icon:
+        icon: mdi:flash
+        color: var(--error-color)
+        opacity: 0.2
 ```
