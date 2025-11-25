@@ -1,0 +1,53 @@
+{
+  "name": "calendar-week-grid-card",
+  "version": "1.0.0",
+  "description": "A custom Home Assistant card that displays calendar events in a week grid format.",
+  "main": "calendar-week-grid-card.js",
+  "module": "calendar-week-grid-card.js",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "format": "prettier --write ."
+  },
+  "keywords": [
+    "home-assistant",
+    "lovelace",
+    "calendar",
+    "custom-card"
+  ],
+  "author": {
+    "name": "Oleksii Kuznietsov",
+    "email": "smithumble@gmail.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "custom-card-helpers": "^1.9.0",
+    "lit": "^3.1.0"
+  },
+  "devDependencies": {
+    "@eslint/compat": "^2.0.0",
+    "@eslint/js": "^9.39.1",
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-terser": "^0.4.0",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "@types/node": "^20.0.0",
+    "eslint": "^9.21.0",
+    "eslint-config-prettier": "^10.0.2",
+    "eslint-plugin-import": "^2.26.0",
+    "globals": "^16.5.0",
+    "postcss": "^8.4.33",
+    "prettier": "^3.1.1",
+    "rollup": "^4.0.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-postcss-lit": "^2.0.0",
+    "tslib": "^2.6.0",
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.48.0"
+  },
+  "prettier": {
+    "singleQuote": true
+  }
+}

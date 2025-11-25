@@ -1,0 +1,89 @@
+:host {
+  display: block;
+  --event-color: var(--primary-text-color, #ffffff);
+  --event-bg: transparent;
+  --normal-color: var(--primary-text-color, #555);
+  --normal-bg: transparent;
+  --grid-bg: var(--card-background-color, #1c1c1e);
+  --text-primary: var(--primary-text-color, #ffffff);
+  --text-secondary: var(--secondary-text-color, #999999);
+  --current-time-color: var(--primary-color, #ea4335);
+}
+
+ha-card {
+  color: var(--text-primary);
+  padding: 8px 16px 16px 8px;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: 50px repeat(7, 1fr);
+  gap: 4px;
+  overflow-x: auto;
+}
+
+.time-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: right;
+  padding-right: 8px;
+  align-self: center;
+}
+
+.day-header {
+  text-align: center;
+  font-weight: bold;
+  padding: 8px 4px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.cell {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background-color: var(--normal-bg);
+  color: var(--normal-color);
+  position: relative;
+}
+
+.cell.has-event {
+  color: var(--event-color);
+}
+
+.event-block {
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  border-radius: 4px;
+}
+
+ha-icon {
+  --mdc-icon-size: var(--icon-size, 18px);
+  position: relative;
+  z-index: 1;
+}
+
+.current-time-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--current-time-color);
+  z-index: 5;
+  pointer-events: none;
+  margin-top: -1px;
+}
+
+.current-time-circle {
+  width: 6px;
+  height: 6px;
+  background-color: var(--current-time-color);
+  border-radius: 50%;
+  position: absolute;
+  left: -3px;
+  top: -2px;
+}
