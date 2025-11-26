@@ -159,14 +159,16 @@ export class CalendarWeekGridCard extends LitElement {
     const cellStartTime = cellDate.setHours(hour);
     const cellEndTime = cellDate.setHours(hour + 1);
 
-    const cellEvents = this.events.filter((event) => {
-      return (
-        cellStartTime < event.end.getTime() &&
-        cellEndTime > event.start.getTime()
-      );
-    });
+    const cellEvents = this.events
+      .filter((event) => {
+        return (
+          cellStartTime < event.end.getTime() &&
+          cellEndTime > event.start.getTime()
+        );
+      })
+      .reverse();
 
-    const event = cellEvents[0];
+    const event = cellEvents[cellEvents.length - 1];
 
     const style = this.getCellConfigStyle('style', event) || '';
     const rawStyle = this.getCellConfig('raw_style', event) || '';
