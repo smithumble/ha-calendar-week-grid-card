@@ -1,0 +1,77 @@
+type: custom:calendar-week-grid-card
+language: en
+style:
+  background: "#FFFFFF"
+  border-radius: 24px
+  padding: 16px
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1)
+  "--text-primary": "#444"
+  "--text-secondary": "#444"
+grid:
+  style:
+    gap: 8px
+cell:
+  style:
+    height: 34px
+    border-radius: 17px
+  icon:
+    style:
+      "--mdc-icon-size": 20px
+cell_blank:
+  background:
+    style:
+      background-color: "#F5F5F5"
+  icon:
+    icon: mdi:check-circle
+    style:
+      color: "#E0E0E0"
+entities:
+  - entity: calendar.probable_outages
+    cell:
+      background:
+        style:
+          background-color: "#B9F6CA"
+      icon:
+        icon: mdi:close-circle
+        style:
+          color: "#1B5E20"
+  - entity: calendar.planned_outages
+    filter: Outage
+    cell:
+      background:
+        style:
+          background-color: "#FF8A80"
+      icon:
+        icon: mdi:close-circle
+        style:
+          color: "#FFFFFF"
+  - entity: calendar.planned_outages
+    filter: Emergency Shutdowns
+    cell:
+      background:
+        style:
+          background-color: "#FF80AB"
+      icon:
+        icon: mdi:alert-circle
+        style:
+          color: "#FFFFFF"
+  - entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    cell:
+      background:
+        style:
+          background-color: "#80DEEA"
+      icon:
+        icon: mdi:clock-outline
+        style:
+          color: "#006064"
+  - entity: calendar.planned_outages
+    filter: Schedule Applies
+    cell:
+      background:
+        style:
+          background-color: "#FFF176"
+      icon:
+        icon: mdi:circle-outline
+        style:
+          color: "#F57F17"

@@ -1,0 +1,9 @@
+type: custom:calendar-week-grid-card
+language: uk
+start_hour: 6
+end_hour: 20
+entities:
+  - calendar.probable_outages
+  - entity: calendar.planned_outages
+    filter: Outage
+

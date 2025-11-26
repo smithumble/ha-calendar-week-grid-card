@@ -1,0 +1,70 @@
+type: custom:calendar-week-grid-card
+language: uk
+cell:
+  style:
+    height: 24px
+    border-radius: 4px
+  icon:
+    style:
+      '--mdc-icon-size': 18px
+cell_filled:
+  icon:
+    icon: mdi:flash-off
+    style:
+      color: var(--primary-color)
+cell_blank:
+  icon:
+    icon: mdi:flash
+    style:
+      opacity: 0.2
+entities:
+  - entity: calendar.probable_outages
+    cell:
+      icon:
+        style:
+          color: '#29B6F6'
+      background:
+        style:
+          background-color: '#29B6F6'
+          opacity: 0.2
+          border-radius: 4px
+  - entity: calendar.planned_outages
+    filter: Outage
+    cell:
+      icon:
+        style:
+          color: red
+      background:
+        style:
+          background-color: red
+          opacity: 0.2
+          border-radius: 4px
+  - entity: calendar.planned_outages
+    filter: Emergency Shutdowns
+    cell:
+      icon:
+        icon: mdi:flash-off
+        style:
+          color: red
+          opacity: 0.2
+      background:
+        style:
+          background-color: red
+          opacity: 0.2
+          border-radius: 4px
+  - entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    cell:
+      icon:
+        icon: mdi:timer-sand
+        style:
+          color: '#FF9800'
+          opacity: 0.2
+  - entity: calendar.planned_outages
+    filter: Schedule Applies
+    cell:
+      icon:
+        icon: mdi:flash
+        style:
+          color: red
+          opacity: 0.2

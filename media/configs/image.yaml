@@ -1,0 +1,100 @@
+type: custom:calendar-week-grid-card
+language: uk
+style:
+  background: rgba(32, 33, 36, 0.95)
+  border-radius: 12px
+  padding: 12px
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1)
+grid:
+  style:
+    gap: 4px
+cell:
+  style:
+    height: 28px
+    '--event-border-radius': 6px
+  icon:
+    style:
+      '--mdc-icon-size': 18px
+cell_blank:
+  icon:
+    icon: mdi:lightning-bolt
+    style:
+      color: '#00E676'
+      opacity: 0.7
+      filter: drop-shadow(0 0 2px rgba(0, 230, 118, 0.3))
+  background:
+    style:
+      background-color: rgba(0, 230, 118, 0.01)
+      border-radius: 6px
+cell_filled:
+  icon:
+    icon: mdi:help-circle
+    style:
+      color: '#B0BEC5'
+  background:
+    style:
+      background-color: rgba(255, 255, 255, 0.03)
+entities:
+  - entity: calendar.probable_outages
+    cell:
+      background:
+        style:
+          background-color: transparent
+        raw_style: >-
+          background: repeating-linear-gradient(45deg, rgba(255, 152, 0, 0.08),
+          rgba(255, 152, 0, 0.08) 10px, rgba(255, 152, 0, 0.15) 10px, rgba(255,
+          152, 0, 0.15) 20px);
+      icon:
+        icon: mdi:alert-circle-outline
+        style:
+          color: '#FF9800'
+          opacity: 0.9
+  - entity: calendar.planned_outages
+    filter: Outage
+    cell:
+      background:
+        style:
+          background-color: transparent
+          border: 1px solid rgba(244, 67, 54, 0.1)
+        raw_style: >-
+          background: repeating-linear-gradient(45deg, rgba(244, 67, 54, 0.08),
+          rgba(244, 67, 54, 0.08) 10px, rgba(244, 67, 54, 0.15) 10px, rgba(244,
+          67, 54, 0.15) 20px);
+      icon:
+        icon: mdi:power-plug-off
+        style:
+          color: '#FF5252'
+          filter: drop-shadow(0 0 2px rgba(255, 82, 82, 0.3))
+  - entity: calendar.planned_outages
+    filter: Emergency Shutdowns
+    cell:
+      background:
+        style:
+          background-color: rgba(183, 28, 28, 0.2)
+          border: 1px dashed #FF1744
+      icon:
+        icon: mdi:transmission-tower-off
+        style:
+          color: '#FF8A80'
+          opacity: 1
+  - entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    cell:
+      background:
+        style:
+          background-color: rgba(120, 144, 156, 0.05)
+      icon:
+        icon: mdi:timer-sand
+        style:
+          color: '#90A4AE'
+  - entity: calendar.planned_outages
+    filter: Schedule Applies
+    cell:
+      background:
+        style:
+          background-color: rgba(3, 169, 244, 0.05)
+      icon:
+        icon: mdi:calendar-check
+        style:
+          color: '#29B6F6'
+
