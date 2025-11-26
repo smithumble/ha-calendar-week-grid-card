@@ -171,13 +171,16 @@ export class CalendarWeekGridCard extends LitElement {
     const rawStyle = this.getCellConfig('raw_style', primaryEvent) || '';
 
     return html`
-      <div
-        class="cell ${primaryEvent ? 'has-event' : ''}"
-        style="${style} ${rawStyle}"
-      >
-        ${this.renderCurrentTimeLine(day, hour)} ${this.renderBackgroundBlock()}
-        ${this.renderEventBlocks(cellEvents, cellStartTime, cellEndTime)}
-        ${this.renderEventIcon(primaryEvent)}
+      <div class="cell-wrapper">
+        <div
+          class="cell ${primaryEvent ? 'has-event' : ''}"
+          style="${style} ${rawStyle}"
+        >
+          ${this.renderBackgroundBlock()}
+          ${this.renderEventBlocks(cellEvents, cellStartTime, cellEndTime)}
+          ${this.renderEventIcon(primaryEvent)}
+        </div>
+        ${this.renderCurrentTimeLine(day, hour)}
       </div>
     `;
   }
