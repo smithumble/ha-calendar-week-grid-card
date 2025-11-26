@@ -9,7 +9,9 @@
     "watch": "rollup -c -w",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "generate-screenshots": "node scripts/generate-screenshots.mjs",
+    "update-readme": "node scripts/update-readme.mjs"
   },
   "keywords": [
     "home-assistant",
@@ -38,8 +40,10 @@
     "eslint-config-prettier": "^10.0.2",
     "eslint-plugin-import": "^2.26.0",
     "globals": "^16.5.0",
+    "js-yaml": "^4.1.1",
     "postcss": "^8.4.33",
     "prettier": "^3.1.1",
+    "puppeteer": "^24.31.0",
     "rollup": "^4.0.0",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-postcss-lit": "^2.0.0",
