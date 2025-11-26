@@ -1,5 +1,6 @@
 :host {
   display: block;
+  --event-border-radius: 0px;
   --event-color: var(--primary-text-color, #ffffff);
   --event-bg: transparent;
   --normal-color: var(--primary-text-color, #555);
@@ -57,19 +58,27 @@ ha-card {
   background-color: var(--normal-bg);
   color: var(--normal-color);
   height: 24px;
+  border-radius: var(--event-border-radius);
 }
 
 .cell.has-event {
   color: var(--event-color);
 }
 
-.event-block,
-.event-background-block {
+.event-block-wrapper {
   position: absolute;
   left: 0;
   right: 0;
   pointer-events: none;
+  overflow: hidden;
+}
+
+.event-block {
+  position: absolute;
+  left: 0;
+  right: 0;
   box-sizing: border-box;
+  border-radius: var(--event-border-radius);
 }
 
 ha-icon {

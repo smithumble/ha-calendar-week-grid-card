@@ -159,26 +159,27 @@ export class CalendarWeekGridCard extends LitElement {
     const cellStartTime = cellDate.setHours(hour);
     const cellEndTime = cellDate.setHours(hour + 1);
 
-    const cellEvents = this.events.filter((evt) => {
+    const cellEvents = this.events.filter((event) => {
       return (
-        cellStartTime < evt.end.getTime() && cellEndTime > evt.start.getTime()
+        cellStartTime < event.end.getTime() &&
+        cellEndTime > event.start.getTime()
       );
     });
 
-    const primaryEvent = cellEvents[0];
+    const event = cellEvents[0];
 
-    const style = this.getCellConfigStyle('style', primaryEvent) || '';
-    const rawStyle = this.getCellConfig('raw_style', primaryEvent) || '';
+    const style = this.getCellConfigStyle('style', event) || '';
+    const rawStyle = this.getCellConfig('raw_style', event) || '';
 
     return html`
       <div class="cell-wrapper">
         <div
-          class="cell ${primaryEvent ? 'has-event' : ''}"
+          class="cell ${event ? 'has-event' : ''}"
           style="${style} ${rawStyle}"
         >
           ${this.renderBackgroundBlock()}
           ${this.renderEventBlocks(cellEvents, cellStartTime, cellEndTime)}
-          ${this.renderEventIcon(primaryEvent)}
+          ${this.renderEventIcon(event)}
         </div>
         ${this.renderCurrentTimeLine(day, hour)}
       </div>
@@ -222,18 +223,18 @@ export class CalendarWeekGridCard extends LitElement {
     cellStartTime: number,
     cellEndTime: number,
   ): TemplateResult[] {
-    return cellEvents.map((evt) =>
-      this.renderEventBlock(evt, cellStartTime, cellEndTime),
+    return cellEvents.map((event) =>
+      this.renderEventBlock(event, cellStartTime, cellEndTime),
     );
   }
 
   private renderEventBlock(
-    evt: Event,
+    event: Event,
     cellStartTime: number,
     cellEndTime: number,
   ): TemplateResult {
-    const eventStartTime = evt.start.getTime();
-    const eventEndTime = evt.end.getTime();
+    const eventStartTime = event.start.getTime();
+    const eventEndTime = event.end.getTime();
 
     const start = Math.max(cellStartTime, eventStartTime);
     const end = Math.min(cellEndTime, eventEndTime);
@@ -242,13 +243,23 @@ export class CalendarWeekGridCard extends LitElement {
     const topPct = ((start - cellStartTime) / duration) * 100;
     const heightPct = ((end - start) / duration) * 100;
 
-    const rawStyle = this.getCellConfig('background.raw_style', evt) || '';
-    const style = this.getCellConfigStyle('background.style', evt) || '';
+    const rawStyle = this.getCellConfig('background.raw_style', event) || '';
+    const style = this.getCellConfigStyle('background.style', event) || '';
+
+    if (heightPct < 0.01) return html``;
+
+    const innerHeightPct = (100 / heightPct) * 100;
+    const innerTopPct = -(topPct / heightPct) * 100;
 
     return html`<div
-      class="event-block"
-      style="top: ${topPct}%; height: ${heightPct}%; ${style} ${rawStyle}"
-    ></div>`;
+      class="event-block-wrapper"
+      style="top: ${topPct}%; height: ${heightPct}%;"
+    >
+      <div
+        class="event-block"
+        style="top: ${innerTopPct}%; height: ${innerHeightPct}%; ${style} ${rawStyle}"
+      ></div>
+    </div>`;
   }
 
   private renderBackgroundBlock(): TemplateResult {
@@ -256,10 +267,12 @@ export class CalendarWeekGridCard extends LitElement {
     const rawStyle =
       this.getCellConfig('background.raw_style', undefined) || '';
 
-    return html`<div
-      class="event-background-block"
-      style="top: 0%; height: 100%; ${style} ${rawStyle}"
-    ></div>`;
+    return html`<div class="event-block-wrapper" style="top: 0%; height: 100%;">
+      <div
+        class="event-block"
+        style="top: 0%; height: 100%; ${style} ${rawStyle}"
+      ></div>
+    </div>`;
   }
 
   private getDays(): DayInfo[] {

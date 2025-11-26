@@ -223,7 +223,7 @@ grid:
 cell:
   style:
     height: 28px
-    border-radius: 6px
+    '--event-border-radius': 6px
   icon:
     style:
       '--mdc-icon-size': 18px
