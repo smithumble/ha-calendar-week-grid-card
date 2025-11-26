@@ -49,60 +49,66 @@ type: module
 
 ## Configuration
 
-| Name          | Type   | Required | Description                                              |
-| ------------- | ------ | -------- | -------------------------------------------------------- |
-| `type`        | string | **Yes**  | `custom:calendar-week-grid-card`                         |
-| `entities`    | list   | **Yes**  | List of calendar entities or objects.                    |
-| `language`    | string | No       | Language code for days (e.g., `en`, `fr`).               |
-| `start_hour`  | number | No       | First hour to display (0-23). Default: 0.                |
-| `end_hour`    | number | No       | Last hour to display (0-23). Default: 24.                |
-| `filter`      | string | No       | Global filter text for event summary.                    |
-| `cell`        | object | No       | Global configuration for cells (see Cell Configuration). |
-| `cell_filled` | object | No       | Configuration for cells with events.                     |
-| `cell_blank`  | object | No       | Configuration for empty cells.                           |
+| Name          | Type   | Required | Description                                                    |
+| ------------- | ------ | -------- | -------------------------------------------------------------- |
+| `type`        | string | **Yes**  | `custom:calendar-week-grid-card`                               |
+| `entities`    | list   | **Yes**  | List of calendar entities or objects.                          |
+| `language`    | string | No       | Language code for days (e.g., `en`, `fr`).                     |
+| `start_hour`  | number | No       | First hour to display (0-23). Default: 0.                      |
+| `end_hour`    | number | No       | Last hour to display (0-23). Default: 24.                      |
+| `filter`      | string | No       | Global filter text for event summary.                          |
+| `grid`        | object | No       | Configuration for the grid container (see Grid Configuration). |
+| `cell`        | object | No       | Configuration for cells (see Cell Configuration).              |
+| `cell_filled` | object | No       | Configuration for cells with events (see Cell Configuration).  |
+| `cell_blank`  | object | No       | Configuration for empty cells (see Cell Configuration).        |
+| `style`       | object | No       | CSS styles for the main card.                                  |
+| `raw_style`   | string | No       | Raw CSS string for the main card.                              |
 
 ### Cell Configuration
 
-Configuration object for `cell`, `cell_filled` and `cell_blank`:
+Configuration object for `cell`, `cell_filled`, `cell_blank`, and `entity.cell`.
 
-| Name                 | Type   | Description                            |
-| -------------------- | ------ | -------------------------------------- |
-| `height`             | string | Height of the cell (e.g., `30px`).     |
-| `icon.icon`          | string | Icon to display.                       |
-| `icon.size`          | string | Size of the icon (e.g., `18px`).       |
-| `icon.color`         | string | Icon color.                            |
-| `icon.opacity`       | number | Icon opacity (0-1).                    |
-| `background.color`   | string | Background color of the event block.   |
-| `background.opacity` | number | Background opacity of the event block. |
+| Name         | Type   | Description                                               |
+| ------------ | ------ | --------------------------------------------------------- |
+| `icon`       | object | Configuration for the icon (see Icon Configuration).      |
+| `background` | object | Configuration for the background (see Background Config). |
+| `style`      | object | CSS styles for the cell container.                        |
+| `raw_style`  | string | Raw CSS string for the cell container.                    |
+
+#### Icon Configuration
+
+| Name        | Type   | Description                   |
+| ----------- | ------ | ----------------------------- |
+| `icon`      | string | Icon name (e.g., `mdi:home`). |
+| `style`     | object | CSS styles for the icon.      |
+| `raw_style` | string | Raw CSS string for the icon.  |
+
+#### Background Configuration
+
+| Name        | Type   | Description                              |
+| ----------- | ------ | ---------------------------------------- |
+| `style`     | object | CSS styles for the background block.     |
+| `raw_style` | string | Raw CSS string for the background block. |
+
+### Grid Configuration
+
+Configuration object for `grid`.
+
+| Name        | Type   | Description                            |
+| ----------- | ------ | -------------------------------------- |
+| `style`     | object | CSS styles for the grid container.     |
+| `raw_style` | string | Raw CSS string for the grid container. |
 
 ### Entity Configuration
 
-You can provide entities as simple strings or objects for more control:
+| Name     | Type   | Required | Description                                          |
+| -------- | ------ | -------- | ---------------------------------------------------- |
+| `entity` | string | **Yes**  | The entity_id of the calendar.                       |
+| `name`   | string | No       | Friendly name for the entity (currently unused).     |
+| `filter` | string | No       | Filter text for events.                              |
+| `cell`   | object | No       | Configuration for the cell (see Cell Configuration). |
 
-```yaml
-entities:
-  - calendar.family
-  - entity: calendar.work
-    name: Work
-    filter: 'Meeting' # Only show events containing "Meeting"
-    cell:
-      icon:
-        color: '#ff0000'
-        icon: 'mdi:briefcase'
-```
-
-## Example
-
-```yaml
-type: custom:calendar-week-grid-card
-entities:
-  - calendar.personal
-  - calendar.holidays
-cell:
-  height: 30px
-```
-
-## Example with [HA Yasno Outages](https://github.com/denysdovhan/ha-yasno-outages)
+## Examples
 
 > [!NOTE]
 > The examples use the [HA Yasno Outages](https://github.com/denysdovhan/ha-yasno-outages) integration calendar, which shows outages in Ukraine caused by Russian attacks on civilian and energy infrastructure during the invasion of Ukraine.
@@ -114,55 +120,12 @@ cell:
 ```yaml
 type: custom:calendar-week-grid-card
 language: uk
-cell:
-  height: 24px
-  icon:
-    size: 18px
-cell_filled:
-  icon:
-    icon: mdi:flash-off
-    color: var(--primary-color)
-  background:
-    opacity: 0.2
-cell_blank:
-  icon:
-    icon: mdi:flash
-    opacity: 0.2
+start_hour: 6
+end_hour: 20
 entities:
-  - entity: calendar.yasno_kiiv_dtek_6_1_probable_outages
-    cell:
-      background:
-        color: var(--primary-color)
+  - calendar.yasno_kiiv_dtek_6_1_probable_outages
   - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
     filter: Outage
-    cell:
-      icon:
-        color: red
-      background:
-        color: red
-  - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
-    filter: Emergency Shutdowns
-    cell:
-      icon:
-        icon: mdi:flash-off
-        color: red
-        opacity: 0.2
-      background:
-        color: red
-  - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
-    filter: Waiting for Schedule
-    cell:
-      icon:
-        icon: mdi:clock
-        color: var(--warning-color)
-        opacity: 0.2
-  - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
-    filter: Schedule Applies
-    cell:
-      icon:
-        icon: mdi:flash
-        color: var(--error-color)
-        opacity: 0.2
 ```
 
 ### Example 2
@@ -172,102 +135,174 @@ entities:
 ```yaml
 type: custom:calendar-week-grid-card
 language: uk
+cell:
+  style:
+    height: 24px
+  icon:
+    style:
+      '--mdc-icon-size': '18px'
+cell_filled:
+  icon:
+    icon: mdi:flash-off
+    style:
+      color: var(--primary-color)
+cell_blank:
+  icon:
+    icon: mdi:flash
+    style:
+      opacity: 0.2
+entities:
+  - entity: calendar.yasno_kiiv_dtek_6_1_probable_outages
+    cell:
+      icon:
+        style:
+          color: '#29B6F6'
+      background:
+        style:
+          background-color: '#29B6F6'
+          opacity: 0.2
+  - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
+    filter: Outage
+    cell:
+      icon:
+        style:
+          color: red
+      background:
+        style:
+          background-color: red
+          opacity: 0.2
+  - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
+    filter: Emergency Shutdowns
+    cell:
+      icon:
+        icon: mdi:flash-off
+        style:
+          color: red
+          opacity: 0.2
+      background:
+        style:
+          background-color: red
+          opacity: 0.2
+  - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
+    filter: Waiting for Schedule
+    cell:
+      icon:
+        icon: mdi:timer-sand
+        style:
+          color: '#FF9800'
+          opacity: 0.2
+  - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
+    filter: Schedule Applies
+    cell:
+      icon:
+        icon: mdi:flash
+        style:
+          color: red
+          opacity: 0.2
+```
 
-# Global Card Styling
+### Example 3
+
+![Calendar Week Grid Card Example 3](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_3.png)
+
+```yaml
+type: custom:calendar-week-grid-card
+language: uk
 style:
-  background: 'rgba(32, 33, 36, 0.95)' # Dark background
-  border-radius: '12px'
-  padding: '12px'
-  box-shadow: '0 4px 6px rgba(0,0,0,0.1)'
-
+  background: rgba(32, 33, 36, 0.95)
+  border-radius: 12px
+  padding: 12px
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1)
 grid:
   style:
-    gap: '4px' # Space between cells
-
+    gap: 4px
 cell:
-  height: 28px
-  icon:
-    size: 18px
   style:
-    border-radius: '6px'
-
-# 🟢 POWER ON (Blank/Empty Cells)
+    height: 28px
+    border-radius: 6px
+  icon:
+    style:
+      '--mdc-icon-size': 18px
 cell_blank:
   icon:
     icon: mdi:lightning-bolt
-    color: '#00E676' # Neon Green
-    opacity: 0.7
     style:
-      filter: 'drop-shadow(0 0 2px rgba(0, 230, 118, 0.3))'
+      color: '#00E676'
+      opacity: '0.7'
+      filter: drop-shadow(0 0 2px rgba(0, 230, 118, 0.3))
   background:
-    color: 'rgba(0, 230, 118, 0.08)' # Very faint green tint
     style:
-      border-radius: '6px'
-
-# ⚪️ DEFAULT EVENT (Fallback)
+      background-color: rgba(0, 230, 118, 0.01)
+      border-radius: 6px
 cell_filled:
   icon:
     icon: mdi:help-circle
-    color: '#B0BEC5'
+    style:
+      color: '#B0BEC5'
   background:
-    color: 'rgba(255, 255, 255, 0.05)'
-
+    style:
+      background-color: rgba(255, 255, 255, 0.03)
 entities:
-  # 🟠 PROBABLE OUTAGES (Striped Pattern)
   - entity: calendar.yasno_kiiv_dtek_6_1_probable_outages
     cell:
       background:
-        color: transparent
-        # Diagonal stripes
-        raw_style: 'background: repeating-linear-gradient(45deg, rgba(255, 152, 0, 0.15), rgba(255, 152, 0, 0.15) 10px, rgba(255, 152, 0, 0.25) 10px, rgba(255, 152, 0, 0.25) 20px);'
+        style:
+          background-color: transparent
+        raw_style: >-
+          background: repeating-linear-gradient(45deg, rgba(255, 152, 0, 0.08),
+          rgba(255, 152, 0, 0.08) 10px, rgba(255, 152, 0, 0.15) 10px, rgba(255,
+          152, 0, 0.15) 20px);
       icon:
         icon: mdi:alert-circle-outline
-        color: '#FF9800'
-        opacity: 1
-
-  # 🔴 PLANNED OUTAGE (Gradient Red)
+        style:
+          color: '#FF9800'
+          opacity: '0.9'
   - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
     filter: Outage
     cell:
       background:
-        color: transparent
-        # Vertical gradient
-        raw_style: 'background: linear-gradient(180deg, rgba(244, 67, 54, 0.25) 0%, rgba(211, 47, 47, 0.45) 100%); border: 1px solid rgba(244,67,54,0.1);'
+        style:
+          background-color: transparent
+          border: 1px solid rgba(244, 67, 54, 0.1)
+        raw_style: >-
+          background: repeating-linear-gradient(45deg, rgba(244, 67, 54, 0.08),
+          rgba(244, 67, 54, 0.08) 10px, rgba(244, 67, 54, 0.15) 10px, rgba(244,
+          67, 54, 0.15) 20px);
       icon:
         icon: mdi:power-plug-off
-        color: '#FF5252' # Neon Red
         style:
-          filter: 'drop-shadow(0 0 4px rgba(255, 82, 82, 0.4))'
-
-  # ⛔️ EMERGENCY (Dark Red)
+          color: '#FF5252'
+          filter: drop-shadow(0 0 2px rgba(255, 82, 82, 0.3))
   - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
     filter: Emergency Shutdowns
     cell:
       background:
-        color: 'rgba(183, 28, 28, 0.5)'
-        raw_style: 'border: 1px dashed #FF1744;'
+        style:
+          background-color: rgba(183, 28, 28, 0.2)
+          border: '1px dashed #FF1744'
       icon:
         icon: mdi:transmission-tower-off
-        color: '#FF8A80'
-        opacity: 1
-
-  # ⏳ WAITING FOR SCHEDULE (Grey/Blue)
+        style:
+          color: '#FF8A80'
+          opacity: '1'
   - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
     filter: Waiting for Schedule
     cell:
       background:
-        color: 'rgba(120, 144, 156, 0.2)'
+        style:
+          background-color: rgba(120, 144, 156, 0.05)
       icon:
         icon: mdi:timer-sand
-        color: '#90A4AE'
-
-  # 📋 SCHEDULE APPLIES (Teal/Info)
+        style:
+          color: '#90A4AE'
   - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
     filter: Schedule Applies
     cell:
       background:
-        color: 'rgba(3, 169, 244, 0.15)'
+        style:
+          background-color: rgba(3, 169, 244, 0.05)
       icon:
         icon: mdi:calendar-check
-        color: '#29B6F6'
+        style:
+          color: '#29B6F6'
 ```

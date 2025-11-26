@@ -15,26 +15,20 @@ type Style = Record<string, string>;
 
 interface IconConfig {
   icon: string;
-  size?: string;
-  color?: string;
-  opacity?: number;
-  raw_style?: string;
   style?: Style;
+  raw_style?: string;
 }
 
 interface BackgroundConfig {
-  color?: string;
-  opacity?: number;
-  raw_style?: string;
   style?: Style;
+  raw_style?: string;
 }
 
 interface CellConfig {
-  height?: string;
   icon?: IconConfig;
   background?: BackgroundConfig;
-  raw_style?: string;
   style?: Style;
+  raw_style?: string;
 }
 
 interface EntityConfig {
@@ -45,8 +39,8 @@ interface EntityConfig {
 }
 
 interface GridConfig {
-  raw_style?: string;
   style?: Style;
+  raw_style?: string;
 }
 
 interface CardConfig {
@@ -60,8 +54,8 @@ interface CardConfig {
   cell?: CellConfig;
   cell_filled?: CellConfig;
   cell_blank?: CellConfig;
-  raw_style?: string;
   style?: Style;
+  raw_style?: string;
 }
 
 interface CalendarEvent {
@@ -120,10 +114,10 @@ export class CalendarWeekGridCard extends LitElement {
 
     const days = this.getDays();
 
+    const cardStyle = this.stylesObjectToString(this.config.style) || '';
     const rawCardStyle = this.config.raw_style || '';
-    const cardStyle = this.stylesObjectToString(this.config.style);
+    const gridStyle = this.stylesObjectToString(this.config.grid?.style) || '';
     const rawGridStyle = this.config.grid?.raw_style || '';
-    const gridStyle = this.stylesObjectToString(this.config.grid?.style);
 
     const startHour = this.config.start_hour ?? 0;
     const endHour = this.config.end_hour ?? 24;
@@ -133,8 +127,8 @@ export class CalendarWeekGridCard extends LitElement {
     );
 
     return html`
-      <ha-card style="${rawCardStyle} ${cardStyle}">
-        <div class="grid-container" style="${rawGridStyle} ${gridStyle}">
+      <ha-card style="${cardStyle} ${rawCardStyle}">
+        <div class="grid-container" style="${gridStyle} ${rawGridStyle}">
           <!-- Header Row -->
           <div></div>
           ${days.map(
@@ -173,20 +167,14 @@ export class CalendarWeekGridCard extends LitElement {
 
     const primaryEvent = cellEvents[0];
 
-    const height = this.getCellConfig('height', primaryEvent);
-    const size = this.getCellConfig('icon.size', primaryEvent);
-    const recordStyle = this.getCellConfigStyle('style', primaryEvent);
-    const rawStyle = this.getCellConfig('raw_style', primaryEvent);
-
-    const style = `
-      ${height !== undefined ? `height: ${height};` : ''}
-      ${size !== undefined ? `--icon-size: ${size};` : ''}
-      ${recordStyle || ''}
-      ${rawStyle || ''}
-    `;
+    const style = this.getCellConfigStyle('style', primaryEvent) || '';
+    const rawStyle = this.getCellConfig('raw_style', primaryEvent) || '';
 
     return html`
-      <div class="cell ${primaryEvent ? 'has-event' : ''}" style="${style}">
+      <div
+        class="cell ${primaryEvent ? 'has-event' : ''}"
+        style="${style} ${rawStyle}"
+      >
         ${this.renderCurrentTimeLine(day, hour)} ${this.renderBackgroundBlock()}
         ${this.renderEventBlocks(cellEvents, cellStartTime, cellEndTime)}
         ${this.renderEventIcon(primaryEvent)}
@@ -196,19 +184,13 @@ export class CalendarWeekGridCard extends LitElement {
 
   private renderEventIcon(event?: Event): TemplateResult {
     const icon = this.getCellConfig('icon.icon', event, 'mdi:check-circle');
-    const opacity = this.getCellConfig('icon.opacity', event, 1, 1);
-    const color = this.getCellConfig('icon.color', event);
-    const rawStyle = this.getCellConfig('icon.raw_style', event);
-    const recordStyle = this.getCellConfigStyle('icon.style', event);
+    const style = this.getCellConfigStyle('icon.style', event) || '';
+    const rawStyle = this.getCellConfig('icon.raw_style', event) || '';
 
-    const style = `
-      ${color !== undefined ? `color: ${color};` : ''}
-      ${opacity !== undefined ? `opacity: ${opacity};` : ''}
-      ${recordStyle || ''}
-      ${rawStyle || ''}
-    `;
-
-    return html`<ha-icon icon="${icon}" style="${style}"></ha-icon>`;
+    return html`<ha-icon
+      icon="${icon}"
+      style="${style} ${rawStyle}"
+    ></ha-icon>`;
   }
 
   private renderCurrentTimeLine(
@@ -242,32 +224,6 @@ export class CalendarWeekGridCard extends LitElement {
     );
   }
 
-  private renderBackgroundBlock(): TemplateResult {
-    const color = this.getCellConfig(
-      'background.color',
-      undefined,
-      'transparent',
-      'transparent',
-    );
-    const opacity = this.getCellConfig(
-      'background.opacity',
-      undefined,
-      0.2,
-      0.2,
-    );
-    const rawStyle = this.getCellConfig('background.raw_style', undefined);
-    const recordStyle = this.getCellConfigStyle('background.style', undefined);
-    const style = `
-      top: 0%;
-      height: 100%;
-      background-color: ${color};
-      ${opacity !== undefined ? `opacity: ${opacity};` : ''}
-      ${recordStyle || ''}
-      ${rawStyle || ''}
-    `;
-    return html`<div class="event-background-block" style="${style}"></div>`;
-  }
-
   private renderEventBlock(
     evt: Event,
     cellStartTime: number,
@@ -283,22 +239,24 @@ export class CalendarWeekGridCard extends LitElement {
     const topPct = ((start - cellStartTime) / duration) * 100;
     const heightPct = ((end - start) / duration) * 100;
 
-    const t = 'transparent';
-    const color = this.getCellConfig('background.color', evt, t, t);
-    const opacity = this.getCellConfig('background.opacity', evt, 0.2, 0.2);
-    const rawStyle = this.getCellConfig('background.raw_style', evt);
-    const recordStyle = this.getCellConfigStyle('background.style', evt);
+    const rawStyle = this.getCellConfig('background.raw_style', evt) || '';
+    const style = this.getCellConfigStyle('background.style', evt) || '';
 
-    const style = `
-      top: ${topPct}%;
-      height: ${heightPct}%;
-      background-color: ${color};
-      ${opacity !== undefined ? `opacity: ${opacity};` : ''}
-      ${recordStyle || ''}
-      ${rawStyle || ''}
-    `;
+    return html`<div
+      class="event-block"
+      style="top: ${topPct}%; height: ${heightPct}%; ${style} ${rawStyle}"
+    ></div>`;
+  }
 
-    return html`<div class="event-block" style="${style}"></div>`;
+  private renderBackgroundBlock(): TemplateResult {
+    const style = this.getCellConfigStyle('background.style', undefined) || '';
+    const rawStyle =
+      this.getCellConfig('background.raw_style', undefined) || '';
+
+    return html`<div
+      class="event-background-block"
+      style="top: 0%; height: 100%; ${style} ${rawStyle}"
+    ></div>`;
   }
 
   private getDays(): DayInfo[] {
