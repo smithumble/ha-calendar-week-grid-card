@@ -138,6 +138,7 @@ language: uk
 cell:
   style:
     height: 24px
+    border-radius: 4px
   icon:
     style:
       '--mdc-icon-size': '18px'
@@ -161,6 +162,7 @@ entities:
         style:
           background-color: '#29B6F6'
           opacity: 0.2
+          border-radius: 4px
   - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
     filter: Outage
     cell:
@@ -171,6 +173,7 @@ entities:
         style:
           background-color: red
           opacity: 0.2
+          border-radius: 4px
   - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
     filter: Emergency Shutdowns
     cell:
@@ -183,6 +186,7 @@ entities:
         style:
           background-color: red
           opacity: 0.2
+          border-radius: 4px
   - entity: calendar.yasno_kiiv_dtek_6_1_planned_outages
     filter: Waiting for Schedule
     cell:

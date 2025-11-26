@@ -46,6 +46,7 @@ ha-card {
   background-color: var(--normal-bg);
   color: var(--normal-color);
   position: relative;
+  overflow: hidden;
 }
 
 .cell.has-event {
@@ -58,7 +59,6 @@ ha-card {
   left: 0;
   right: 0;
   pointer-events: none;
-  border-radius: 4px;
   box-sizing: border-box;
 }
 
