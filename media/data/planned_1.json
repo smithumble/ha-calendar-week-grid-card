@@ -32,9 +32,7 @@
       "status": "ScheduleApplies"
     },
     "tomorrow": {
-      "slots": [
-        
-      ],
+      "slots": [],
       "date": "2025-11-28T00:00:00+02:00",
       "status": "WaitingForSchedule"
     },

@@ -52,11 +52,11 @@ const getMockEvents = () => {
 
   // Load data files
   const plannedRaw = fs.readFileSync(
-    path.join(DATA_DIR, 'planned_1.yaml'),
+    path.join(DATA_DIR, 'planned_1.json'),
     'utf8',
   );
   const probableRaw = fs.readFileSync(
-    path.join(DATA_DIR, 'probable_1.yaml'),
+    path.join(DATA_DIR, 'probable_1.json'),
     'utf8',
   );
 
