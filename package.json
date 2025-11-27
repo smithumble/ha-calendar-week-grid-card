@@ -11,6 +11,9 @@
     "lint:fix": "eslint src --fix",
     "format": "prettier --write .",
     "generate-screenshots": "node scripts/generate-screenshots.mjs",
+    "generate-screenshots:force": "node scripts/generate-screenshots.mjs --force",
+    "generate-and-update": "npm run generate-screenshots && npm run update-readme",
+    "generate-and-update:force": "npm run generate-screenshots:force && npm run update-readme",
     "update-readme": "node scripts/update-readme.mjs"
   },
   "keywords": [

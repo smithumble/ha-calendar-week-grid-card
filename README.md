@@ -118,6 +118,7 @@ Configuration object for `grid`.
 ![Calendar Week Grid Card Example 1](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_1.png)
 
 <!-- CONFIG:example_1 -->
+
 ```yaml
 type: custom:calendar-week-grid-card
 language: uk
@@ -128,6 +129,7 @@ entities:
   - entity: calendar.planned_outages
     filter: Outage
 ```
+
 <!-- END_CONFIG -->
 
 ### Example 2
@@ -135,6 +137,7 @@ entities:
 ![Calendar Week Grid Card Example 2](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_2.png)
 
 <!-- CONFIG:example_2 -->
+
 ```yaml
 type: custom:calendar-week-grid-card
 language: uk
@@ -207,6 +210,7 @@ entities:
           color: red
           opacity: 0.2
 ```
+
 <!-- END_CONFIG -->
 
 ### Example 3
@@ -214,6 +218,7 @@ entities:
 ![Calendar Week Grid Card Example 3](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_3.png)
 
 <!-- CONFIG:example_3 -->
+
 ```yaml
 type: custom:calendar-week-grid-card
 language: uk
@@ -315,6 +320,7 @@ entities:
         style:
           color: '#29B6F6'
 ```
+
 <!-- END_CONFIG -->
 
 ### Example 4
@@ -322,16 +328,17 @@ entities:
 ![Calendar Week Grid Card Example 4](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_4.png)
 
 <!-- CONFIG:example_4 -->
+
 ```yaml
 type: custom:calendar-week-grid-card
 language: en
 style:
-  background: "#FFFFFF"
+  background: '#FFFFFF'
   border-radius: 24px
   padding: 16px
   box-shadow: 0 8px 16px rgba(0,0,0,0.1)
-  "--text-primary": "#444"
-  "--text-secondary": "#444"
+  '--text-primary': '#444'
+  '--text-secondary': '#444'
 grid:
   style:
     gap: 8px
@@ -341,64 +348,65 @@ cell:
     border-radius: 17px
   icon:
     style:
-      "--mdc-icon-size": 20px
+      '--mdc-icon-size': 20px
 cell_blank:
   background:
     style:
-      background-color: "#F5F5F5"
+      background-color: '#F5F5F5'
   icon:
     icon: mdi:check-circle
     style:
-      color: "#E0E0E0"
+      color: '#E0E0E0'
 entities:
   - entity: calendar.probable_outages
     cell:
       background:
         style:
-          background-color: "#B9F6CA"
+          background-color: '#B9F6CA'
       icon:
         icon: mdi:close-circle
         style:
-          color: "#1B5E20"
+          color: '#1B5E20'
   - entity: calendar.planned_outages
     filter: Outage
     cell:
       background:
         style:
-          background-color: "#FF8A80"
+          background-color: '#FF8A80'
       icon:
         icon: mdi:close-circle
         style:
-          color: "#FFFFFF"
+          color: '#FFFFFF'
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
     cell:
       background:
         style:
-          background-color: "#FF80AB"
+          background-color: '#FF80AB'
       icon:
         icon: mdi:alert-circle
         style:
-          color: "#FFFFFF"
+          color: '#FFFFFF'
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
     cell:
       background:
         style:
-          background-color: "#80DEEA"
+          background-color: '#80DEEA'
       icon:
         icon: mdi:clock-outline
         style:
-          color: "#006064"
+          color: '#006064'
   - entity: calendar.planned_outages
     filter: Schedule Applies
     cell:
       background:
         style:
-          background-color: "#FFF176"
+          background-color: '#FFF176'
       icon:
         icon: mdi:circle-outline
         style:
-          color: "#F57F17"
+          color: '#F57F17'
 ```
+
 <!-- END_CONFIG -->
