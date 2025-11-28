@@ -6,4 +6,3 @@ entities:
   - calendar.probable_outages
   - entity: calendar.planned_outages
     filter: Outage
-
