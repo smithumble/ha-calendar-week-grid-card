@@ -1,7 +1,6 @@
 type: custom:calendar-week-grid-card
-language: uk
-start_hour: 6
-end_hour: 20
+language: en
+time_format: 'HH:mm'
 entities:
   - calendar.probable_outages
   - entity: calendar.planned_outages

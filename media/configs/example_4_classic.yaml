@@ -1,5 +1,11 @@
 type: custom:calendar-week-grid-card
-language: uk
+language: en
+time_format: 'HH:mm'
+style:
+  '--color-primary': var(--primary-color)
+  '--color-blue': '#29B6F6'
+  '--color-red': red
+  '--color-orange': '#FF9800'
 cell:
   style:
     height: 24px
@@ -11,7 +17,7 @@ cell_filled:
   icon:
     icon: mdi:flash-off
     style:
-      color: var(--primary-color)
+      color: var(--color-primary)
 cell_blank:
   icon:
     icon: mdi:flash
@@ -22,10 +28,10 @@ entities:
     cell:
       icon:
         style:
-          color: '#29B6F6'
+          color: var(--color-blue)
       background:
         style:
-          background-color: '#29B6F6'
+          background-color: var(--color-blue)
           opacity: 0.2
           border-radius: 4px
   - entity: calendar.planned_outages
@@ -33,10 +39,10 @@ entities:
     cell:
       icon:
         style:
-          color: red
+          color: var(--color-red)
       background:
         style:
-          background-color: red
+          background-color: var(--color-red)
           opacity: 0.2
           border-radius: 4px
   - entity: calendar.planned_outages
@@ -45,11 +51,11 @@ entities:
       icon:
         icon: mdi:flash-off
         style:
-          color: red
+          color: var(--color-red)
           opacity: 0.2
       background:
         style:
-          background-color: red
+          background-color: var(--color-red)
           opacity: 0.2
           border-radius: 4px
   - entity: calendar.planned_outages
@@ -58,7 +64,7 @@ entities:
       icon:
         icon: mdi:timer-sand
         style:
-          color: '#FF9800'
+          color: var(--color-orange)
           opacity: 0.2
   - entity: calendar.planned_outages
     filter: Schedule Applies
@@ -66,5 +72,5 @@ entities:
       icon:
         icon: mdi:flash
         style:
-          color: red
+          color: var(--color-red)
           opacity: 0.2

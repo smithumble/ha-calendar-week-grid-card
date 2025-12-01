@@ -18,7 +18,50 @@ const specificConfig = configArgIndex !== -1 ? args[configArgIndex] : null;
 const DIST_PATH = path.resolve(__dirname, '../dist/calendar-week-grid-card.js');
 const OUTPUT_DIR = path.resolve(__dirname, '../media/images');
 const CONFIGS_DIR = path.resolve(__dirname, '../media/configs');
+const THEMES_DIR = path.resolve(__dirname, '../media/themes');
 const DATA_DIR = path.resolve(__dirname, '../media/data');
+
+// Load Theme
+function loadTheme() {
+  try {
+    const themePath = path.join(THEMES_DIR, 'catppuccin.yaml');
+    if (!fs.existsSync(themePath)) return null;
+
+    const content = fs.readFileSync(themePath, 'utf8');
+    const themes = yaml.load(content);
+    const themeName = 'Catppuccin Auto Latte Mocha';
+    const themeData = themes[themeName];
+
+    if (!themeData || !themeData.modes) return null;
+
+    const processMode = (modeData) => {
+      return Object.entries(modeData)
+        .filter(
+          ([key, value]) =>
+            typeof value === 'string' || typeof value === 'number',
+        )
+        .map(([key, value]) => `--${key}: ${value};`)
+        .join('\n');
+    };
+
+    return {
+      light: processMode(themeData.modes.light),
+      dark: processMode(themeData.modes.dark),
+    };
+  } catch (e) {
+    console.error('Error loading theme:', e);
+    return null;
+  }
+}
+
+const THEME_CSS = loadTheme();
+if (THEME_CSS && THEME_CSS.light && THEME_CSS.dark) {
+  console.log('Theme loaded: Catppuccin Auto Latte Macchiato (Light & Dark)');
+} else {
+  console.log(
+    'No theme loaded or failed to load Catppuccin Auto Latte Macchiato',
+  );
+}
 
 // Fixed date: Monday, May 20, 2024
 const MOCK_DATE_STR = '2024-05-20T11:38:00';
@@ -187,8 +230,8 @@ const MOCK_EVENTS = getMockEvents();
 async function renderScreenshot(browser, configItem) {
   const page = await browser.newPage();
 
-  // Set viewport size
-  await page.setViewport({ width: 1200, height: 600, deviceScaleFactor: 2 });
+  // Set viewport size (wider for split view)
+  await page.setViewport({ width: 1600, height: 800, deviceScaleFactor: 2 });
 
   // Log console messages from the page
   page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
@@ -199,32 +242,67 @@ async function renderScreenshot(browser, configItem) {
     <html>
       <head>
         <style>
+          /* Root Variables */
+          :root {
+            --box-sizing: border-box;
+          }
+
+          /* Base Styles */
           body { 
             font-family: 'Roboto', sans-serif; 
-            background-color: rgb(40, 40, 40);
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
             margin: 0;
-            padding: 40px 350px; /* Add padding */
-            box-sizing: border-box;
+            padding: 0;
+            display: flex;
+            width: 100vw;
+            min-height: 100vh;
           }
-          /* Mock Variables */
-          body {
-            --primary-text-color: #e1e1e1;
-            --secondary-text-color: #9b9b9b;
-            --primary-color: #03a9f4;
-            --card-background-color: #1d2021;
-            --ha-card-background: var(--card-background-color);
-            --ha-card-box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12);
-            --ha-card-border-radius: 4px;
+
+          .theme-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 80px 175px 40px;
+            box-sizing: border-box;
+            background-color: var(--primary-background-color, rgb(40, 40, 40));
             color: var(--primary-text-color);
+            position: relative;
+            min-height: 100vh;
+          }
+          
+          .theme-light {
+            ${THEME_CSS && THEME_CSS.light ? THEME_CSS.light : ''}
+          }
+
+          .theme-dark {
+            ${THEME_CSS && THEME_CSS.dark ? THEME_CSS.dark : ''}
+          }
+          
+          /* Label for the theme mode */
+          .theme-label {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            opacity: 0.5;
+            font-weight: bold;
+          }
+
+          #card-container-light, #card-container-dark {
+            width: 100%;
+            max-width: 800px;
           }
         </style>
       </head>
       <body>
-        <div id="card-container" style="width: 100%; max-width: 800px;"></div>
+        <div class="theme-container theme-light">
+          <div class="theme-label">Light</div>
+          <div id="card-container-light"></div>
+        </div>
+        <div class="theme-container theme-dark">
+          <div class="theme-label">Dark</div>
+          <div id="card-container-dark"></div>
+        </div>
       </body>
     </html>
   `);
@@ -350,59 +428,78 @@ async function renderScreenshot(browser, configItem) {
     customElements.get('calendar-week-grid-card'),
   );
 
-  // Create and configure the card
+  // Create and configure the card (twice, for light and dark)
   await page.evaluate(
     async (config, events) => {
-      const card = document.createElement('calendar-week-grid-card');
+      const createCard = (containerId) => {
+        const card = document.createElement('calendar-week-grid-card');
 
-      // Mock Hass object
-      card.hass = {
-        language: config.language || 'en',
-        config: {
-          time_zone: 'Europe/Kiev',
-        },
-        callApi: async (method, path) => {
-          if (path.startsWith('calendars/')) {
-            const parts = path.split('/');
-            if (parts.length >= 2) {
-              // Extract entity_id before any query params
-              let calendarId = decodeURIComponent(parts[1]);
-              if (calendarId.includes('?')) {
-                calendarId = calendarId.split('?')[0];
+        // Mock Hass object
+        card.hass = {
+          language: config.language || 'en',
+          config: {
+            time_zone: 'Europe/Kiev',
+          },
+          callApi: async (method, path) => {
+            if (path.startsWith('calendars/')) {
+              const parts = path.split('/');
+              if (parts.length >= 2) {
+                // Extract entity_id before any query params
+                let calendarId = decodeURIComponent(parts[1]);
+                if (calendarId.includes('?')) {
+                  calendarId = calendarId.split('?')[0];
+                }
+
+                // Return filtered events for the given entity_id
+                const filtered = events.filter(
+                  (e) => e.entity_id === calendarId,
+                );
+                return filtered;
               }
-
-              // Return filtered events for the given entity_id
-              const filtered = events.filter((e) => e.entity_id === calendarId);
-              return filtered;
             }
-          }
-          return [];
-        },
+            return [];
+          },
+        };
+
+        card.setConfig(config);
+        document.getElementById(containerId).appendChild(card);
       };
 
-      card.setConfig(config);
-      document.getElementById('card-container').appendChild(card);
-
-      // Force update if needed? Lit should handle it.
+      createCard('card-container-light');
+      createCard('card-container-dark');
     },
     configItem.config,
     MOCK_EVENTS,
   );
 
-  // Wait for card to render and fetch events
+  // Wait for card to render and fetch events (check both)
   await page.waitForFunction(() => {
-    const card = document.querySelector('calendar-week-grid-card');
-    return (
-      card &&
-      card.shadowRoot &&
-      card.shadowRoot.querySelector('.grid-container')
+    const cards = document.querySelectorAll('calendar-week-grid-card');
+    if (cards.length < 2) return false;
+
+    return Array.from(cards).every(
+      (card) =>
+        card &&
+        card.shadowRoot &&
+        card.shadowRoot.querySelector('.grid-container'),
     );
   });
 
   // Give it a bit more time for async fetch and render cycles
   await new Promise((r) => setTimeout(r, 3000));
 
-  // Take screenshot of the body to get the background
+  // Resize viewport to fit content
+  const bodyHandle = await page.$('body');
+  const boundingBox = await bodyHandle.boundingBox();
+  if (boundingBox) {
+    await page.setViewport({
+      width: 1600,
+      height: Math.ceil(boundingBox.height),
+      deviceScaleFactor: 2,
+    });
+  }
+
+  // Take screenshot of the body
   const element = await page.$('body');
   if (element) {
     const imagePath = path.join(OUTPUT_DIR, `${configItem.name}.png`);
