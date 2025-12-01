@@ -47,6 +47,7 @@ interface CardConfig {
   type: string;
   entities: (string | EntityConfig)[];
   language?: string;
+  time_format?: string;
   start_hour?: number;
   end_hour?: number;
   filter?: string;
@@ -147,11 +148,33 @@ export class CalendarWeekGridCard extends LitElement {
   }
 
   private renderRow(hour: number, days: DayInfo[]): TemplateResult {
-    const timeLabel = `${hour.toString().padStart(2, '0')}:00`;
+    const timeLabel = this.formatTime(hour);
     return html`
       <div class="time-label">${timeLabel}</div>
       ${days.map((day) => this.renderCell(day, hour))}
     `;
+  }
+
+  private formatTime(hour: number): string {
+    const format = this.config?.time_format || 'h A';
+
+    // Custom pattern replacement
+    // H: 0-23, HH: 00-23
+    // h: 1-12, hh: 01-12
+    // m: 0-59, mm: 00-59
+    // a: am/pm, A: AM/PM
+    const tokens: Record<string, string> = {
+      HH: hour.toString().padStart(2, '0'),
+      H: hour.toString(),
+      hh: (hour % 12 || 12).toString().padStart(2, '0'),
+      h: (hour % 12 || 12).toString(),
+      mm: '00',
+      m: '0',
+      a: hour < 12 ? 'am' : 'pm',
+      A: hour < 12 ? 'AM' : 'PM',
+    };
+
+    return format.replace(/HH|H|hh|h|mm|m|a|A/g, (match) => tokens[match]);
   }
 
   private renderCell(day: DayInfo, hour: number): TemplateResult {

@@ -1,8 +1,6 @@
 type: custom:calendar-week-grid-card
 language: en
-time_format: 'h A'
-start_hour: 6
-end_hour: 22
+time_format: 'HH:mm'
 style:
   '--event-border-radius': 4px
   '--main-color': var(--primary-text-color)

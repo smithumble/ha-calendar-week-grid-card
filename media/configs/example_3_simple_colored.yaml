@@ -1,14 +1,16 @@
 type: custom:calendar-week-grid-card
 language: en
-time_format: 'h A'
-start_hour: 6
-end_hour: 22
+time_format: 'HH:mm'
 style:
   '--event-border-radius': 4px
-  '--main-color': var(--primary-text-color)
+  '--color-neutral': var(--secondary-text-color)
+  '--color-warning': var(--warning-color)
+  '--color-error': var(--error-color)
+  '--color-info': var(--info-color)
+  '--color-success': var(--success-color)
 cell_blank:
   style:
-    border: 1px dotted var(--main-color)
+    border: 1px dotted var(--color-neutral)
     opacity: 0.3
   icon:
     icon: mdi:checkbox-blank-circle-outline
@@ -18,58 +20,66 @@ entities:
   - entity: calendar.probable_outages
     cell:
       style:
-        border: 1px dashed var(--main-color)
+        border: 1px dashed var(--color-warning)
       icon:
         icon: mdi:alert-circle-outline
         style:
-          color: var(--main-color)
+          color: var(--color-warning)
       background:
         style:
-          background-color: var(--main-color)
+          background-color: var(--color-warning)
           opacity: 0.1
   - entity: calendar.planned_outages
     filter: Outage
     cell:
       style:
-        border: 1px solid var(--main-color)
+        border: 1px solid var(--color-error)
       icon:
         icon: mdi:flash-off
         style:
-          color: var(--main-color)
+          color: var(--color-error)
       background:
         style:
-          background-color: var(--main-color)
+          background-color: var(--color-error)
           opacity: 0.1
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
     cell:
       style:
-        border: 1px double var(--main-color)
+        border: 1px double var(--color-error)
       icon:
         icon: mdi:transmission-tower-off
         style:
-          color: var(--main-color)
+          color: var(--color-error)
       background:
         style:
-          background-color: var(--main-color)
+          background-color: var(--color-error)
           opacity: 0.2
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
     cell:
       style:
-        border: 1px dotted var(--main-color)
-        opacity: 0.4
+        border: 1px dotted var(--color-info)
+        opacity: 0.6
       icon:
         icon: mdi:timer-sand
         style:
-          color: var(--main-color)
+          color: var(--color-info)
+      background:
+        style:
+          background-color: var(--color-info)
+          opacity: 0.1
   - entity: calendar.planned_outages
     filter: Schedule Applies
     cell:
       style:
-        border: 1px groove var(--main-color)
-        opacity: 0.4
+        border: 1px groove var(--color-success)
+        opacity: 0.6
       icon:
         icon: mdi:calendar-check
         style:
-          color: var(--main-color)
+          color: var(--color-success)
+      background:
+        style:
+          background-color: var(--color-success)
+          opacity: 0.1

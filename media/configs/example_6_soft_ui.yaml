@@ -1,12 +1,26 @@
 type: custom:calendar-week-grid-card
 language: en
+time_format: 'HH:mm'
 style:
-  background: '#FFFFFF'
+  '--white': '#FFFFFF'
+  '--text-color': '#444'
+  '--blank-bg': '#F5F5F5'
+  '--blank-icon': '#E0E0E0'
+  '--probable-bg': '#B9F6CA'
+  '--probable-icon': '#1B5E20'
+  '--outage-bg': '#FF8A80'
+  '--emergency-bg': '#FF80AB'
+  '--waiting-bg': '#80DEEA'
+  '--waiting-icon': '#006064'
+  '--schedule-bg': '#FFF176'
+  '--schedule-icon': '#F57F17'
+  '--shadow-color': 'rgba(0,0,0,0.1)'
+  background: var(--white)
   border-radius: 24px
   padding: 16px
-  box-shadow: 0 8px 16px rgba(0,0,0,0.1)
-  '--text-primary': '#444'
-  '--text-secondary': '#444'
+  box-shadow: 0 8px 16px var(--shadow-color)
+  '--text-primary': var(--text-color)
+  '--text-secondary': var(--text-color)
 grid:
   style:
     gap: 8px
@@ -20,58 +34,58 @@ cell:
 cell_blank:
   background:
     style:
-      background-color: '#F5F5F5'
+      background-color: var(--blank-bg)
   icon:
     icon: mdi:check-circle
     style:
-      color: '#E0E0E0'
+      color: var(--blank-icon)
 entities:
   - entity: calendar.probable_outages
     cell:
       background:
         style:
-          background-color: '#B9F6CA'
+          background-color: var(--probable-bg)
       icon:
         icon: mdi:close-circle
         style:
-          color: '#1B5E20'
+          color: var(--probable-icon)
   - entity: calendar.planned_outages
     filter: Outage
     cell:
       background:
         style:
-          background-color: '#FF8A80'
+          background-color: var(--outage-bg)
       icon:
         icon: mdi:close-circle
         style:
-          color: '#FFFFFF'
+          color: var(--white)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
     cell:
       background:
         style:
-          background-color: '#FF80AB'
+          background-color: var(--emergency-bg)
       icon:
         icon: mdi:alert-circle
         style:
-          color: '#FFFFFF'
+          color: var(--white)
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
     cell:
       background:
         style:
-          background-color: '#80DEEA'
+          background-color: var(--waiting-bg)
       icon:
         icon: mdi:clock-outline
         style:
-          color: '#006064'
+          color: var(--waiting-icon)
   - entity: calendar.planned_outages
     filter: Schedule Applies
     cell:
       background:
         style:
-          background-color: '#FFF176'
+          background-color: var(--schedule-bg)
       icon:
         icon: mdi:circle-outline
         style:
-          color: '#F57F17'
+          color: var(--schedule-icon)
