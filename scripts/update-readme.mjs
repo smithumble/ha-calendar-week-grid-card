@@ -33,7 +33,14 @@ function updateReadme() {
       const regex = new RegExp(`(${startMarker})[\\s\\S]*?(${endMarker})`, 'g');
 
       if (readmeContent.match(regex)) {
-        const newBlock = `${startMarker}\n\n\`\`\`yaml\n${configContent.trim()}\n\`\`\`\n\n${endMarker}`;
+        let codeBlock = `\`\`\`yaml\n${configContent.trim()}\n\`\`\``;
+        const lines = configContent.trim().split('\n');
+
+        if (lines.length > 15) {
+          codeBlock = `<details>\n<summary>Configuration</summary>\n\n${codeBlock}\n\n</details>`;
+        }
+
+        const newBlock = `${startMarker}\n\n${codeBlock}\n\n${endMarker}`;
         readmeContent = readmeContent.replace(regex, newBlock);
         console.log(`Updated config for ${configName}`);
       } else {

@@ -160,6 +160,9 @@ entities:
 
 <!-- CONFIG:example_2_simple -->
 
+<details>
+<summary>Configuration</summary>
+
 ```yaml
 type: custom:calendar-week-grid-card
 language: en
@@ -236,6 +239,8 @@ entities:
           color: var(--main-color)
 ```
 
+</details>
+
 <!-- END_CONFIG -->
 
 ### Example 3: Simple Colored
@@ -243,6 +248,9 @@ entities:
 ![Calendar Week Grid Card Example 3: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_3_simple_colored.png)
 
 <!-- CONFIG:example_3_simple_colored -->
+
+<details>
+<summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -332,6 +340,8 @@ entities:
           opacity: 0.1
 ```
 
+</details>
+
 <!-- END_CONFIG -->
 
 ### Example 4: Classic
@@ -339,6 +349,9 @@ entities:
 ![Calendar Week Grid Card Example 4: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_4_classic.png)
 
 <!-- CONFIG:example_4_classic -->
+
+<details>
+<summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -419,6 +432,8 @@ entities:
           opacity: 0.2
 ```
 
+</details>
+
 <!-- END_CONFIG -->
 
 ### Example 5: Neon
@@ -426,6 +441,9 @@ entities:
 ![Calendar Week Grid Card Example 5: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_5_neon.png)
 
 <!-- CONFIG:example_5_neon -->
+
+<details>
+<summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -545,6 +563,8 @@ entities:
           color: var(--neon-light-blue)
 ```
 
+</details>
+
 <!-- END_CONFIG -->
 
 ### Example 6: Soft UI
@@ -552,6 +572,9 @@ entities:
 ![Calendar Week Grid Card Example 6: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_6_soft_ui.png)
 
 <!-- CONFIG:example_6_soft_ui -->
+
+<details>
+<summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -647,6 +670,8 @@ entities:
           color: var(--schedule-icon)
 ```
 
+</details>
+
 <!-- END_CONFIG -->
 
 ### Example 7: Holographic
@@ -654,6 +679,9 @@ entities:
 ![Calendar Week Grid Card Example 7: Holographic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_7_holographic.png)
 
 <!-- CONFIG:example_7_holographic -->
+
+<details>
+<summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -789,5 +817,7 @@ entities:
         style:
           color: var(--sched-icon)
 ```
+
+</details>
 
 <!-- END_CONFIG -->
