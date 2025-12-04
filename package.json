@@ -7,14 +7,14 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -c -w",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
+    "lint": "eslint src scripts",
+    "lint:fix": "eslint src scripts --fix",
     "format": "prettier --write .",
-    "generate-screenshots": "node scripts/generate-screenshots.mjs",
-    "generate-screenshots:force": "node scripts/generate-screenshots.mjs --force",
+    "generate-screenshots": "tsx scripts/generate-screenshots.ts",
+    "generate-screenshots:force": "tsx scripts/generate-screenshots.ts --force",
     "generate-and-update": "npm run generate-screenshots && npm run update-readme",
     "generate-and-update:force": "npm run generate-screenshots:force && npm run update-readme",
-    "update-readme": "node scripts/update-readme.mjs"
+    "update-readme": "tsx scripts/update-readme.ts"
   },
   "keywords": [
     "home-assistant",
@@ -38,7 +38,8 @@
     "@rollup/plugin-node-resolve": "^15.0.0",
     "@rollup/plugin-terser": "^0.4.0",
     "@rollup/plugin-typescript": "^11.0.0",
-    "@types/node": "^20.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.19.25",
     "eslint": "^9.21.0",
     "eslint-config-prettier": "^10.0.2",
     "eslint-plugin-import": "^2.26.0",
@@ -51,6 +52,7 @@
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-postcss-lit": "^2.0.0",
     "tslib": "^2.6.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.48.0"
   },

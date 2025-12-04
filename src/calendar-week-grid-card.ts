@@ -43,7 +43,7 @@ interface GridConfig {
   raw_style?: string;
 }
 
-interface CardConfig {
+export interface CardConfig {
   type: string;
   entities: (string | EntityConfig)[];
   language?: string;
@@ -59,13 +59,13 @@ interface CardConfig {
   raw_style?: string;
 }
 
-interface CalendarEvent {
+export interface CalendarEvent {
   start: { dateTime?: string; date?: string };
   end: { dateTime?: string; date?: string };
   summary?: string;
 }
 
-interface Event extends Omit<CalendarEvent, 'start' | 'end'> {
+export interface Event extends Omit<CalendarEvent, 'start' | 'end'> {
   start: Date; // override with Date object
   end: Date; // override with Date object
   entity?: string;

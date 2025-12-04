@@ -8,11 +8,11 @@ const __dirname = path.dirname(__filename);
 const README_PATH = path.resolve(__dirname, '../README.md');
 const CONFIGS_DIR = path.resolve(__dirname, '../media/configs');
 
-function updateReadme() {
+function updateReadme(): void {
   let readmeContent = fs.readFileSync(README_PATH, 'utf8');
   const files = fs.readdirSync(CONFIGS_DIR);
 
-  files.forEach((file) => {
+  files.forEach((file: string) => {
     if (file.endsWith('.yaml') || file.endsWith('.yml')) {
       const configName = path.basename(file, path.extname(file));
       const configContent = fs.readFileSync(
@@ -25,15 +25,10 @@ function updateReadme() {
       const endMarker = `<!-- END_CONFIG -->`;
 
       // Regex to match content between markers
-      // We match starting marker, anything in between, and the NEXT end marker.
-      // The logic assumes markers are properly paired and nested markers don't exist (which is true).
-      // We need to be careful about which END_CONFIG we match.
-      // Since we iterate by config name, we look for the specific start marker.
-
       const regex = new RegExp(`(${startMarker})[\\s\\S]*?(${endMarker})`, 'g');
 
       if (readmeContent.match(regex)) {
-        let codeBlock = `\`\`\`yaml\n${configContent.trim()}\n\`\`\``;
+        let codeBlock = '```yaml\n' + configContent.trim() + '\n```';
         const lines = configContent.trim().split('\n');
 
         if (lines.length > 15) {
