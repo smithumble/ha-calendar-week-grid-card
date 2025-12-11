@@ -7,6 +7,7 @@ import { getPageContent } from './utils/browser';
 import { getMockEvents, MOCK_DATE_STR } from './utils/events';
 import { loadTheme } from './utils/theme';
 import { loadConfigs, ConfigItem } from './utils/configs';
+import { loadIcons } from './utils/icons';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,6 +27,7 @@ const BROWSER_UTILS_PATH = path.resolve(__dirname, 'utils/browser.ts');
 const THEME_CSS = loadTheme();
 const CONFIGS = loadConfigs();
 const MOCK_EVENTS = getMockEvents();
+const ICON_MAP = loadIcons();
 
 // Compile browser-side code once
 function getBrowserCode(): string {
@@ -36,7 +38,6 @@ function getBrowserCode(): string {
       bundle: true,
       format: 'iife',
       target: 'es2015',
-      globalName: 'BrowserUtils', // Optional, but nice if we export things
     });
     return result.outputFiles[0].text;
   } catch (e) {
@@ -61,16 +62,18 @@ async function renderScreenshot(browser: Browser, configItem: ConfigItem) {
 
   // Inject global variables
   await page.evaluate(
-    (mockDateStr, config, events, theme) => {
+    (mockDateStr, config, events, theme, iconMap) => {
       window.MOCK_DATE_STR = mockDateStr;
       window.CONFIG = config;
       window.EVENTS = events;
       window.THEME_CSS = theme;
+      window.ICON_MAP = iconMap;
     },
     MOCK_DATE_STR,
     configItem.config,
     MOCK_EVENTS,
     THEME_CSS,
+    ICON_MAP,
   );
 
   // Inject helper script
@@ -78,8 +81,7 @@ async function renderScreenshot(browser: Browser, configItem: ConfigItem) {
 
   // Setup the environment
   await page.evaluate(() => {
-    // @ts-expect-error - BrowserUtils is injected via bundled code
-    BrowserUtils.setupBrowserEnv();
+    window.setupBrowserEnv();
   });
 
   // Inject the card script
@@ -98,8 +100,7 @@ async function renderScreenshot(browser: Browser, configItem: ConfigItem) {
 
   // Render cards
   await page.evaluate(() => {
-    // @ts-expect-error - BrowserUtils is injected via bundled code
-    BrowserUtils.renderCards();
+    window.renderCards();
   });
 
   // Wait for card to render and fetch events (check both)
