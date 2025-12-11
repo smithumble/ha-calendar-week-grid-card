@@ -110,7 +110,6 @@ function mockHaCard() {
                   color: var(--primary-text-color);
                   transition: all 0.3s ease-out;
                   position: relative;
-                  min-height: 100vh;
                 }
               </style>
               <slot></slot>
@@ -121,6 +120,8 @@ function mockHaCard() {
     );
   }
 }
+
+const iconCache = new Map<string, string>();
 
 function mockHaIcon() {
   if (!customElements.get('ha-icon')) {
@@ -146,37 +147,49 @@ function mockHaIcon() {
 
           if (!iconName) return;
 
+          // Check cache first for deterministic rendering
+          if (iconCache.has(iconName)) {
+            this.setIconContent(iconCache.get(iconName)!);
+            return;
+          }
+
+          // Fetch and cache icon
           fetch(`https://api.iconify.design/${iconName}.svg`)
             .then((response) => response.text())
             .then((svg) => {
-              if (this.shadowRoot) {
-                this.shadowRoot.innerHTML = `
-                  <style>
-                    :host {
-                      display: inline-flex;
-                      align-items: center;
-                      justify-content: center;
-                      position: relative;
-                      vertical-align: middle;
-                      fill: currentcolor;
-                      width: var(--mdc-icon-size, 24px);
-                      height: var(--mdc-icon-size, 24px);
-                    }
-                    svg {
-                      width: 100%;
-                      height: 100%;
-                      fill: currentColor;
-                      width: 100%;
-                      height: 100%;
-                    }
-                  </style>
-                  ${svg}
-                `;
-              }
+              // Cache the icon for future use
+              iconCache.set(iconName, svg);
+              this.setIconContent(svg);
             })
             .catch((err) => {
               console.error('Failed to fetch icon:', icon, err);
             });
+        }
+        setIconContent(svg: string) {
+          if (this.shadowRoot) {
+            this.shadowRoot.innerHTML = `
+              <style>
+                :host {
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  position: relative;
+                  vertical-align: middle;
+                  fill: currentcolor;
+                  width: var(--mdc-icon-size, 24px);
+                  height: var(--mdc-icon-size, 24px);
+                }
+                svg {
+                  width: 100%;
+                  height: 100%;
+                  fill: currentColor;
+                  width: 100%;
+                  height: 100%;
+                }
+              </style>
+              ${svg}
+            `;
+          }
         }
       },
     );

@@ -182,29 +182,32 @@ export class CalendarWeekGridCard extends LitElement {
     const cellStartTime = cellDate.setHours(hour);
     const cellEndTime = cellDate.setHours(hour + 1);
 
-    const cellEvents = this.events
-      .filter((event) => {
-        return (
-          cellStartTime < event.end.getTime() &&
-          cellEndTime > event.start.getTime()
-        );
-      })
-      .reverse();
+    // Filter events that are within the cell time range
+    const cellEvents = this.events.filter((event) => {
+      return (
+        cellStartTime < event.end.getTime() &&
+        cellEndTime > event.start.getTime()
+      );
+    });
 
-    const event = cellEvents[cellEvents.length - 1];
+    // Main event is the first one in the list
+    const mainEvent = cellEvents[0];
 
-    const style = this.getCellConfigStyle('style', event) || '';
-    const rawStyle = this.getCellConfig('raw_style', event) || '';
+    // Reverse the list to render the events in the correct order
+    cellEvents.reverse();
+
+    const style = this.getCellConfigStyle('style', mainEvent) || '';
+    const rawStyle = this.getCellConfig('raw_style', mainEvent) || '';
 
     return html`
       <div class="cell-wrapper">
         <div
-          class="cell ${event ? 'has-event' : ''}"
+          class="cell ${mainEvent ? 'has-event' : ''}"
           style="${style} ${rawStyle}"
         >
           ${this.renderBackgroundBlock()}
           ${this.renderEventBlocks(cellEvents, cellStartTime, cellEndTime)}
-          ${this.renderEventIcon(event)}
+          ${this.renderEventIcon(mainEvent)}
         </div>
         ${this.renderCurrentTimeLine(day, hour)}
       </div>
