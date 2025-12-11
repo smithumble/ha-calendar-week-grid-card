@@ -8,7 +8,10 @@ declare global {
     CONFIG: CardConfig;
     EVENTS: MockCalendarEvent[];
     THEME_CSS: ThemeCSS;
+    ICON_MAP: Record<string, string>;
     Date: DateConstructor;
+    setupBrowserEnv: () => void;
+    renderCards: () => void;
   }
 }
 
@@ -121,8 +124,6 @@ function mockHaCard() {
   }
 }
 
-const iconCache = new Map<string, string>();
-
 function mockHaIcon() {
   if (!customElements.get('ha-icon')) {
     customElements.define(
@@ -147,23 +148,12 @@ function mockHaIcon() {
 
           if (!iconName) return;
 
-          // Check cache first for deterministic rendering
-          if (iconCache.has(iconName)) {
-            this.setIconContent(iconCache.get(iconName)!);
-            return;
+          const svg = window.ICON_MAP?.[iconName];
+          if (svg) {
+            this.setIconContent(svg);
+          } else {
+            console.error(`Icon not found: ${iconName}`);
           }
-
-          // Fetch and cache icon
-          fetch(`https://api.iconify.design/${iconName}.svg`)
-            .then((response) => response.text())
-            .then((svg) => {
-              // Cache the icon for future use
-              iconCache.set(iconName, svg);
-              this.setIconContent(svg);
-            })
-            .catch((err) => {
-              console.error('Failed to fetch icon:', icon, err);
-            });
         }
         setIconContent(svg: string) {
           if (this.shadowRoot) {
@@ -218,7 +208,7 @@ function overrideDate() {
   }
 }
 
-export function setupBrowserEnv() {
+function setupBrowserEnv() {
   mockHaCard();
   mockHaIcon();
   overrideDate();
@@ -256,7 +246,7 @@ interface MockCard extends HTMLElement {
   setConfig: (config: CardConfig) => void;
 }
 
-export function renderCards() {
+function renderCards() {
   const config = window.CONFIG;
   const events = window.EVENTS;
 
@@ -274,4 +264,10 @@ export function renderCards() {
 
   createCard('card-container-light');
   createCard('card-container-dark');
+}
+
+// Expose functions on window for use in browser context
+if (typeof window !== 'undefined') {
+  window.setupBrowserEnv = setupBrowserEnv;
+  window.renderCards = renderCards;
 }
