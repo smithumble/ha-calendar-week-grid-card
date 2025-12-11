@@ -1,76 +1,61 @@
 type: custom:calendar-week-grid-card
 language: en
-time_format: 'HH:mm'
+time_format: HH:mm
 style:
-  '--color-primary': var(--primary-color)
-  '--color-blue': '#29B6F6'
-  '--color-red': red
-  '--color-orange': '#FF9800'
-cell:
-  style:
-    height: 24px
-    border-radius: 4px
-  icon:
-    style:
-      '--mdc-icon-size': 18px
-cell_filled:
-  icon:
-    icon: mdi:flash-off
-    style:
-      color: var(--color-primary)
+  '--event-border-radius': 4px
+  '--color-neutral': var(--secondary-text-color)
+  '--color-warning': '#FF9800'
+  '--color-error': '#FF0000'
+  '--color-info': '#29B6F6'
+  '--color-success': var(--success-color)
 cell_blank:
   icon:
-    icon: mdi:flash
+    icon: mdi:checkbox-blank-circle-outline
     style:
-      opacity: 0.2
+      opacity: 0.3
 entities:
   - entity: calendar.probable_outages
     cell:
       icon:
+        icon: mdi:alert-circle-outline
         style:
-          color: var(--color-blue)
+          color: var(--color-info)
       background:
         style:
-          background-color: var(--color-blue)
-          opacity: 0.2
-          border-radius: 4px
+          background-color: rgb(from var(--color-info) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Outage
     cell:
       icon:
+        icon: mdi:flash-off
         style:
-          color: var(--color-red)
+          color: var(--color-error)
       background:
         style:
-          background-color: var(--color-red)
-          opacity: 0.2
-          border-radius: 4px
+          background-color: rgb(from var(--color-error) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
     cell:
       icon:
-        icon: mdi:flash-off
+        icon: mdi:transmission-tower-off
         style:
-          color: var(--color-red)
-          opacity: 0.2
+          color: var(--color-error)
       background:
         style:
-          background-color: var(--color-red)
-          opacity: 0.2
-          border-radius: 4px
+          background-color: rgb(from var(--color-error) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
     cell:
       icon:
         icon: mdi:timer-sand
         style:
-          color: var(--color-orange)
-          opacity: 0.2
+          opacity: 0.6
+          color: var(--color-warning)
   - entity: calendar.planned_outages
     filter: Schedule Applies
     cell:
       icon:
-        icon: mdi:flash
+        icon: mdi:checkbox-blank-circle-outline
         style:
-          color: var(--color-red)
-          opacity: 0.2
+          opacity: 0.4
+          color: var(--color-error)

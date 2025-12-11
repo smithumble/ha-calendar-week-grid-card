@@ -146,7 +146,10 @@ async function renderScreenshot(browser: Browser, configItem: ConfigItem) {
   console.log('Starting screenshot generation...');
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: [
+      '--no-sandbox',
+      '--disable-gpu',
+    ],
   });
 
   try {
