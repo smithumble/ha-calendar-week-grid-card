@@ -2,12 +2,11 @@ import puppeteer, { Browser } from 'puppeteer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { buildSync } from 'esbuild';
-import { getPageContent } from './utils/browser';
-import { getMockEvents, MOCK_DATE_STR } from './utils/events';
-import { loadTheme } from './utils/theme';
+import {
+  generateScreenshotPageHTML,
+  getRenderPageData,
+} from './utils/renderers/screenshot-page';
 import { loadConfigs, ConfigItem } from './utils/configs';
-import { loadIcons } from './utils/icons';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,31 +21,8 @@ const specificConfig = configArgIndex !== -1 ? args[configArgIndex] : null;
 
 const DIST_PATH = path.resolve(__dirname, '../dist/calendar-week-grid-card.js');
 const OUTPUT_DIR = path.resolve(__dirname, '../media/images');
-const BROWSER_UTILS_PATH = path.resolve(__dirname, 'utils/browser.ts');
 
-const THEME_CSS = loadTheme();
 const CONFIGS = loadConfigs();
-const MOCK_EVENTS = getMockEvents();
-const ICON_MAP = loadIcons();
-
-// Compile browser-side code once
-function getBrowserCode(): string {
-  try {
-    const result = buildSync({
-      entryPoints: [BROWSER_UTILS_PATH],
-      write: false,
-      bundle: true,
-      format: 'iife',
-      target: 'es2015',
-    });
-    return result.outputFiles[0].text;
-  } catch (e) {
-    console.error('Failed to bundle browser utils:', e);
-    process.exit(1);
-  }
-}
-
-const BROWSER_CODE = getBrowserCode();
 
 async function renderScreenshot(browser: Browser, configItem: ConfigItem) {
   const page = await browser.newPage();
@@ -57,8 +33,11 @@ async function renderScreenshot(browser: Browser, configItem: ConfigItem) {
   // Set viewport size (wider for split view)
   await page.setViewport({ width: 1600, height: 800, deviceScaleFactor: 2 });
 
-  // Set content first
-  await page.setContent(getPageContent());
+  // Get render data for this config
+  const renderData = getRenderPageData(configItem.config);
+
+  // Set content first (screenshot page without navbar)
+  await page.setContent(generateScreenshotPageHTML());
 
   // Inject global variables
   await page.evaluate(
@@ -69,19 +48,19 @@ async function renderScreenshot(browser: Browser, configItem: ConfigItem) {
       window.THEME_CSS = theme;
       window.ICON_MAP = iconMap;
     },
-    MOCK_DATE_STR,
-    configItem.config,
-    MOCK_EVENTS,
-    THEME_CSS,
-    ICON_MAP,
+    renderData.mockDateStr,
+    renderData.config,
+    renderData.events,
+    renderData.theme,
+    renderData.iconMap,
   );
 
   // Inject helper script
-  await page.evaluate(BROWSER_CODE);
+  await page.evaluate(renderData.commonCode);
 
   // Setup the environment
   await page.evaluate(() => {
-    window.setupBrowserEnv();
+    window.setupBrowserEnv?.();
   });
 
   // Inject the card script
@@ -100,7 +79,7 @@ async function renderScreenshot(browser: Browser, configItem: ConfigItem) {
 
   // Render cards
   await page.evaluate(() => {
-    window.renderCards();
+    window.renderCards?.();
   });
 
   // Wait for card to render and fetch events (check both)
@@ -147,10 +126,7 @@ async function renderScreenshot(browser: Browser, configItem: ConfigItem) {
   console.log('Starting screenshot generation...');
   const browser = await puppeteer.launch({
     headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-gpu',
-    ],
+    args: ['--no-sandbox', '--disable-gpu'],
   });
 
   try {

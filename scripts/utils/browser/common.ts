@@ -1,82 +1,37 @@
-import { ThemeCSS } from './theme';
-import type { CardConfig } from '../../src/calendar-week-grid-card';
-import type { MockCalendarEvent } from './events';
+import { ThemeCSS } from '../theme';
+import type { MockCalendarEvent } from '../events';
 
 declare global {
   interface Window {
     MOCK_DATE_STR: string;
-    CONFIG: CardConfig;
+    CONFIG?: any;
     EVENTS: MockCalendarEvent[];
     THEME_CSS: ThemeCSS;
     ICON_MAP: Record<string, string>;
     Date: DateConstructor;
-    setupBrowserEnv: () => void;
-    renderCards: () => void;
+    setupBrowserEnv?: () => void;
+    renderCards?: (config?: any) => void;
   }
 }
 
-export function getPageContent(): string {
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <style>
-          /* Root Variables */
-          :root {
-            --box-sizing: border-box;
-          }
+interface MockCard extends HTMLElement {
+  hass: unknown;
+  setConfig: (config: any) => void;
+}
 
-          /* Base Styles */
-          body { 
-            font-family: 'Roboto', sans-serif; 
-            margin: 0;
-            padding: 0;
-            display: flex;
-            width: 100vw;
-            min-height: 100vh;
-          }
+function createMockHass(config: any, events: MockCalendarEvent[]) {
+  return {
+    language: config.language || 'en',
+    config: { time_zone: 'Europe/Kiev' },
+    callApi: async (_method: string, path: string) => {
+      if (!path.startsWith('calendars/')) return [];
 
-          .theme-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 80px 175px 40px;
-            box-sizing: border-box;
-            background-color: var(--primary-background-color, rgb(40, 40, 40));
-            color: var(--primary-text-color);
-            position: relative;
-            min-height: 100vh;
-          }
-          
-          /* Label for the theme mode */
-          .theme-label {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 24px;
-            opacity: 0.5;
-            font-weight: bold;
-          }
-
-          #card-container-light, #card-container-dark {
-            width: 100%;
-            max-width: 800px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="theme-container theme-light">
-          <div class="theme-label">Light</div>
-          <div id="card-container-light"></div>
-        </div>
-        <div class="theme-container theme-dark">
-          <div class="theme-label">Dark</div>
-          <div id="card-container-dark"></div>
-        </div>
-      </body>
-    </html>
-  `;
+      const calendarId = decodeURIComponent(
+        path.split('/')[1]?.split('?')[0] || '',
+      );
+      return events.filter((e) => e.entity_id === calendarId);
+    },
+  };
 }
 
 function injectTheme() {
@@ -173,8 +128,6 @@ function mockHaIcon() {
                   width: 100%;
                   height: 100%;
                   fill: currentColor;
-                  width: 100%;
-                  height: 100%;
                 }
               </style>
               ${svg}
@@ -208,62 +161,36 @@ function overrideDate() {
   }
 }
 
-function setupBrowserEnv() {
+export function setupBrowserEnv() {
   mockHaCard();
   mockHaIcon();
   overrideDate();
   injectTheme();
 }
 
-function createMockHass(config: CardConfig, events: MockCalendarEvent[]) {
-  return {
-    language: config.language || 'en',
-    config: {
-      time_zone: 'Europe/Kiev',
-    },
-    callApi: async (method: string, path: string) => {
-      if (path.startsWith('calendars/')) {
-        const parts = path.split('/');
-        if (parts.length >= 2) {
-          // Extract entity_id before any query params
-          let calendarId = decodeURIComponent(parts[1]);
-          if (calendarId.includes('?')) {
-            calendarId = calendarId.split('?')[0];
-          }
+export function renderCards(config?: any) {
+  const cardConfig = config || window.CONFIG;
+  const { EVENTS } = window;
 
-          // Return filtered events for the given entity_id
-          const filtered = events.filter((e) => e.entity_id === calendarId);
-          return filtered;
-        }
-      }
-      return [];
-    },
-  };
-}
+  if (!cardConfig) {
+    console.warn('No card config available');
+    return;
+  }
 
-interface MockCard extends HTMLElement {
-  hass: unknown;
-  setConfig: (config: CardConfig) => void;
-}
-
-function renderCards() {
-  const config = window.CONFIG;
-  const events = window.EVENTS;
-
-  const createCard = (containerId: string) => {
-    const card = document.createElement('calendar-week-grid-card') as MockCard;
-
-    card.hass = createMockHass(config, events);
-    card.setConfig(config);
-
+  ['card-container-light', 'card-container-dark'].forEach((containerId) => {
     const container = document.getElementById(containerId);
-    if (container) {
-      container.appendChild(card);
-    }
-  };
+    if (!container) return;
 
-  createCard('card-container-light');
-  createCard('card-container-dark');
+    // Clear existing cards if config is provided (update mode)
+    if (config) {
+      container.innerHTML = '';
+    }
+
+    const card = document.createElement('calendar-week-grid-card') as MockCard;
+    card.hass = createMockHass(cardConfig, EVENTS);
+    card.setConfig(cardConfig);
+    container.appendChild(card);
+  });
 }
 
 // Expose functions on window for use in browser context

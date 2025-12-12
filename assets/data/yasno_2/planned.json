@@ -1,0 +1,41 @@
+{
+  "6.1": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 420,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 420,
+          "end": 630,
+          "type": "Definite"
+        },
+        {
+          "start": 630,
+          "end": 1020,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1020,
+          "end": 1230,
+          "type": "Definite"
+        },
+        {
+          "start": 1230,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-11-27T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [],
+      "date": "2025-11-28T00:00:00+02:00",
+      "status": "WaitingForSchedule"
+    },
+    "updatedOn": "2025-11-26T19:53:57+00:00"
+  }
+}

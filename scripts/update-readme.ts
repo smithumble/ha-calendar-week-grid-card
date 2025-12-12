@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const README_PATH = path.resolve(__dirname, '../README.md');
-const CONFIGS_DIR = path.resolve(__dirname, '../media/configs');
+const CONFIGS_DIR = path.resolve(__dirname, '../assets/configs');
 
 function updateReadme(): void {
   let readmeContent = fs.readFileSync(README_PATH, 'utf8');

@@ -1,10 +1,13 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { fromZonedTime, formatInTimeZone } from 'date-fns-tz';
 
 import type { CalendarEvent } from '../../src/calendar-week-grid-card';
 
-const DATA_DIR = path.resolve(__dirname, '../../media/data');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DATA_DIR = path.resolve(__dirname, '../../assets/data');
 
 // Fixed date: Monday, May 20, 2024
 export const MOCK_DATE_STR = '2024-05-20T11:45:00';
@@ -112,18 +115,33 @@ function minutesToTime(minutes: number, date: Date): Date {
 }
 
 // Mock events based on the Monday, May 20, 2024 start date
-export const getMockEvents = (): MockCalendarEvent[] => {
+export const getMockEvents = (dataSource?: string): MockCalendarEvent[] => {
   const baseDate = new Date(MOCK_DATE_STR);
   // Reset to start of the week (Monday)
   // May 20, 2024 is a Monday.
   baseDate.setHours(0, 0, 0, 0);
 
+  // Determine data source paths
+  // Default to yasno_1 if no dataSource is provided
+  const effectiveDataSource = dataSource || 'yasno_1';
+
+  let plannedPath: string;
+  let probablePath: string;
+
+  if (effectiveDataSource === 'yasno_1' || effectiveDataSource === 'yasno_2') {
+    // Use yasno_1 or yasno_2 directory structure
+    plannedPath = path.join(DATA_DIR, effectiveDataSource, 'planned.json');
+    probablePath = path.join(DATA_DIR, effectiveDataSource, 'probable.json');
+  } else {
+    // Fallback: treat as directory name
+    plannedPath = path.join(DATA_DIR, effectiveDataSource, 'planned.json');
+    probablePath = path.join(DATA_DIR, effectiveDataSource, 'probable.json');
+  }
+
   // Load data files
-  const plannedPath = path.join(DATA_DIR, 'planned_1.json');
   const plannedRaw = fs.readFileSync(plannedPath, 'utf8');
   const plannedData = JSON.parse(plannedRaw) as PlannedData;
 
-  const probablePath = path.join(DATA_DIR, 'probable_1.json');
   const probableRaw = fs.readFileSync(probablePath, 'utf8');
   const probableData = JSON.parse(probableRaw) as ProbableData;
 

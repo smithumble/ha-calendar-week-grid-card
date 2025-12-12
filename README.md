@@ -348,80 +348,65 @@ entities:
 ```yaml
 type: custom:calendar-week-grid-card
 language: en
-time_format: 'HH:mm'
+time_format: HH:mm
 style:
-  '--color-primary': var(--primary-color)
-  '--color-blue': '#29B6F6'
-  '--color-red': red
-  '--color-orange': '#FF9800'
-cell:
-  style:
-    height: 24px
-    border-radius: 4px
-  icon:
-    style:
-      '--mdc-icon-size': 18px
-cell_filled:
-  icon:
-    icon: mdi:flash-off
-    style:
-      color: var(--color-primary)
+  '--event-border-radius': 4px
+  '--color-neutral': var(--secondary-text-color)
+  '--color-warning': '#FF9800'
+  '--color-error': '#FF0000'
+  '--color-info': '#29B6F6'
+  '--color-success': var(--success-color)
 cell_blank:
   icon:
-    icon: mdi:flash
+    icon: mdi:checkbox-blank-circle-outline
     style:
-      opacity: 0.2
+      opacity: 0.3
 entities:
   - entity: calendar.probable_outages
     cell:
       icon:
+        icon: mdi:alert-circle-outline
         style:
-          color: var(--color-blue)
+          color: var(--color-info)
       background:
         style:
-          background-color: var(--color-blue)
-          opacity: 0.2
-          border-radius: 4px
+          background-color: rgb(from var(--color-info) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Outage
     cell:
       icon:
+        icon: mdi:flash-off
         style:
-          color: var(--color-red)
+          color: var(--color-error)
       background:
         style:
-          background-color: var(--color-red)
-          opacity: 0.2
-          border-radius: 4px
+          background-color: rgb(from var(--color-error) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
     cell:
       icon:
-        icon: mdi:flash-off
+        icon: mdi:transmission-tower-off
         style:
-          color: var(--color-red)
-          opacity: 0.2
+          color: var(--color-error)
       background:
         style:
-          background-color: var(--color-red)
-          opacity: 0.2
-          border-radius: 4px
+          background-color: rgb(from var(--color-error) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
     cell:
       icon:
         icon: mdi:timer-sand
         style:
-          color: var(--color-orange)
-          opacity: 0.2
+          opacity: 0.6
+          color: var(--color-warning)
   - entity: calendar.planned_outages
     filter: Schedule Applies
     cell:
       icon:
-        icon: mdi:flash
+        icon: mdi:checkbox-blank-circle-outline
         style:
-          color: var(--color-red)
-          opacity: 0.2
+          opacity: 0.4
+          color: var(--color-error)
 ```
 
 </details>
@@ -660,154 +645,6 @@ entities:
         icon: mdi:circle-outline
         style:
           color: var(--schedule-icon)
-```
-
-</details>
-
-<!-- END_CONFIG -->
-
-### Example 7: Holographic
-
-![Calendar Week Grid Card Example 7: Holographic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_7_holographic.png)
-
-<!-- CONFIG:example_7_holographic -->
-
-<details>
-<summary>Configuration</summary>
-
-```yaml
-type: custom:calendar-week-grid-card
-language: en
-time_format: 'HH:mm'
-style:
-  '--bg-grad-1': '#0f0c29'
-  '--bg-grad-2': '#302b63'
-  '--bg-grad-3': '#24243e'
-  '--card-shadow': 'rgba(48, 43, 99, 0.4)'
-  '--text-primary-color': '#E0E7FF'
-  '--text-secondary-color': '#B3BCF5'
-  '--border-main': 'rgba(255, 255, 255, 0.15)'
-  '--cell-grad-1': 'rgba(0, 210, 255, 0.2)'
-  '--cell-grad-2': 'rgba(146, 141, 171, 0.2)'
-  '--cell-border': 'rgba(255, 255, 255, 0.2)'
-  '--blank-grad-1': 'rgba(255, 255, 255, 0.06)'
-  '--blank-grad-2': 'rgba(255, 255, 255, 0.02)'
-  '--blank-border': 'rgba(255, 255, 255, 0.1)'
-  '--blank-icon': 'rgba(224, 231, 255, 0.4)'
-  '--prob-grad-1': 'rgba(0, 210, 255, 0.4)'
-  '--prob-grad-2': 'rgba(58, 123, 213, 0.4)'
-  '--prob-border': 'rgba(0, 210, 255, 0.7)'
-  '--prob-shadow': 'rgba(0, 210, 255, 0.4)'
-  '--prob-icon': '#00D2FF'
-  '--outage-grad-1': 'rgba(255, 0, 153, 0.45)'
-  '--outage-grad-2': 'rgba(255, 94, 247, 0.35)'
-  '--outage-border': 'rgba(255, 94, 247, 0.7)'
-  '--outage-shadow': 'rgba(255, 0, 153, 0.4)'
-  '--outage-icon': '#FF5EF7'
-  '--emerg-grad-1': 'rgba(255, 84, 17, 0.5)'
-  '--emerg-grad-2': 'rgba(255, 0, 0, 0.4)'
-  '--emerg-border': 'rgba(255, 84, 17, 0.8)'
-  '--emerg-shadow': 'rgba(255, 84, 17, 0.6)'
-  '--emerg-icon': '#FF5411'
-  '--wait-grad-1': 'rgba(120, 255, 214, 0.35)'
-  '--wait-grad-2': 'rgba(0, 210, 255, 0.3)'
-  '--wait-border': 'rgba(120, 255, 214, 0.6)'
-  '--wait-shadow': 'rgba(120, 255, 214, 0.4)'
-  '--wait-icon': '#78FFD6'
-  '--sched-grad-1': 'rgba(159, 232, 112, 0.35)'
-  '--sched-grad-2': 'rgba(46, 213, 115, 0.3)'
-  '--sched-border': 'rgba(46, 213, 115, 0.7)'
-  '--sched-shadow': 'rgba(46, 213, 115, 0.4)'
-  '--sched-icon': '#2ED573'
-  background: 'linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 50%, var(--bg-grad-3) 100%)'
-  border-radius: '24px'
-  padding: '24px'
-  box-shadow: '0 12px 30px var(--card-shadow)'
-  '--text-primary': var(--text-primary-color)
-  '--text-secondary': var(--text-secondary-color)
-  '--event-border-radius': '14px'
-  border: '1px solid var(--border-main)'
-grid:
-  style:
-    gap: '10px'
-cell:
-  style:
-    height: '40px'
-    background: 'linear-gradient(135deg, var(--cell-grad-1), var(--cell-grad-2))'
-    border: '1px solid var(--cell-border)'
-  icon:
-    style:
-      '--mdc-icon-size': '18px'
-cell_blank:
-  background:
-    style:
-      background: 'linear-gradient(135deg, var(--blank-grad-1), var(--blank-grad-2))'
-      border: '1px solid var(--blank-border)'
-      backdrop-filter: 'blur(12px)'
-  icon:
-    icon: mdi:hexagon-outline
-    style:
-      color: var(--blank-icon)
-entities:
-  - entity: calendar.probable_outages
-    cell:
-      background:
-        style:
-          background: 'linear-gradient(135deg, var(--prob-grad-1), var(--prob-grad-2))'
-          border: '1px solid var(--prob-border)'
-          box-shadow: '0 0 25px var(--prob-shadow)'
-      icon:
-        icon: mdi:transit-connection-variant
-        style:
-          color: var(--prob-icon)
-  - entity: calendar.planned_outages
-    filter: 'Outage'
-    cell:
-      background:
-        style:
-          background: 'linear-gradient(135deg, var(--outage-grad-1), var(--outage-grad-2))'
-          border: '1px solid var(--outage-border)'
-          box-shadow: '0 0 25px var(--outage-shadow)'
-      icon:
-        icon: mdi:flash-outline
-        style:
-          color: var(--outage-icon)
-  - entity: calendar.planned_outages
-    filter: 'Emergency Shutdowns'
-    cell:
-      background:
-        style:
-          background: 'linear-gradient(135deg, var(--emerg-grad-1), var(--emerg-grad-2))'
-          border: '2px solid var(--emerg-border)'
-          box-shadow: '0 0 30px var(--emerg-shadow)'
-      icon:
-        icon: mdi:alert-octagram
-        style:
-          color: var(--emerg-icon)
-  - entity: calendar.planned_outages
-    filter: 'Waiting for Schedule'
-    cell:
-      background:
-        style:
-          background: 'linear-gradient(135deg, var(--wait-grad-1), var(--wait-grad-2))'
-          border: '1px solid var(--wait-border)'
-          box-shadow: '0 0 20px var(--wait-shadow)'
-      icon:
-        icon: mdi:progress-clock
-        style:
-          color: var(--wait-icon)
-  - entity: calendar.planned_outages
-    filter: 'Schedule Applies'
-    cell:
-      background:
-        style:
-          background: 'linear-gradient(135deg, var(--sched-grad-1), var(--sched-grad-2))'
-          border: '1px solid var(--sched-border)'
-          box-shadow: '0 0 20px var(--sched-shadow)'
-      icon:
-        icon: mdi:check-circle-outline
-        style:
-          color: var(--sched-icon)
 ```
 
 </details>

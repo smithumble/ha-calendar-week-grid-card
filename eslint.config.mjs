@@ -16,5 +16,11 @@ export default tseslint.config(
       globals: globals.browser,
     },
   },
+  {
+    files: ['scripts/**/*'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
   prettier,
 );

@@ -11,7 +11,7 @@ const MDI_SVG_DIR = path.resolve(__dirname, '../../node_modules/@mdi/svg/svg');
  */
 export function loadIcons(): Record<string, string> {
   const iconMap: Record<string, string> = {};
-  
+
   if (!fs.existsSync(MDI_SVG_DIR)) {
     console.warn(`MDI SVG directory not found: ${MDI_SVG_DIR}`);
     return iconMap;
@@ -23,7 +23,7 @@ export function loadIcons(): Record<string, string> {
       const iconName = file.replace('.svg', '');
       const iconKey = `mdi/${iconName}`;
       const svgPath = path.join(MDI_SVG_DIR, file);
-      
+
       try {
         iconMap[iconKey] = fs.readFileSync(svgPath, 'utf8');
       } catch (error) {
