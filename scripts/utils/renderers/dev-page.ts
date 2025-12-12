@@ -1,10 +1,10 @@
-import { buildSync } from 'esbuild';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getMockEvents, MOCK_DATE_STR } from '../events';
-import { loadTheme } from '../theme';
+import { buildSync } from 'esbuild';
+import { MOCK_DATE_STR } from '../datetime';
 import { loadIcons } from '../icons';
-import { loadConfigs, type ConfigItem } from '../configs';
+import { preloadAllProviderData } from '../providers';
+import { loadTheme } from '../theme';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,8 +13,9 @@ const BROWSER_DEV_PATH = path.resolve(__dirname, '../browser/dev.ts');
 
 /**
  * Get all the data needed to render a page with a config
+ * Note: calendars and selectors are handled by browser code, not needed here
  */
-export function getRenderPageData(config: any, dataSource?: string) {
+function getRenderPageData() {
   // Compile browser common code
   let commonCode: string;
   try {
@@ -49,8 +50,6 @@ export function getRenderPageData(config: any, dataSource?: string) {
 
   return {
     mockDateStr: MOCK_DATE_STR,
-    config,
-    events: getMockEvents(dataSource),
     theme: loadTheme(),
     iconMap: loadIcons(),
     commonCode,
@@ -62,26 +61,17 @@ export function getRenderPageData(config: any, dataSource?: string) {
  * Generate HTML content for dev page with navbar (theme labels and config selector)
  */
 export function generateDevPageHTML(options: {
-  config: any;
   cardScriptPath: string;
-  dataSource?: string;
 }): string {
-  const { config, cardScriptPath, dataSource } = options;
-  // Default to yasno_1 if no dataSource is provided
-  const effectiveDataSource = dataSource || 'yasno_1';
-  const data = getRenderPageData(config, effectiveDataSource);
+  const { cardScriptPath } = options;
 
-  // Pre-load events for all data sources
-  const allEvents: Record<string, any> = {
-    yasno_1: getMockEvents('yasno_1'),
-    yasno_2: getMockEvents('yasno_2'),
-  };
-  const allConfigs: ConfigItem[] = loadConfigs();
-  const currentConfigName =
-    allConfigs.find((c) => JSON.stringify(c.config) === JSON.stringify(config))
-      ?.name ||
-    allConfigs[0]?.name ||
-    '';
+  // Preload all provider data
+  const providerDataMap = preloadAllProviderData();
+
+  // Get render data (browser selectors will handle provider/data source selection)
+  const data = getRenderPageData();
+
+  // Browser code will build maps and populate all selectors dynamically
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -132,10 +122,17 @@ export function generateDevPageHTML(options: {
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           }
 
+          .provider-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          }
+
           .config-selector {
             display: flex;
             align-items: center;
             gap: 10px;
+            margin-left: 20px;
           }
 
           .data-source-selector {
@@ -145,6 +142,7 @@ export function generateDevPageHTML(options: {
             margin-left: 20px;
           }
 
+          .provider-selector select,
           .config-selector select,
           .data-source-selector select {
             padding: 8px 12px;
@@ -158,11 +156,13 @@ export function generateDevPageHTML(options: {
             max-width: 100%;
           }
 
+          .provider-selector select:hover,
           .config-selector select:hover,
           .data-source-selector select:hover {
             background-color: rgba(255, 255, 255, 0.15);
           }
 
+          .provider-selector select:focus,
           .config-selector select:focus,
           .data-source-selector select:focus {
             outline: none;
@@ -175,7 +175,6 @@ export function generateDevPageHTML(options: {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 80px 175px 40px;
             box-sizing: border-box;
             background-color: var(--primary-background-color, rgb(40, 40, 40));
             color: var(--primary-text-color);
@@ -210,11 +209,13 @@ export function generateDevPageHTML(options: {
               padding: 0 10px;
             }
 
+            .provider-selector,
             .config-selector,
             .data-source-selector {
               width: 100%;
             }
 
+            .provider-selector select,
             .config-selector select,
             .data-source-selector select {
               min-width: 150px;
@@ -245,21 +246,14 @@ export function generateDevPageHTML(options: {
       </head>
       <body>
         <div class="navbar theme-dark">
+          <div class="provider-selector">
+            <select id="provider-select"></select>
+          </div>
           <div class="config-selector">
-            <select id="config-select">
-              ${allConfigs
-                .map(
-                  (c) =>
-                    `<option value="${c.name}" ${c.name === currentConfigName ? 'selected' : ''}>${c.name}</option>`,
-                )
-                .join('')}
-            </select>
+            <select id="config-select"></select>
           </div>
           <div class="data-source-selector">
-            <select id="data-source-select">
-              <option value="yasno_1" ${!dataSource || dataSource === 'yasno_1' ? 'selected' : ''}>Yasno 1</option>
-              <option value="yasno_2" ${dataSource === 'yasno_2' ? 'selected' : ''}>Yasno 2</option>
-            </select>
+            <select id="data-source-select"></select>
           </div>
         </div>
         <div class="theme-container theme-dark">
@@ -271,23 +265,10 @@ export function generateDevPageHTML(options: {
           <div id="card-container-light"></div>
         </div>
         <script>
-          // Inject global variables
           window.MOCK_DATE_STR = ${JSON.stringify(data.mockDateStr)};
-          window.CONFIG = ${JSON.stringify(data.config)};
-          window.EVENTS = ${JSON.stringify(data.events)};
-          window.ALL_EVENTS = ${JSON.stringify(allEvents)};
+          window.PROVIDER_DATA_MAP = ${JSON.stringify(providerDataMap)};
           window.THEME_CSS = ${JSON.stringify(data.theme)};
           window.ICON_MAP = ${JSON.stringify(data.iconMap)};
-          window.ALL_CONFIGS = ${JSON.stringify(
-            allConfigs.reduce(
-              (acc, c) => {
-                acc[c.name] = c.config;
-                return acc;
-              },
-              {} as Record<string, any>,
-            ),
-          )};
-          window.DATA_SOURCE = ${JSON.stringify(effectiveDataSource)};
         </script>
         <script>
           ${data.commonCode}

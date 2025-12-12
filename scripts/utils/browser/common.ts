@@ -1,16 +1,16 @@
+import type { MockCalendar } from '../providers';
 import { ThemeCSS } from '../theme';
-import type { MockCalendarEvent } from '../events';
 
 declare global {
   interface Window {
     MOCK_DATE_STR: string;
     CONFIG?: any;
-    EVENTS: MockCalendarEvent[];
+    CALENDARS: any[];
     THEME_CSS: ThemeCSS;
     ICON_MAP: Record<string, string>;
     Date: DateConstructor;
     setupBrowserEnv?: () => void;
-    renderCards?: (config?: any) => void;
+    renderCards?: (config: any, calendars: MockCalendar[]) => void;
   }
 }
 
@@ -19,7 +19,7 @@ interface MockCard extends HTMLElement {
   setConfig: (config: any) => void;
 }
 
-function createMockHass(config: any, events: MockCalendarEvent[]) {
+function createMockHass(config: any, calendars: MockCalendar[]) {
   return {
     language: config.language || 'en',
     config: { time_zone: 'Europe/Kiev' },
@@ -29,7 +29,8 @@ function createMockHass(config: any, events: MockCalendarEvent[]) {
       const calendarId = decodeURIComponent(
         path.split('/')[1]?.split('?')[0] || '',
       );
-      return events.filter((e) => e.entity_id === calendarId);
+      const calendar = calendars.find((c) => c.entity_id === calendarId);
+      return calendar ? calendar.events : [];
     },
   };
 }
@@ -168,28 +169,43 @@ export function setupBrowserEnv() {
   injectTheme();
 }
 
-export function renderCards(config?: any) {
-  const cardConfig = config || window.CONFIG;
-  const { EVENTS } = window;
+function createCard(): MockCard {
+  return document.createElement('calendar-week-grid-card') as MockCard;
+}
 
-  if (!cardConfig) {
-    console.warn('No card config available');
-    return;
-  }
-
-  ['card-container-light', 'card-container-dark'].forEach((containerId) => {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    // Clear existing cards if config is provided (update mode)
-    if (config) {
-      container.innerHTML = '';
+function setupCard(
+  card: MockCard,
+  cardConfig: any,
+  calendars: MockCalendar[],
+): void {
+  Promise.resolve().then(() => {
+    try {
+      card.hass = createMockHass(cardConfig, calendars);
+      card.setConfig(cardConfig);
+    } catch (error) {
+      console.error('Error setting up card:', error);
     }
+  });
+}
 
-    const card = document.createElement('calendar-week-grid-card') as MockCard;
-    card.hass = createMockHass(cardConfig, EVENTS);
-    card.setConfig(cardConfig);
-    container.appendChild(card);
+function renderCardToContainer(
+  containerId: string,
+  cardConfig: any,
+  calendars: MockCalendar[],
+): void {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = '';
+  const card = createCard();
+  container.appendChild(card);
+  setupCard(card, cardConfig, calendars);
+}
+
+export function renderCards(config: any, calendars: MockCalendar[]) {
+  const containerIds = ['card-container-light', 'card-container-dark'];
+  containerIds.forEach((containerId) => {
+    renderCardToContainer(containerId, config, calendars);
   });
 }
 

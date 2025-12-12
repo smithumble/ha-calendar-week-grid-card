@@ -1,9 +1,10 @@
-import { buildSync } from 'esbuild';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getMockEvents, MOCK_DATE_STR } from '../events';
-import { loadTheme } from '../theme';
+import { buildSync } from 'esbuild';
+import { MOCK_DATE_STR } from '../datetime';
 import { loadIcons } from '../icons';
+import { preloadAllProviderData } from '../providers';
+import { loadTheme } from '../theme';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,7 +13,11 @@ const BROWSER_COMMON_PATH = path.resolve(__dirname, '../browser/common.ts');
 /**
  * Get all the data needed to render a page with a config
  */
-export function getRenderPageData(config: any) {
+export function getRenderPageData(
+  config: any,
+  provider: string,
+  dataSource?: string,
+) {
   // Compile browser common code
   let commonCode: string;
   try {
@@ -29,10 +34,27 @@ export function getRenderPageData(config: any) {
     throw e;
   }
 
+  // Get provider data
+  const providerDataMap = preloadAllProviderData();
+  const providerData = providerDataMap[provider];
+  if (!providerData) {
+    throw new Error(`Provider "${provider}" not found`);
+  }
+
+  // Use provided data source or first available
+  const selectedDataSource = dataSource || providerData.dataSources[0];
+  if (!providerData.dataSources.includes(selectedDataSource)) {
+    throw new Error(
+      `Data source "${selectedDataSource}" not available for provider "${provider}"`,
+    );
+  }
+
+  const calendars = providerData.calendars[selectedDataSource] || [];
+
   return {
     mockDateStr: MOCK_DATE_STR,
     config,
-    events: getMockEvents('yasno_1'),
+    calendars,
     theme: loadTheme(),
     iconMap: loadIcons(),
     commonCode,
