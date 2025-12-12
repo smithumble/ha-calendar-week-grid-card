@@ -13,7 +13,8 @@ export default defineConfig({
   },
   server: {
     port: 5000,
-    host: 'localhost',
+    host: '0.0.0.0',
+    strictPort: false,
     cors: true,
     watch: {
       ignored: (path: string) => {
@@ -42,7 +43,7 @@ export default defineConfig({
 
         generate();
 
-        const watchPaths = ['src', 'scripts', 'assets/configs'];
+        const watchPaths = ['src', 'scripts', 'assets'];
         watchPaths.forEach((path) => {
           server.watcher.add(resolve(__dirname, path));
         });
