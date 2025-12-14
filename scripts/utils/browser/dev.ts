@@ -1,3 +1,4 @@
+import yaml from 'js-yaml';
 import { MockCalendar } from '../providers';
 
 export {};
@@ -12,6 +13,7 @@ declare global {
   interface Window {
     PROVIDER_DATA_MAP?: Record<string, ProviderData>;
     CONFIG?: any;
+    ORIGINAL_CONFIG?: any;
     CALENDARS: any[];
     PROVIDER?: string;
     setupBrowserEnv?: () => void;
@@ -46,6 +48,11 @@ function getFromURL(paramName: string): string | null {
   const params = new URLSearchParams(window.location.search);
   return params.get(paramName);
 }
+
+// Hardcoded default values
+const DEFAULT_PROVIDER = 'yasno';
+const DEFAULT_CONFIG = 'example_4_classic';
+const DEFAULT_DATA_SOURCE = 'yasno_1';
 
 function getValue(
   storageKey: string,
@@ -109,6 +116,8 @@ function selectConfig(configName: string, provider: string): boolean {
   const config = configs[configName];
   if (config) {
     window.CONFIG = config;
+    window.ORIGINAL_CONFIG = JSON.parse(JSON.stringify(config)); // Deep copy
+    updateConfigEditor();
     return true;
   }
   return false;
@@ -130,16 +139,20 @@ function updateConfigSelect(provider: string) {
     .join('');
 
   const savedConfig = getValue('selected-config', 'config');
+  const defaultConfig = configKeys.includes(DEFAULT_CONFIG)
+    ? DEFAULT_CONFIG
+    : configKeys[0] || '';
   const selectedConfig =
     savedConfig && configKeys.includes(savedConfig)
       ? savedConfig
-      : configKeys[0] || '';
+      : defaultConfig;
 
   if (selectedConfig && selectConfig(selectedConfig, provider)) {
     configSelect.value = selectedConfig;
     if (!savedConfig) {
       saveToStorage('selected-config', selectedConfig);
     }
+    updateConfigEditor();
   }
 }
 
@@ -157,10 +170,13 @@ function updateDataSourceSelect(provider: string, shouldRender = false) {
     .join('');
 
   const savedDataSource = getValue('selected-data-source', 'dataSource');
+  const defaultDataSource = providerData.dataSources.includes(DEFAULT_DATA_SOURCE)
+    ? DEFAULT_DATA_SOURCE
+    : providerData.dataSources[0] || '';
   const selectedDataSource =
     savedDataSource && providerData.dataSources.includes(savedDataSource)
       ? savedDataSource
-      : providerData.dataSources[0] || '';
+      : defaultDataSource;
 
   if (selectedDataSource) {
     dataSourceSelect.value = selectedDataSource;
@@ -183,6 +199,158 @@ function setupSelectListener(
     const target = e.target as HTMLSelectElement;
     handler(target.value);
   });
+}
+
+function updateConfigEditor() {
+  const textarea = document.getElementById(
+    'config-editor-textarea',
+  ) as HTMLTextAreaElement;
+  if (!textarea || !window.CONFIG) return;
+
+  try {
+    const configYaml = yaml.dump(window.CONFIG, {
+      indent: 2,
+      lineWidth: -1,
+      noRefs: true,
+      sortKeys: false,
+    });
+    textarea.value = configYaml;
+    hideConfigEditorError();
+  } catch (e) {
+    console.error('Failed to serialize config:', e);
+  }
+}
+
+function showConfigEditorError(message: string) {
+  const errorDiv = document.getElementById('config-editor-error');
+  if (errorDiv) {
+    errorDiv.textContent = message;
+    errorDiv.classList.add('visible');
+  }
+}
+
+function hideConfigEditorError() {
+  const errorDiv = document.getElementById('config-editor-error');
+  if (errorDiv) {
+    errorDiv.classList.remove('visible');
+  }
+}
+
+function applyEditedConfig() {
+  const textarea = document.getElementById(
+    'config-editor-textarea',
+  ) as HTMLTextAreaElement;
+  if (!textarea) return;
+
+  const configText = textarea.value.trim();
+  if (!configText) {
+    showConfigEditorError('Config cannot be empty');
+    return;
+  }
+
+  try {
+    const parsedConfig = yaml.load(configText);
+    window.CONFIG = parsedConfig;
+    window.renderCards?.(window.CONFIG, window.CALENDARS);
+    hideConfigEditorError();
+    return true;
+  } catch (e) {
+    showConfigEditorError(
+      `Invalid YAML: ${e instanceof Error ? e.message : String(e)}`,
+    );
+    return false;
+  }
+}
+
+function resetConfig() {
+  if (window.ORIGINAL_CONFIG) {
+    window.CONFIG = JSON.parse(JSON.stringify(window.ORIGINAL_CONFIG)); // Deep copy
+    updateConfigEditor();
+    window.renderCards?.(window.CONFIG, window.CALENDARS);
+    hideConfigEditorError();
+  }
+}
+
+function toggleConfigEditor() {
+  const panel = document.getElementById('config-editor-panel');
+  const toggleBtn = document.getElementById('config-editor-toggle-btn');
+  const body = document.body;
+
+  if (!panel || !toggleBtn) return;
+
+  const isVisible = panel.classList.contains('visible');
+  if (isVisible) {
+    panel.classList.remove('visible');
+    toggleBtn.textContent = 'Edit Config';
+    body.classList.remove('with-editor');
+  } else {
+    panel.classList.add('visible');
+    toggleBtn.textContent = 'Close Editor';
+    body.classList.add('with-editor');
+    updateConfigEditor();
+  }
+}
+
+let configEditorSetup = false;
+
+function setupConfigEditor() {
+  if (configEditorSetup) return;
+  configEditorSetup = true;
+
+  const toggleBtn = document.getElementById('config-editor-toggle-btn');
+  const closeBtn = document.getElementById('config-editor-close');
+  const applyBtn = document.getElementById('config-editor-apply');
+  const resetBtn = document.getElementById('config-editor-reset');
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', toggleConfigEditor);
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', toggleConfigEditor);
+  }
+
+  if (applyBtn) {
+    applyBtn.addEventListener('click', applyEditedConfig);
+  }
+
+  if (resetBtn) {
+    resetBtn.addEventListener('click', resetConfig);
+  }
+
+  // Allow Ctrl+Enter to apply manually
+  const textarea = document.getElementById('config-editor-textarea');
+  if (textarea) {
+    textarea.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        applyEditedConfig();
+      }
+    });
+
+    // Show scrollbar only when scrolling
+    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+    textarea.addEventListener('scroll', () => {
+      textarea.classList.add('scrolling');
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+      scrollTimeout = setTimeout(() => {
+        textarea.classList.remove('scrolling');
+      }, 1000);
+    });
+
+    // Auto-apply config after user stops typing
+    let autoApplyTimeout: ReturnType<typeof setTimeout> | null = null;
+    textarea.addEventListener('input', () => {
+      if (autoApplyTimeout) {
+        clearTimeout(autoApplyTimeout);
+      }
+      autoApplyTimeout = setTimeout(() => {
+        applyEditedConfig();
+      }, 1000); // Apply 1 second after user stops typing
+    });
+  }
 }
 
 function setupConfigSelectListener() {
@@ -237,11 +405,14 @@ function setupProviderSelector() {
 
   populateProviderSelect();
 
+  const defaultProvider = allProviders.includes(DEFAULT_PROVIDER)
+    ? DEFAULT_PROVIDER
+    : allProviders[0];
   const currentProvider = getValue(
     'selected-provider',
     'provider',
     window.PROVIDER,
-    allProviders[0],
+    defaultProvider,
   );
 
   if (currentProvider && allProviders.includes(currentProvider)) {
@@ -279,6 +450,13 @@ function waitForProviderData() {
   }
 }
 
+// Setup config editor early (before provider data is ready)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupConfigEditor);
+} else {
+  setupConfigEditor();
+}
+
 waitForProviderData();
 
 async function waitForScript(scriptElement: HTMLScriptElement): Promise<void> {
@@ -309,7 +487,10 @@ async function waitForProviderDataAsync(): Promise<void> {
 
 function initializeCards() {
   const allProviders = getAllProviders();
-  const currentProvider = window.PROVIDER || allProviders[0];
+  const defaultProvider = allProviders.includes(DEFAULT_PROVIDER)
+    ? DEFAULT_PROVIDER
+    : allProviders[0];
+  const currentProvider = window.PROVIDER || defaultProvider;
   if (!currentProvider) return;
 
   const providerData = getProviderData(currentProvider);
@@ -317,15 +498,23 @@ function initializeCards() {
 
   // Set up data source and calendars
   const savedDataSource = getValue('selected-data-source', 'dataSource');
+  const defaultDataSource = providerData.dataSources.includes(DEFAULT_DATA_SOURCE)
+    ? DEFAULT_DATA_SOURCE
+    : providerData.dataSources[0] || '';
   const initialDataSource =
     savedDataSource && providerData.dataSources.includes(savedDataSource)
       ? savedDataSource
-      : providerData.dataSources[0] || '';
+      : defaultDataSource;
 
   if (initialDataSource) {
     updateCalendars(initialDataSource, currentProvider);
   }
 
+  if (window.CONFIG && !window.ORIGINAL_CONFIG) {
+    window.ORIGINAL_CONFIG = JSON.parse(JSON.stringify(window.CONFIG)); // Deep copy
+  }
+
+  updateConfigEditor();
   window.renderCards?.(window.CONFIG, window.CALENDARS);
 }
 
