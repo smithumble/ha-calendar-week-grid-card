@@ -1,3 +1,4 @@
+import { HomeAssistant } from 'custom-card-helpers';
 import {
   CSSResultGroup,
   LitElement,
@@ -7,8 +8,6 @@ import {
   unsafeCSS,
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { HomeAssistant } from 'custom-card-helpers';
-
 import styles from './styles.css';
 
 type Style = Record<string, string>;

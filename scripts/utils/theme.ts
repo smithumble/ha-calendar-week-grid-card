@@ -1,8 +1,11 @@
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
 
-const THEMES_DIR = path.resolve(__dirname, '../../media/themes');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const THEMES_DIR = path.resolve(__dirname, '../../assets/themes');
 
 interface RawThemeNode {
   [key: string]: RawThemeNode | string | number;
