@@ -375,6 +375,7 @@ export class CalendarWeekGridCard extends LitElement {
     return html`<div
       class="event-block-wrapper"
       style="top: ${topPct}%; height: ${heightPct}%;"
+      data-entity="${event.entity || ''}"
     >
       <div
         class="event-block"
