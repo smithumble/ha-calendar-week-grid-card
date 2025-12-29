@@ -170,7 +170,9 @@ function updateDataSourceSelect(provider: string, shouldRender = false) {
     .join('');
 
   const savedDataSource = getValue('selected-data-source', 'dataSource');
-  const defaultDataSource = providerData.dataSources.includes(DEFAULT_DATA_SOURCE)
+  const defaultDataSource = providerData.dataSources.includes(
+    DEFAULT_DATA_SOURCE,
+  )
     ? DEFAULT_DATA_SOURCE
     : providerData.dataSources[0] || '';
   const selectedDataSource =
@@ -498,7 +500,9 @@ function initializeCards() {
 
   // Set up data source and calendars
   const savedDataSource = getValue('selected-data-source', 'dataSource');
-  const defaultDataSource = providerData.dataSources.includes(DEFAULT_DATA_SOURCE)
+  const defaultDataSource = providerData.dataSources.includes(
+    DEFAULT_DATA_SOURCE,
+  )
     ? DEFAULT_DATA_SOURCE
     : providerData.dataSources[0] || '';
   const initialDataSource =

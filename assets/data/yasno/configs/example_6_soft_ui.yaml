@@ -31,6 +31,10 @@ cell:
   icon:
     style:
       '--mdc-icon-size': 20px
+events:
+  icon:
+    container: event
+    mode: all
 cell_blank:
   background:
     style:

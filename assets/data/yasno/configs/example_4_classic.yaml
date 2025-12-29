@@ -22,8 +22,9 @@ entities:
         style:
           color: var(--color-error)
       background:
-        style:
-          background-color: rgb(from var(--color-error) r g b / 0.2)
+        block:
+          style:
+            background-color: rgb(from var(--color-error) r g b / 0.2)
   - entity: calendar.probable_outages
     cell:
       icon:
@@ -31,8 +32,9 @@ entities:
         style:
           color: var(--color-info)
       background:
-        style:
-          background-color: rgb(from var(--color-info) r g b / 0.2)
+        block:
+          style:
+            background-color: rgb(from var(--color-info) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
     cell:
@@ -41,8 +43,9 @@ entities:
         style:
           color: var(--color-error)
       background:
-        style:
-          background-color: rgb(from var(--color-error) r g b / 0.2)
+        block:
+          style:
+            background-color: rgb(from var(--color-error) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
     cell:

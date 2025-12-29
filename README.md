@@ -67,6 +67,7 @@ type: module
 | `cell`        | object | No       | Configuration for cells (see Cell Configuration).              |
 | `cell_filled` | object | No       | Configuration for cells with events (see Cell Configuration).  |
 | `cell_blank`  | object | No       | Configuration for empty cells (see Cell Configuration).        |
+| `events`      | object | No       | Configuration for event icons (see Events Configuration).      |
 | `style`       | object | No       | CSS styles for the main card.                                  |
 | `raw_style`   | string | No       | Raw CSS string for the main card.                              |
 
@@ -122,6 +123,21 @@ Configuration object for `grid`.
 | `style`     | object | CSS styles for the grid container.     |
 | `raw_style` | string | Raw CSS string for the grid container. |
 
+### Events Configuration
+
+Configuration object for `events`.
+
+| Name   | Type   | Description                                                    |
+| ------ | ------ | -------------------------------------------------------------- |
+| `icon` | object | Configuration for event icons (see Events Icon Configuration). |
+
+#### Events Icon Configuration
+
+| Name        | Type   | Default | Description                                                               |
+| ----------- | ------ | ------- | ------------------------------------------------------------------------- |
+| `container` | string | `cell`  | Where to render icons: `cell` (in the cell) or `event` (in event blocks). |
+| `mode`      | string | `top`   | Which events show icons: `top` (only main event) or `all` (all events).   |
+
 ### Entity Configuration
 
 | Name     | Type   | Required | Description                                          |
@@ -140,7 +156,7 @@ Configuration object for `grid`.
 
 ![Calendar Week Grid Card Example 1: Basic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_1_basic.png)
 
-<!-- CONFIG:example_1_basic -->
+<!-- CONFIG:yasno/example_1_basic -->
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -158,7 +174,7 @@ entities:
 
 ![Calendar Week Grid Card Example 2: Simple](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_2_simple.png)
 
-<!-- CONFIG:example_2_simple -->
+<!-- CONFIG:yasno/example_2_simple -->
 
 <details>
 <summary>Configuration</summary>
@@ -179,16 +195,6 @@ cell_blank:
     style:
       opacity: 0.3
 entities:
-  - entity: calendar.probable_outages
-    cell:
-      icon:
-        icon: mdi:alert-circle-outline
-        style:
-          color: var(--main-color)
-      background:
-        style:
-          border: 1px dashed var(--main-color)
-          background-color: rgb(from var(--main-color) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Outage
     cell:
@@ -199,6 +205,16 @@ entities:
       background:
         style:
           border: 1px solid var(--main-color)
+          background-color: rgb(from var(--main-color) r g b / 0.1)
+  - entity: calendar.probable_outages
+    cell:
+      icon:
+        icon: mdi:alert-circle-outline
+        style:
+          color: var(--main-color)
+      background:
+        style:
+          border: 1px dashed var(--main-color)
           background-color: rgb(from var(--main-color) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -247,7 +263,7 @@ entities:
 
 ![Calendar Week Grid Card Example 3: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_3_simple_colored.png)
 
-<!-- CONFIG:example_3_simple_colored -->
+<!-- CONFIG:yasno/example_3_simple_colored -->
 
 <details>
 <summary>Configuration</summary>
@@ -272,16 +288,6 @@ cell_blank:
     style:
       opacity: 0.3
 entities:
-  - entity: calendar.probable_outages
-    cell:
-      icon:
-        icon: mdi:alert-circle-outline
-        style:
-          color: var(--color-warning)
-      background:
-        style:
-          border: 1px dashed var(--color-warning)
-          background-color: rgb(from var(--color-warning) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Outage
     cell:
@@ -293,6 +299,16 @@ entities:
         style:
           border: 1px solid var(--color-error)
           background-color: rgb(from var(--color-error) r g b / 0.1)
+  - entity: calendar.probable_outages
+    cell:
+      icon:
+        icon: mdi:alert-circle-outline
+        style:
+          color: var(--color-warning)
+      background:
+        style:
+          border: 1px dashed var(--color-warning)
+          background-color: rgb(from var(--color-warning) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
     cell:
@@ -340,7 +356,7 @@ entities:
 
 ![Calendar Week Grid Card Example 4: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_4_classic.png)
 
-<!-- CONFIG:example_4_classic -->
+<!-- CONFIG:yasno/example_4_classic -->
 
 <details>
 <summary>Configuration</summary>
@@ -362,15 +378,6 @@ cell_blank:
     style:
       opacity: 0.3
 entities:
-  - entity: calendar.probable_outages
-    cell:
-      icon:
-        icon: mdi:alert-circle-outline
-        style:
-          color: var(--color-info)
-      background:
-        style:
-          background-color: rgb(from var(--color-info) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Outage
     cell:
@@ -379,8 +386,19 @@ entities:
         style:
           color: var(--color-error)
       background:
+        block:
+          style:
+            background-color: rgb(from var(--color-error) r g b / 0.2)
+  - entity: calendar.probable_outages
+    cell:
+      icon:
+        icon: mdi:alert-circle-outline
         style:
-          background-color: rgb(from var(--color-error) r g b / 0.2)
+          color: var(--color-info)
+      background:
+        block:
+          style:
+            background-color: rgb(from var(--color-info) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
     cell:
@@ -389,8 +407,9 @@ entities:
         style:
           color: var(--color-error)
       background:
-        style:
-          background-color: rgb(from var(--color-error) r g b / 0.2)
+        block:
+          style:
+            background-color: rgb(from var(--color-error) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
     cell:
@@ -417,7 +436,7 @@ entities:
 
 ![Calendar Week Grid Card Example 5: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_5_neon.png)
 
-<!-- CONFIG:example_5_neon -->
+<!-- CONFIG:yasno/example_5_neon -->
 
 <details>
 <summary>Configuration</summary>
@@ -479,19 +498,6 @@ cell_filled:
     style:
       background-color: var(--neon-grey-bg)
 entities:
-  - entity: calendar.probable_outages
-    cell:
-      background:
-        style:
-          background-color: transparent
-        raw_style: >-
-          background: repeating-linear-gradient(45deg, var(--neon-orange-grad-1),
-          var(--neon-orange-grad-1) 10px, var(--neon-orange-grad-2) 10px, var(--neon-orange-grad-2) 20px);
-      icon:
-        icon: mdi:alert-circle-outline
-        style:
-          color: var(--neon-orange)
-          opacity: 0.9
   - entity: calendar.planned_outages
     filter: Outage
     cell:
@@ -506,6 +512,19 @@ entities:
         style:
           color: var(--neon-red)
           filter: drop-shadow(0 0 2px var(--neon-red-shadow))
+  - entity: calendar.probable_outages
+    cell:
+      background:
+        style:
+          background-color: transparent
+        raw_style: >-
+          background: repeating-linear-gradient(45deg, var(--neon-orange-grad-1),
+          var(--neon-orange-grad-1) 10px, var(--neon-orange-grad-2) 10px, var(--neon-orange-grad-2) 20px);
+      icon:
+        icon: mdi:alert-circle-outline
+        style:
+          color: var(--neon-orange)
+          opacity: 0.9
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
     cell:
@@ -548,7 +567,7 @@ entities:
 
 ![Calendar Week Grid Card Example 6: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_6_soft_ui.png)
 
-<!-- CONFIG:example_6_soft_ui -->
+<!-- CONFIG:yasno/example_6_soft_ui -->
 
 <details>
 <summary>Configuration</summary>
@@ -587,6 +606,10 @@ cell:
   icon:
     style:
       '--mdc-icon-size': 20px
+events:
+  icon:
+    container: event
+    mode: all
 cell_blank:
   background:
     style:
@@ -596,15 +619,6 @@ cell_blank:
     style:
       color: var(--blank-icon)
 entities:
-  - entity: calendar.probable_outages
-    cell:
-      background:
-        style:
-          background-color: var(--probable-bg)
-      icon:
-        icon: mdi:close-circle
-        style:
-          color: var(--probable-icon)
   - entity: calendar.planned_outages
     filter: Outage
     cell:
@@ -615,6 +629,15 @@ entities:
         icon: mdi:close-circle
         style:
           color: var(--white)
+  - entity: calendar.probable_outages
+    cell:
+      background:
+        style:
+          background-color: var(--probable-bg)
+      icon:
+        icon: mdi:close-circle
+        style:
+          color: var(--probable-icon)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
     cell:

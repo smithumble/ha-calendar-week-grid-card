@@ -79,12 +79,24 @@ ha-card {
   right: 0;
   box-sizing: border-box;
   border-radius: var(--event-border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.event-sub-block {
+  position: absolute;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
 }
 
 ha-icon {
   --mdc-icon-size: var(--icon-size, 18px);
   position: relative;
-  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .current-time-line {
