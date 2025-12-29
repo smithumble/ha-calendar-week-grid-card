@@ -54,19 +54,6 @@ cell_filled:
     style:
       background-color: var(--neon-grey-bg)
 entities:
-  - entity: calendar.probable_outages
-    cell:
-      background:
-        style:
-          background-color: transparent
-        raw_style: >-
-          background: repeating-linear-gradient(45deg, var(--neon-orange-grad-1),
-          var(--neon-orange-grad-1) 10px, var(--neon-orange-grad-2) 10px, var(--neon-orange-grad-2) 20px);
-      icon:
-        icon: mdi:alert-circle-outline
-        style:
-          color: var(--neon-orange)
-          opacity: 0.9
   - entity: calendar.planned_outages
     filter: Outage
     cell:
@@ -81,6 +68,19 @@ entities:
         style:
           color: var(--neon-red)
           filter: drop-shadow(0 0 2px var(--neon-red-shadow))
+  - entity: calendar.probable_outages
+    cell:
+      background:
+        style:
+          background-color: transparent
+        raw_style: >-
+          background: repeating-linear-gradient(45deg, var(--neon-orange-grad-1),
+          var(--neon-orange-grad-1) 10px, var(--neon-orange-grad-2) 10px, var(--neon-orange-grad-2) 20px);
+      icon:
+        icon: mdi:alert-circle-outline
+        style:
+          color: var(--neon-orange)
+          opacity: 0.9
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
     cell:

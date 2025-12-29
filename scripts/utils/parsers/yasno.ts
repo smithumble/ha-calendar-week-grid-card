@@ -3,9 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import type { CalendarEvent } from '../../../src/calendar-week-grid-card';
 import {
-  MOCK_EVENTS_TIMEZONE,
   toTimeZoneISOString,
-  getDateString,
   minutesToTime,
   getDayDate,
   MOCK_DATE_STR,
@@ -76,27 +74,6 @@ interface ProbableData {
 // ============================================================================
 // Event Processing Utilities
 // ============================================================================
-
-/**
- * Get planned dates from planned group
- * The dates in the JSON are just metadata, the actual week is determined by baseDate
- */
-function getPlannedDates(
-  plannedGroup: PlannedGroup,
-  baseDate: Date,
-): Set<string> {
-  const plannedDates = new Set<string>();
-
-  if (plannedGroup.today) {
-    plannedDates.add(getDateString(getDayDate(baseDate, 0)));
-  }
-
-  if (plannedGroup.tomorrow) {
-    plannedDates.add(getDateString(getDayDate(baseDate, 1)));
-  }
-
-  return plannedDates;
-}
 
 /**
  * Create a calendar event from slot data
@@ -314,21 +291,6 @@ function parseAllDayStatusEvents(
 }
 
 /**
- * Filter out probable events for days that have planned events
- */
-function filterProbableEvents(
-  probableEvents: CalendarEvent[],
-  plannedDates: Set<string>,
-): CalendarEvent[] {
-  return probableEvents.filter((event) => {
-    if (!event.start.dateTime) return false;
-    const eventDate = new Date(event.start.dateTime);
-    const eventDateString = getDateString(eventDate, MOCK_EVENTS_TIMEZONE);
-    return !plannedDates.has(eventDateString);
-  });
-}
-
-/**
  * Generate mock calendars based on the Monday, May 20, 2024 start date
  */
 export function getMockCalendars(dataSource?: string): MockCalendar[] {
@@ -346,15 +308,9 @@ export function getMockCalendars(dataSource?: string): MockCalendar[] {
   const rawPlannedSlotEvents = parsePlannedSlotEvents(plannedGroup, baseDate);
   const allDayEvents = parseAllDayStatusEvents(plannedGroup, baseDate);
 
-  // Filter and merge events
-  const plannedDates = getPlannedDates(plannedGroup, baseDate);
-  const filteredProbableEvents = filterProbableEvents(
-    rawProbableEvents,
-    plannedDates,
-  );
-
+  // Merge multi-day events
   const mergedPlannedSlotEvents = mergeMultiDayEvents(rawPlannedSlotEvents);
-  const mergedProbableEvents = mergeMultiDayEvents(filteredProbableEvents);
+  const mergedProbableEvents = mergeMultiDayEvents(rawProbableEvents);
 
   // Combine planned events
   const plannedEvents = [...mergedPlannedSlotEvents, ...allDayEvents];

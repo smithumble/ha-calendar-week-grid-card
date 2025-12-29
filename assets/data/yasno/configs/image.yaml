@@ -15,16 +15,6 @@ cell_blank:
     style:
       opacity: 0.3
 entities:
-  - entity: calendar.probable_outages
-    cell:
-      icon:
-        icon: mdi:alert-circle-outline
-        style:
-          color: var(--main-color)
-      background:
-        style:
-          border: 1px dashed var(--main-color)
-          background-color: rgb(from var(--main-color) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Outage
     cell:
@@ -35,6 +25,16 @@ entities:
       background:
         style:
           border: 1px solid var(--main-color)
+          background-color: rgb(from var(--main-color) r g b / 0.1)
+  - entity: calendar.probable_outages
+    cell:
+      icon:
+        icon: mdi:alert-circle-outline
+        style:
+          color: var(--main-color)
+      background:
+        style:
+          border: 1px dashed var(--main-color)
           background-color: rgb(from var(--main-color) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns

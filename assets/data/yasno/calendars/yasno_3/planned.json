@@ -1,0 +1,842 @@
+{
+  "1.1": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 90,
+          "type": "Definite"
+        },
+        {
+          "start": 90,
+          "end": 480,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 480,
+          "end": 720,
+          "type": "Definite"
+        },
+        {
+          "start": 720,
+          "end": 1110,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1110,
+          "end": 1350,
+          "type": "Definite"
+        },
+        {
+          "start": 1350,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-29T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 270,
+          "type": "Definite"
+        },
+        {
+          "start": 270,
+          "end": 660,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 660,
+          "end": 1110,
+          "type": "Definite"
+        },
+        {
+          "start": 1110,
+          "end": 1290,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1290,
+          "end": 1440,
+          "type": "Definite"
+        }
+      ],
+      "date": "2025-12-30T00:00:00+02:00",
+      "status": "WaitingForSchedule"
+    },
+    "updatedOn": "2025-12-29T10:52:52+00:00"
+  },
+  "1.2": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 90,
+          "type": "Definite"
+        },
+        {
+          "start": 90,
+          "end": 480,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 480,
+          "end": 720,
+          "type": "Definite"
+        },
+        {
+          "start": 720,
+          "end": 1110,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1110,
+          "end": 1350,
+          "type": "Definite"
+        },
+        {
+          "start": 1350,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-29T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 120,
+          "type": "Definite"
+        },
+        {
+          "start": 120,
+          "end": 660,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 660,
+          "end": 1110,
+          "type": "Definite"
+        },
+        {
+          "start": 1110,
+          "end": 1290,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1290,
+          "end": 1440,
+          "type": "Definite"
+        }
+      ],
+      "date": "2025-12-30T00:00:00+02:00",
+      "status": "WaitingForSchedule"
+    },
+    "updatedOn": "2025-12-29T10:52:52+00:00"
+  },
+  "2.1": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 600,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 600,
+          "end": 900,
+          "type": "Definite"
+        },
+        {
+          "start": 900,
+          "end": 1110,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1110,
+          "end": 1350,
+          "type": "Definite"
+        },
+        {
+          "start": 1350,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-29T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 270,
+          "type": "Definite"
+        },
+        {
+          "start": 270,
+          "end": 660,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 660,
+          "end": 1110,
+          "type": "Definite"
+        },
+        {
+          "start": 1110,
+          "end": 1290,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1290,
+          "end": 1380,
+          "type": "Definite"
+        },
+        {
+          "start": 1380,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-30T00:00:00+02:00",
+      "status": "WaitingForSchedule"
+    },
+    "updatedOn": "2025-12-29T10:52:52+00:00"
+  },
+  "2.2": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 90,
+          "type": "Definite"
+        },
+        {
+          "start": 90,
+          "end": 600,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 600,
+          "end": 900,
+          "type": "Definite"
+        },
+        {
+          "start": 900,
+          "end": 1110,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1110,
+          "end": 1350,
+          "type": "Definite"
+        },
+        {
+          "start": 1350,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-29T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 270,
+          "type": "Definite"
+        },
+        {
+          "start": 270,
+          "end": 660,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 660,
+          "end": 900,
+          "type": "Definite"
+        },
+        {
+          "start": 900,
+          "end": 1290,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1290,
+          "end": 1440,
+          "type": "Definite"
+        }
+      ],
+      "date": "2025-12-30T00:00:00+02:00",
+      "status": "WaitingForSchedule"
+    },
+    "updatedOn": "2025-12-29T10:52:52+00:00"
+  },
+  "3.1": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 60,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 60,
+          "end": 300,
+          "type": "Definite"
+        },
+        {
+          "start": 300,
+          "end": 690,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 690,
+          "end": 1110,
+          "type": "Definite"
+        },
+        {
+          "start": 1110,
+          "end": 1320,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1320,
+          "end": 1440,
+          "type": "Definite"
+        }
+      ],
+      "date": "2025-12-29T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 240,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 240,
+          "end": 480,
+          "type": "Definite"
+        },
+        {
+          "start": 480,
+          "end": 870,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 870,
+          "end": 1320,
+          "type": "Definite"
+        },
+        {
+          "start": 1320,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-30T00:00:00+02:00",
+      "status": "WaitingForSchedule"
+    },
+    "updatedOn": "2025-12-29T10:52:52+00:00"
+  },
+  "3.2": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 690,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 690,
+          "end": 1110,
+          "type": "Definite"
+        },
+        {
+          "start": 1110,
+          "end": 1320,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1320,
+          "end": 1440,
+          "type": "Definite"
+        }
+      ],
+      "date": "2025-12-29T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 240,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 240,
+          "end": 480,
+          "type": "Definite"
+        },
+        {
+          "start": 480,
+          "end": 870,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 870,
+          "end": 1320,
+          "type": "Definite"
+        },
+        {
+          "start": 1320,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-30T00:00:00+02:00",
+      "status": "WaitingForSchedule"
+    },
+    "updatedOn": "2025-12-29T10:52:52+00:00"
+  },
+  "4.1": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 60,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 60,
+          "end": 480,
+          "type": "Definite"
+        },
+        {
+          "start": 480,
+          "end": 690,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 690,
+          "end": 930,
+          "type": "Definite"
+        },
+        {
+          "start": 930,
+          "end": 1320,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1320,
+          "end": 1440,
+          "type": "Definite"
+        }
+      ],
+      "date": "2025-12-29T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 240,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 240,
+          "end": 480,
+          "type": "Definite"
+        },
+        {
+          "start": 480,
+          "end": 600,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 600,
+          "end": 660,
+          "type": "Definite"
+        },
+        {
+          "start": 660,
+          "end": 870,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 870,
+          "end": 1110,
+          "type": "Definite"
+        },
+        {
+          "start": 1110,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-30T00:00:00+02:00",
+      "status": "WaitingForSchedule"
+    },
+    "updatedOn": "2025-12-29T10:52:52+00:00"
+  },
+  "4.2": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 60,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 60,
+          "end": 300,
+          "type": "Definite"
+        },
+        {
+          "start": 300,
+          "end": 690,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 690,
+          "end": 930,
+          "type": "Definite"
+        },
+        {
+          "start": 930,
+          "end": 1320,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1320,
+          "end": 1440,
+          "type": "Definite"
+        }
+      ],
+      "date": "2025-12-29T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 510,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 510,
+          "end": 660,
+          "type": "Definite"
+        },
+        {
+          "start": 660,
+          "end": 870,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 870,
+          "end": 1320,
+          "type": "Definite"
+        },
+        {
+          "start": 1320,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-30T00:00:00+02:00",
+      "status": "WaitingForSchedule"
+    },
+    "updatedOn": "2025-12-29T10:52:52+00:00"
+  },
+  "5.1": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 360,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 360,
+          "end": 690,
+          "type": "Definite"
+        },
+        {
+          "start": 690,
+          "end": 900,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 900,
+          "end": 1140,
+          "type": "Definite"
+        },
+        {
+          "start": 1140,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-29T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 90,
+          "type": "Definite"
+        },
+        {
+          "start": 90,
+          "end": 450,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 450,
+          "end": 720,
+          "type": "Definite"
+        },
+        {
+          "start": 720,
+          "end": 1080,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1080,
+          "end": 1320,
+          "type": "Definite"
+        },
+        {
+          "start": 1320,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-30T00:00:00+02:00",
+      "status": "WaitingForSchedule"
+    },
+    "updatedOn": "2025-12-29T10:52:52+00:00"
+  },
+  "5.2": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 480,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 480,
+          "end": 690,
+          "type": "Definite"
+        },
+        {
+          "start": 690,
+          "end": 900,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 900,
+          "end": 1140,
+          "type": "Definite"
+        },
+        {
+          "start": 1140,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-29T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 90,
+          "type": "Definite"
+        },
+        {
+          "start": 90,
+          "end": 450,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 450,
+          "end": 900,
+          "type": "Definite"
+        },
+        {
+          "start": 900,
+          "end": 1080,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1080,
+          "end": 1350,
+          "type": "Definite"
+        },
+        {
+          "start": 1350,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-30T00:00:00+02:00",
+      "status": "WaitingForSchedule"
+    },
+    "updatedOn": "2025-12-29T10:52:52+00:00"
+  },
+  "6.1": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 270,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 270,
+          "end": 510,
+          "type": "Definite"
+        },
+        {
+          "start": 510,
+          "end": 900,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 900,
+          "end": 1200,
+          "type": "Definite"
+        },
+        {
+          "start": 1200,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-29T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 30,
+          "type": "Definite"
+        },
+        {
+          "start": 30,
+          "end": 450,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 450,
+          "end": 900,
+          "type": "Definite"
+        },
+        {
+          "start": 900,
+          "end": 1080,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1080,
+          "end": 1320,
+          "type": "Definite"
+        },
+        {
+          "start": 1320,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-30T00:00:00+02:00",
+      "status": "WaitingForSchedule"
+    },
+    "updatedOn": "2025-12-29T10:52:52+00:00"
+  },
+  "6.2": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 270,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 270,
+          "end": 510,
+          "type": "Definite"
+        },
+        {
+          "start": 510,
+          "end": 900,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 900,
+          "end": 1320,
+          "type": "Definite"
+        },
+        {
+          "start": 1320,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-29T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 30,
+          "type": "Definite"
+        },
+        {
+          "start": 30,
+          "end": 510,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 510,
+          "end": 780,
+          "type": "Definite"
+        },
+        {
+          "start": 780,
+          "end": 1080,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1080,
+          "end": 1260,
+          "type": "Definite"
+        },
+        {
+          "start": 1260,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-12-30T00:00:00+02:00",
+      "status": "WaitingForSchedule"
+    },
+    "updatedOn": "2025-12-29T10:52:52+00:00"
+  }
+}
