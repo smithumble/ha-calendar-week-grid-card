@@ -65,7 +65,11 @@ ha-card {
   color: var(--event-color);
 }
 
-.event-block-wrapper {
+.cell.has-event ha-icon {
+  --icon: mdi: check-circle;
+}
+
+.event-wrapper {
   position: absolute;
   left: 0;
   right: 0;
@@ -84,6 +88,13 @@ ha-card {
   justify-content: center;
 }
 
+.event-sub-blocks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+}
+
 .event-sub-block {
   position: absolute;
   left: 0;
@@ -91,7 +102,18 @@ ha-card {
   box-sizing: border-box;
 }
 
-ha-icon {
+.event-icon-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.event-icon {
   --mdc-icon-size: var(--icon-size, 18px);
   position: relative;
   display: flex;

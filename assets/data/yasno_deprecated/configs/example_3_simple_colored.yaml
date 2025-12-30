@@ -1,0 +1,77 @@
+type: custom:calendar-week-grid-card
+language: en
+time_format: 'HH:mm'
+style:
+  '--event-border-radius': 4px
+  '--color-neutral': var(--secondary-text-color)
+  '--color-warning': var(--warning-color)
+  '--color-error': var(--error-color)
+  '--color-info': var(--info-color)
+  '--color-success': var(--success-color)
+cell_blank:
+  background:
+    style:
+      border: 1px dotted rgb(from var(--color-neutral) r g b / 0.3)
+  icon:
+    icon: mdi:checkbox-blank-circle-outline
+    style:
+      opacity: 0.3
+entities:
+  - entity: calendar.planned_outages
+    filter: Outage
+    cell:
+      icon:
+        icon: mdi:flash-off
+        style:
+          color: var(--color-error)
+      background:
+        style:
+          border: 1px solid var(--color-error)
+          background-color: rgb(from var(--color-error) r g b / 0.1)
+  - entity: calendar.probable_outages
+    cell:
+      icon:
+        icon: mdi:alert-circle-outline
+        style:
+          color: var(--color-warning)
+      background:
+        style:
+          border: 1px dashed var(--color-warning)
+          background-color: rgb(from var(--color-warning) r g b / 0.1)
+  - entity: calendar.planned_outages
+    filter: Emergency Shutdowns
+    cell:
+      icon:
+        icon: mdi:transmission-tower-off
+        style:
+          color: var(--color-error)
+      background:
+        style:
+          border: 1px double var(--color-error)
+          background-color: rgb(from var(--color-error) r g b / 0.2)
+  - entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    cell:
+      icon:
+        icon: mdi:timer-sand
+        style:
+          opacity: 0.4
+          color: var(--color-info)
+      background:
+        style:
+          opacity: 0.4
+          border: 1px dotted var(--color-info)
+          background-color: rgb(from var(--color-info) r g b / 0.1)
+  - entity: calendar.planned_outages
+    filter: Schedule Applies
+    cell:
+      icon:
+        icon: mdi:calendar-check
+        style:
+          opacity: 0.4
+          color: var(--color-success)
+      background:
+        style:
+          opacity: 0.4
+          border: 1px dotted var(--color-success)
+          background-color: rgb(from var(--color-success) r g b / 0.1)

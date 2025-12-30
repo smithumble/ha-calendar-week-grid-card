@@ -1,6 +1,7 @@
-import type { CalendarEvent } from '../../../src/calendar-week-grid-card';
+import type { CalendarEvent } from '../../../src/types';
 import { DummyProvider } from './dummy';
 import { YasnoProvider } from './yasno';
+import { YasnoDeprecatedProvider } from './yasno_deprecated';
 
 export interface ConfigItem {
   name: string;
@@ -20,6 +21,7 @@ export interface CalendarProvider {
 
 export const PROVIDERS: Record<string, CalendarProvider> = {
   yasno: new YasnoProvider(),
+  yasno_deprecated: new YasnoDeprecatedProvider(),
   dummy: new DummyProvider(),
 };
 

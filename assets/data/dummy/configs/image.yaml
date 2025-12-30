@@ -1,65 +1,85 @@
 type: custom:calendar-week-grid-card
 language: en
 time_format: HH:mm
-start_hour: 0
+start_hour: 6
 end_hour: 24
-style:
-  '--event-border-radius': 4px
-  '--color-neutral': var(--secondary-text-color)
-  '--color-warning': '#FF9800'
-  '--color-error': '#FF0000'
-  '--color-info': '#29B6F6'
-  '--color-success': var(--success-color)
-cell_blank:
-  icon:
-    icon: mdi:checkbox-blank-circle-outline
-    style:
-      opacity: 0.3
 entities:
   - entity: calendar.work_schedule
     filter: Sleep
-    cell:
-      icon:
-        icon: mdi:pause-circle-outline
-        style:
-          opacity: 0.3
   - entity: calendar.work_schedule
     filter: Beer
-    cell:
-      icon:
-        icon: mdi:beer
-        style:
-          color: var(--color-warning)
-      background:
-        style:
-          background-color: rgb(from var(--color-warning) r g b / 0.2)
   - entity: calendar.work_schedule
     filter: Planning
-    cell:
-      icon:
-        icon: mdi:calendar-clock
-        style:
-          color: var(--color-info)
-      background:
-        style:
-          background-color: rgb(from var(--color-info) r g b / 0.2)
   - entity: calendar.work_schedule
     filter: Stand Up
-    cell:
-      icon:
-        icon: mdi:account-group
-        style:
-          color: var(--color-success)
-      background:
-        style:
-          background-color: rgb(from var(--color-success) r g b / 0.2)
   - entity: calendar.work_schedule
     filter: Working Hours
-    cell:
-      icon:
-        icon: mdi:checkbox-blank-circle-outline
-        style:
-          color: rgb(from var(--color-neutral) r g b / 0.3)
-      background:
-        style:
-          border: 1px dotted rgb(from var(--color-neutral) r g b / 0.3)
+css: |
+  ha-card {
+    --event-border-radius: 4px;
+    --color-neutral: var(--secondary-text-color);
+    --color-warning: #FF9800;
+    --color-error: #FF0000;
+    --color-info: #29B6F6;
+    --color-success: var(--success-color);
+  }
+
+  .cell {
+    &:not(.has-event) ha-icon {
+      --icon: mdi:checkbox-blank-circle-outline;
+      opacity: 0.3;
+    }
+
+    [data-entity="calendar.work_schedule"] {
+      &[data-filter="Sleep"] {
+        &.event-icon {
+          --icon: mdi:pause-circle-outline;
+          opacity: 0.3;
+        }
+      }
+
+      &[data-filter="Beer"] {
+        &.event-icon {
+          --icon: mdi:beer;
+          color: var(--color-warning);
+        }
+
+        .event-block {
+          background-color: rgb(from var(--color-warning) r g b / 0.2);
+        }
+      }
+
+      &[data-filter="Planning"] {
+        &.event-icon {
+          --icon: mdi:calendar-clock;
+          color: var(--color-info);
+        }
+
+        .event-block {
+          background-color: rgb(from var(--color-info) r g b / 0.2);
+        }
+      }
+
+      &[data-filter="Stand Up"] {
+        &.event-icon {
+          --icon: mdi:account-group;
+          color: var(--color-success);
+        }
+
+        .event-block {
+          background-color: rgb(from var(--color-success) r g b / 0.2);
+        }
+      }
+
+      &[data-filter="Working Hours"] {
+        &.event-icon {
+          --icon: mdi:checkbox-blank-circle-outline;
+          color: rgb(from var(--color-neutral) r g b / 0.3);
+        }
+
+        .event-block {
+          border: 1px dotted rgb(from var(--color-neutral) r g b / 0.3);
+        }
+      }
+    }
+  }

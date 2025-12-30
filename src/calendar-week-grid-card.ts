@@ -8,97 +8,28 @@ import {
   unsafeCSS,
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { generateCssFromDeprecatedStyleConfig } from './deprecated';
 import styles from './styles.css';
-
-type Style = Record<string, string>;
-
-interface IconConfig {
-  icon: string;
-  style?: Style;
-  raw_style?: string;
-}
-
-interface BackgroundConfig {
-  style?: Style;
-  raw_style?: string;
-  block?: BackgroundConfig;
-}
-
-interface CellConfig {
-  icon?: IconConfig;
-  background?: BackgroundConfig;
-  style?: Style;
-  raw_style?: string;
-}
-
-interface EntityConfig {
-  entity: string;
-  name?: string;
-  filter?: string;
-  cell?: CellConfig;
-}
-
-interface GridConfig {
-  style?: Style;
-  raw_style?: string;
-}
-
-interface EventsIconConfig {
-  container?: 'event' | 'cell';
-  mode?: 'top' | 'all';
-}
-
-interface EventsConfig {
-  icon?: EventsIconConfig;
-}
-
-export interface CardConfig {
-  type: string;
-  entities: (string | EntityConfig)[];
-  language?: string;
-  time_format?: string;
-  start_hour?: number;
-  end_hour?: number;
-  filter?: string;
-  grid?: GridConfig;
-  cell?: CellConfig;
-  cell_filled?: CellConfig;
-  cell_blank?: CellConfig;
-  style?: Style;
-  raw_style?: string;
-  events?: EventsConfig;
-}
-
-export interface CalendarEvent {
-  start: { dateTime?: string; date?: string };
-  end: { dateTime?: string; date?: string };
-  summary?: string;
-}
-
-export interface Event extends Omit<CalendarEvent, 'start' | 'end'> {
-  start: Date; // override with Date object
-  end: Date; // override with Date object
-  entity?: string;
-  cell?: CellConfig;
-}
-
-interface DayInfo {
-  date: Date;
-  label: string;
-  isToday: boolean;
-}
+import type {
+  CardConfig,
+  CalendarEvent,
+  Event,
+  DayInfo,
+  EntityConfig,
+} from './types';
 
 @customElement('calendar-week-grid-card')
 export class CalendarWeekGridCard extends LitElement {
   @property({ attribute: false }) public hass?: HomeAssistant;
   @state() private config?: CardConfig;
   @state() private events: Event[] = [];
+  @state() private cellHeight: number = 24;
 
   private lastFetched: number = 0;
 
-  static get styles(): CSSResultGroup {
-    return unsafeCSS(styles);
-  }
+  // ============================================================================
+  // Public API
+  // ============================================================================
 
   public setConfig(config: CardConfig): void {
     if (!config.entities) {
@@ -107,10 +38,18 @@ export class CalendarWeekGridCard extends LitElement {
     this.config = config;
   }
 
+  // ============================================================================
+  // Lifecycle
+  // ============================================================================
+
   protected updated(changedProps: PropertyValues): void {
     if (changedProps.has('hass')) {
       this.fetchEventsIfNeeded();
     }
+    // Update icons from CSS custom properties after DOM updates
+    requestAnimationFrame(() => {
+      this.updateIconsAndHeightFromCss();
+    });
   }
 
   protected render(): TemplateResult {
@@ -125,11 +64,6 @@ export class CalendarWeekGridCard extends LitElement {
 
     const days = this.getDays();
 
-    const cardStyle = this.stylesObjectToString(this.config.style) || '';
-    const rawCardStyle = this.config.raw_style || '';
-    const gridStyle = this.stylesObjectToString(this.config.grid?.style) || '';
-    const rawGridStyle = this.config.grid?.raw_style || '';
-
     const startHour = this.config.start_hour ?? 0;
     const endHour = this.config.end_hour ?? 24;
     const hours = Array.from(
@@ -138,8 +72,14 @@ export class CalendarWeekGridCard extends LitElement {
     );
 
     return html`
-      <ha-card style="${cardStyle} ${rawCardStyle}">
-        <div class="grid-container" style="${gridStyle} ${rawGridStyle}">
+      <style>
+        ${unsafeCSS(styles)}
+      </style>
+      <style>
+        ${this.getDynamicStyles()}
+      </style>
+      <ha-card>
+        <div class="grid-container">
           <!-- Header Row -->
           <div></div>
           ${days.map(
@@ -157,6 +97,50 @@ export class CalendarWeekGridCard extends LitElement {
     `;
   }
 
+  // ============================================================================
+  // Style Helpers
+  // ============================================================================
+
+  private getDynamicStyles(): CSSResultGroup {
+    if (!this.config) return unsafeCSS('');
+
+    if (this.config.css) {
+      return unsafeCSS(this.config.css);
+    }
+
+    // Deprecated: generate CSS from config objects
+    return unsafeCSS(
+      generateCssFromDeprecatedStyleConfig(
+        this.config as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      ),
+    );
+  }
+
+  private updateIconsAndHeightFromCss(): void {
+    // Find all ha-icon elements and check if they have --icon CSS custom property set
+    const icons = this.shadowRoot?.querySelectorAll('ha-icon') || [];
+    icons.forEach((iconEl) => {
+      const computedStyle = window.getComputedStyle(iconEl);
+      const iconValue = computedStyle.getPropertyValue('--icon').trim();
+      if (iconValue) {
+        iconEl.setAttribute('icon', iconValue);
+      }
+    });
+
+    const cell = this.shadowRoot?.querySelector('.cell');
+    if (cell) {
+      const heightStr = window.getComputedStyle(cell).height;
+      const height = parseFloat(heightStr);
+      if (height && Math.abs(height - this.cellHeight) > 0.1) {
+        this.cellHeight = height;
+      }
+    }
+  }
+
+  // ============================================================================
+  // Render
+  // ============================================================================
+
   private renderRow(hour: number, days: DayInfo[]): TemplateResult {
     const timeLabel = this.formatTime(hour);
     return html`
@@ -165,47 +149,13 @@ export class CalendarWeekGridCard extends LitElement {
     `;
   }
 
-  private formatTime(hour: number): string {
-    const format = this.config?.time_format || 'h A';
-
-    // Custom pattern replacement
-    // H: 0-23, HH: 00-23
-    // h: 1-12, hh: 01-12
-    // m: 0-59, mm: 00-59
-    // a: am/pm, A: AM/PM
-    const tokens: Record<string, string> = {
-      HH: hour.toString().padStart(2, '0'),
-      H: hour.toString(),
-      hh: (hour % 12 || 12).toString().padStart(2, '0'),
-      h: (hour % 12 || 12).toString(),
-      mm: '00',
-      m: '0',
-      a: hour < 12 ? 'am' : 'pm',
-      A: hour < 12 ? 'AM' : 'PM',
-    };
-
-    return format.replace(/HH|H|hh|h|mm|m|a|A/g, (match) => tokens[match]);
-  }
-
-  private getOverlappingEvents(
-    events: Event[],
-    startTime: number,
-    endTime: number,
-  ): Event[] {
-    return events.filter((event) => {
-      const eventStart = event.start.getTime();
-      const eventEnd = event.end.getTime();
-      return endTime > eventStart && startTime < eventEnd;
-    });
-  }
-
   private renderCell(day: DayInfo, hour: number): TemplateResult {
     const cellDate = new Date(day.date);
     const cellStartTime = cellDate.setHours(hour);
     const cellEndTime = cellDate.setHours(hour + 1);
 
     // Filter events that are within the cell time range
-    const cellEvents = this.getOverlappingEvents(
+    const cellEvents = this.filterEvents(
       this.events,
       cellStartTime,
       cellEndTime,
@@ -217,67 +167,197 @@ export class CalendarWeekGridCard extends LitElement {
     // Main event is the last one in the list
     const mainEvent = cellEvents[cellEvents.length - 1];
 
-    const style = this.getCellConfigStyle('style', mainEvent) || '';
-    const rawStyle = this.getCellConfig('raw_style', mainEvent) || '';
-
-    const iconPosition = this.config?.events?.icon?.container || 'cell';
-    const iconMode = this.config?.events?.icon?.mode || 'top';
+    const iconPosition = this.getIconPosition();
+    const iconMode = this.getIconMode();
 
     // Determine which event icons to show and whether to show blank icon
-    let iconEvents: (Event | undefined)[] = [];
+    let cellIconEvents: Event[] = [];
     let showBlankIcon = false;
 
     if (iconMode === 'all') {
       if (iconPosition === 'cell') {
-        iconEvents = cellEvents;
-        showBlankIcon = iconEvents.length === 0;
+        cellIconEvents = cellEvents;
+        showBlankIcon = cellIconEvents.length === 0;
       } else {
-        iconEvents = [];
+        cellIconEvents = [];
         showBlankIcon = true;
       }
     } else {
       if (iconPosition === 'cell') {
         showBlankIcon = !mainEvent;
-        iconEvents = mainEvent ? [mainEvent] : [];
+        cellIconEvents = mainEvent ? [mainEvent] : [];
       } else {
-        iconEvents = [];
+        cellIconEvents = [];
         showBlankIcon = true;
       }
     }
 
     return html`
       <div class="cell-wrapper">
-        <div
-          class="cell ${mainEvent ? 'has-event' : ''}"
-          style="${style} ${rawStyle}"
-        >
-          ${this.renderBlankEventBlock(showBlankIcon)}
-          ${this.renderEventBlocks(
+        <div class="cell ${mainEvent ? 'has-event' : ''}">
+          ${this.renderBlankEvent(showBlankIcon)}
+          ${this.renderEvents(
             cellEvents,
             cellStartTime,
             cellEndTime,
             mainEvent,
           )}
-          ${this.renderCellIcons(iconEvents)}
+          ${this.renderCellIcons(cellIconEvents)}
         </div>
         ${this.renderCurrentTimeLine(day, hour)}
       </div>
     `;
   }
 
-  private renderEventIcon(event?: Event): TemplateResult {
-    const icon = this.getCellConfig('icon.icon', event, 'mdi:check-circle');
-    if (!icon) return html``;
-    const style = this.getCellConfigStyle('icon.style', event) || '';
-    const rawStyle = this.getCellConfig('icon.raw_style', event) || '';
+  private renderBlankEvent(showBlankIcon: boolean = false): TemplateResult {
+    return html`<div class="event-wrapper" style="top: 0%; height: 100%;">
+      <div class="event-block event-block-blank" style="top: 0%; height: 100%;">
+        ${showBlankIcon ? this.renderEventIcon(undefined) : ''}
+      </div>
+    </div>`;
+  }
 
+  private renderEvents(
+    cellEvents: Event[],
+    cellStartTime: number,
+    cellEndTime: number,
+    mainEvent?: Event,
+  ): TemplateResult[] {
+    return cellEvents.map((event) => {
+      const iconPosition = this.getIconPosition();
+      const iconMode = this.getIconMode();
+
+      // Determine if this event should show an icon
+      const shouldShowIcon =
+        iconPosition === 'event' &&
+        (iconMode === 'all' || (iconMode === 'top' && event === mainEvent));
+
+      return this.renderEvent(
+        event,
+        cellStartTime,
+        cellEndTime,
+        cellEvents,
+        shouldShowIcon,
+      );
+    });
+  }
+
+  private renderEvent(
+    event: Event,
+    cellStartTime: number,
+    cellEndTime: number,
+    cellEvents: Event[],
+    shouldShowIcon?: boolean,
+  ): TemplateResult {
+    const eventStartTime = event.start.getTime();
+    const eventEndTime = event.end.getTime();
+
+    const start = Math.max(cellStartTime, eventStartTime);
+    const end = Math.min(cellEndTime, eventEndTime);
+
+    const duration = cellEndTime - cellStartTime;
+
+    const startRatio = (start - cellStartTime) / duration;
+    const endRatio = (end - cellStartTime) / duration;
+
+    const topPx = Math.round(startRatio * this.cellHeight);
+    const bottomPx = Math.round(endRatio * this.cellHeight);
+
+    const heightPx = bottomPx - topPx;
+
+    const blocks = this.generateEventSubBlocks(
+      start,
+      end,
+      cellStartTime,
+      cellEndTime,
+    );
+
+    const innerHeightPx = this.cellHeight;
+    const innerTopPx = -topPx;
+
+    // Filter and merge blocks that should be rendered
+    const mergedBlocks: Array<{ start: number; end: number }> = [];
+    let currentBlock: { start: number; end: number } | null = null;
+
+    for (const block of blocks) {
+      // Find all events that overlap with this block time period
+      const events = this.filterEvents(cellEvents, block.start, block.end);
+
+      // The last one is the topmost event
+      if (events.length > 0 && events[events.length - 1] === event) {
+        if (currentBlock && currentBlock.end === block.start) {
+          currentBlock.end = block.end;
+        } else {
+          if (currentBlock) mergedBlocks.push(currentBlock);
+          currentBlock = { ...block };
+        }
+      } else {
+        if (currentBlock) {
+          mergedBlocks.push(currentBlock);
+          currentBlock = null;
+        }
+      }
+    }
+
+    if (currentBlock) mergedBlocks.push(currentBlock);
+
+    const wrapperStyle = `top: ${topPx}px; height: ${heightPx}px;`;
+    const innerStyle = `top: ${innerTopPx}px; height: ${innerHeightPx}px;`;
+
+    return html`<div
+      class="event-wrapper"
+      style="${wrapperStyle}"
+      data-entity="${event.entity || ''}"
+      data-filter="${event.filter || ''}"
+    >
+      <div class="event-sub-blocks" style="${innerStyle}">
+        ${this.renderEventSubBlocks(mergedBlocks, cellStartTime, duration)}
+      </div>
+      <div class="event-block" style="${innerStyle}"></div>
+      <div class="event-icon-overlay" style="${innerStyle}">
+        ${shouldShowIcon ? this.renderEventIcon(event) : ''}
+      </div>
+    </div>`;
+  }
+
+  private renderEventSubBlocks(
+    blocks: { start: number; end: number }[],
+    cellStartTime: number,
+    duration: number,
+  ): TemplateResult[] {
+    return blocks.map((block) =>
+      this.renderEventSubBlock(block, cellStartTime, duration),
+    );
+  }
+
+  private renderEventSubBlock(
+    block: { start: number; end: number },
+    cellStartTime: number,
+    duration: number,
+  ): TemplateResult {
+    const startRatio = (block.start - cellStartTime) / duration;
+    const endRatio = (block.end - cellStartTime) / duration;
+
+    const blockTopPx = Math.round(startRatio * this.cellHeight);
+    const blockBottomPx = Math.round(endRatio * this.cellHeight);
+
+    const blockHeightPx = blockBottomPx - blockTopPx;
+
+    const style = `top: ${blockTopPx}px; height: ${blockHeightPx}px;`;
+
+    return html`<div class="event-sub-block" style="${style}"></div>`;
+  }
+
+  private renderEventIcon(event?: Event | undefined): TemplateResult {
+    // Icon will be set via CSS --icon custom property by updateIconsFromCss
     return html`<ha-icon
-      icon="${icon}"
-      style="${style} ${rawStyle}"
+      class="event-icon"
+      data-entity="${event?.entity || ''}"
+      data-filter="${event?.filter || ''}"
     ></ha-icon>`;
   }
 
-  private renderCellIcons(events: (Event | undefined)[]): TemplateResult {
+  private renderCellIcons(events: Event[]): TemplateResult {
     return html`${events.map((event) => this.renderEventIcon(event))}`;
   }
 
@@ -302,219 +382,9 @@ export class CalendarWeekGridCard extends LitElement {
     `;
   }
 
-  private renderEventBlocks(
-    cellEvents: Event[],
-    cellStartTime: number,
-    cellEndTime: number,
-    mainEvent?: Event,
-  ): TemplateResult[] {
-    return cellEvents.map((event) =>
-      this.renderEventBlock(
-        event,
-        cellStartTime,
-        cellEndTime,
-        mainEvent,
-        cellEvents,
-      ),
-    );
-  }
-
-  private renderEventBlock(
-    event: Event,
-    cellStartTime: number,
-    cellEndTime: number,
-    mainEvent?: Event,
-    cellEvents?: Event[],
-  ): TemplateResult {
-    const eventStartTime = event.start.getTime();
-    const eventEndTime = event.end.getTime();
-
-    const start = Math.max(cellStartTime, eventStartTime);
-    const end = Math.min(cellEndTime, eventEndTime);
-
-    const duration = cellEndTime - cellStartTime;
-    const topPct = ((start - cellStartTime) / duration) * 100;
-    const heightPct = ((end - start) / duration) * 100;
-
-    if (heightPct < 0.01) return html``;
-
-    // Always generate sub blocks
-    const blocks = this.generateEventSubBlocks(
-      start,
-      end,
-      cellStartTime,
-      cellEndTime,
-    );
-
-    const iconPosition = this.config?.events?.icon?.container || 'cell';
-    const iconMode = this.config?.events?.icon?.mode || 'top';
-
-    // Determine if this event should show an icon
-    const shouldShowIcon =
-      iconPosition === 'event' &&
-      (iconMode === 'all' || (iconMode === 'top' && event === mainEvent));
-
-    // Use background styling for event-block container
-    const eventBlockRawStyle =
-      this.getCellConfig('background.raw_style', event) || '';
-    const eventBlockStyle =
-      this.getCellConfigStyle('background.style', event) || '';
-
-    // Use background.block styling for sub-blocks
-    const subBlockRawStyle =
-      this.getCellConfig('background.block.raw_style', event) || '';
-    const subBlockStyle =
-      this.getCellConfigStyle('background.block.style', event) || '';
-
-    const innerHeightPct = (100 / heightPct) * 100;
-    const innerTopPct = -(topPct / heightPct) * 100;
-
-    // Calculate block positions relative to the event wrapper
-    const eventDuration = end - start;
-
-    return html`<div
-      class="event-block-wrapper"
-      style="top: ${topPct}%; height: ${heightPct}%;"
-      data-entity="${event.entity || ''}"
-    >
-      <div
-        class="event-block"
-        style="top: ${innerTopPct}%; height: ${innerHeightPct}%; ${eventBlockStyle} ${eventBlockRawStyle}"
-      >
-        ${blocks.map((block) => {
-          const blockTopPct = ((block.start - start) / eventDuration) * 100;
-          const blockHeightPct =
-            ((block.end - block.start) / eventDuration) * 100;
-
-          if (blockHeightPct < 0.01) return html``;
-
-          // Check if this sub block is the main (on top) one for this time period
-          const isMainSubBlock = this.isMainSubBlock(
-            event,
-            block,
-            cellEvents || [],
-          );
-
-          if (!isMainSubBlock) return html``;
-
-          return html`<div
-            class="event-sub-block"
-            style="position: absolute; top: ${blockTopPct}%; height: ${blockHeightPct}%; left: 0; right: 0; ${subBlockStyle} ${subBlockRawStyle}"
-          ></div>`;
-        })}
-        ${shouldShowIcon ? this.renderEventIcon(event) : ''}
-      </div>
-    </div>`;
-  }
-
-  private isMainSubBlock(
-    event: Event,
-    block: { start: number; end: number },
-    cellEvents: Event[],
-  ): boolean {
-    // Find all events that overlap with this sub block time period
-    const overlappingEvents = this.getOverlappingEvents(
-      cellEvents,
-      block.start,
-      block.end,
-    );
-
-    // The main sub block is from the first event in the list (rendered on top)
-    // Since cellEvents is reversed, the first one is the topmost
-    return (
-      overlappingEvents.length > 0 &&
-      overlappingEvents[overlappingEvents.length - 1] === event
-    );
-  }
-
-  private generateEventSubBlocks(
-    eventStart: number,
-    eventEnd: number,
-    cellStartTime: number,
-    cellEndTime: number,
-  ): Array<{ start: number; end: number }> {
-    const blocks: Array<{ start: number; end: number }> = [];
-    const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
-
-    // Find the first event block start that is >= cellStartTime
-    const cellStartDate = new Date(cellStartTime);
-    const cellStartMinutes = cellStartDate.getMinutes();
-    const roundedCellStartMinutes = Math.floor(cellStartMinutes / 5) * 5;
-    cellStartDate.setMinutes(roundedCellStartMinutes, 0, 0);
-    let currentBlockStart = cellStartDate.getTime();
-
-    // If we rounded down, move to the next block if needed
-    if (currentBlockStart < cellStartTime) {
-      currentBlockStart += fiveMinutes;
-    }
-
-    // Find the last event block end that is <= cellEndTime
-    const cellEndDate = new Date(cellEndTime);
-    const cellEndMinutes = cellEndDate.getMinutes();
-    const roundedCellEndMinutes = Math.ceil(cellEndMinutes / 5) * 5;
-    cellEndDate.setMinutes(roundedCellEndMinutes, 0, 0);
-    const finalBlockEnd = Math.min(cellEndDate.getTime(), cellEndTime);
-
-    while (currentBlockStart < finalBlockEnd) {
-      const currentBlockEnd = Math.min(
-        currentBlockStart + fiveMinutes,
-        finalBlockEnd,
-      );
-
-      // Only create block if it overlaps with the actual event
-      if (currentBlockEnd > eventStart && currentBlockStart < eventEnd) {
-        blocks.push({
-          start: Math.max(currentBlockStart, eventStart),
-          end: Math.min(currentBlockEnd, eventEnd),
-        });
-      }
-
-      currentBlockStart = currentBlockEnd;
-    }
-
-    return blocks;
-  }
-
-  private renderBlankEventBlock(
-    showBlankIcon: boolean = false,
-  ): TemplateResult {
-    const style = this.getCellConfigStyle('background.style', undefined) || '';
-    const rawStyle =
-      this.getCellConfig('background.raw_style', undefined) || '';
-
-    return html`<div class="event-block-wrapper" style="top: 0%; height: 100%;">
-      <div
-        class="event-block"
-        style="top: 0%; height: 100%; ${style} ${rawStyle}"
-      >
-        ${showBlankIcon ? this.renderEventIcon(undefined) : ''}
-      </div>
-    </div>`;
-  }
-
-  private getDays(): DayInfo[] {
-    const days: DayInfo[] = [];
-    const today = this.toHaTime(new Date());
-    today.setHours(0, 0, 0, 0);
-
-    const lang = this.config?.language || this.hass?.language || 'en';
-    const dateFormat = new Intl.DateTimeFormat(lang, { weekday: 'short' });
-
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-
-      const weekday = dateFormat.format(date);
-      const label = weekday.charAt(0).toUpperCase() + weekday.slice(1);
-
-      days.push({
-        date: date,
-        label: label,
-        isToday: i === 0,
-      });
-    }
-    return days;
-  }
+  // ============================================================================
+  // Data Fetching
+  // ============================================================================
 
   private fetchEventsIfNeeded(): void {
     const now = Date.now();
@@ -556,6 +426,13 @@ export class CalendarWeekGridCard extends LitElement {
         start: this.normalizeDate(e.start),
         end: this.normalizeDate(e.end),
       }));
+
+      // this.events.push({
+      //   start: new Date(start),
+      //   end: new Date(end),
+      //   entity: '',
+      //   filter: '',
+      // });
     } catch (e) {
       console.error('CalendarWeekGridCard: Error fetching events:', e);
       this.events = [];
@@ -587,6 +464,130 @@ export class CalendarWeekGridCard extends LitElement {
     }
   }
 
+  // ============================================================================
+  // Utilities
+  // ============================================================================
+
+  private getDays(): DayInfo[] {
+    const days: DayInfo[] = [];
+    const today = this.toHaTime(new Date());
+    today.setHours(0, 0, 0, 0);
+
+    const lang = this.config?.language || this.hass?.language || 'en';
+    const dateFormat = new Intl.DateTimeFormat(lang, { weekday: 'short' });
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+
+      const weekday = dateFormat.format(date);
+      const label = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+
+      days.push({
+        date: date,
+        label: label,
+        isToday: i === 0,
+      });
+    }
+    return days;
+  }
+
+  private formatTime(hour: number): string {
+    const format = this.config?.time_format || 'h A';
+
+    // Custom pattern replacement
+    // H: 0-23, HH: 00-23
+    // h: 1-12, hh: 01-12
+    // m: 0-59, mm: 00-59
+    // a: am/pm, A: AM/PM
+    const tokens: Record<string, string> = {
+      HH: hour.toString().padStart(2, '0'),
+      H: hour.toString(),
+      hh: (hour % 12 || 12).toString().padStart(2, '0'),
+      h: (hour % 12 || 12).toString(),
+      mm: '00',
+      m: '0',
+      a: hour < 12 ? 'am' : 'pm',
+      A: hour < 12 ? 'AM' : 'PM',
+    };
+
+    return format.replace(/HH|H|hh|h|mm|m|a|A/g, (match) => tokens[match]);
+  }
+
+  private filterEvents(
+    events: Event[],
+    startTime: number,
+    endTime: number,
+  ): Event[] {
+    return events.filter((event) => {
+      const eventStart = event.start.getTime();
+      const eventEnd = event.end.getTime();
+      return endTime > eventStart && startTime < eventEnd;
+    });
+  }
+
+  private getIconPosition(): 'event' | 'cell' {
+    return this.config?.icons_container || 'cell';
+  }
+
+  private getIconMode(): 'top' | 'all' {
+    return this.config?.icons_mode || 'top';
+  }
+
+  private generateEventSubBlocks(
+    eventStart: number,
+    eventEnd: number,
+    cellStartTime: number,
+    cellEndTime: number,
+  ): Array<{ start: number; end: number }> {
+    const BLOCK_INTERVAL_MINUTES = 5;
+    const BLOCK_INTERVAL_MS = BLOCK_INTERVAL_MINUTES * 60 * 1000;
+
+    const blocks: Array<{ start: number; end: number }> = [];
+
+    // Find the first event block start that is >= cellStartTime
+    const cellStartDate = new Date(cellStartTime);
+    const cellStartMinutes = cellStartDate.getMinutes();
+    const roundedCellStartMinutes =
+      Math.floor(cellStartMinutes / BLOCK_INTERVAL_MINUTES) *
+      BLOCK_INTERVAL_MINUTES;
+    cellStartDate.setMinutes(roundedCellStartMinutes, 0, 0);
+    let currentBlockStart = cellStartDate.getTime();
+
+    // If we rounded down, move to the next block if needed
+    if (currentBlockStart < cellStartTime) {
+      currentBlockStart += BLOCK_INTERVAL_MS;
+    }
+
+    // Find the last event block end that is <= cellEndTime
+    const cellEndDate = new Date(cellEndTime);
+    const cellEndMinutes = cellEndDate.getMinutes();
+    const roundedCellEndMinutes =
+      Math.ceil(cellEndMinutes / BLOCK_INTERVAL_MINUTES) *
+      BLOCK_INTERVAL_MINUTES;
+    cellEndDate.setMinutes(roundedCellEndMinutes, 0, 0);
+    const finalBlockEnd = Math.min(cellEndDate.getTime(), cellEndTime);
+
+    while (currentBlockStart < finalBlockEnd) {
+      const currentBlockEnd = Math.min(
+        currentBlockStart + BLOCK_INTERVAL_MS,
+        finalBlockEnd,
+      );
+
+      // Only create block if it overlaps with the actual event
+      if (currentBlockEnd > eventStart && currentBlockStart < eventEnd) {
+        blocks.push({
+          start: Math.max(currentBlockStart, eventStart),
+          end: Math.min(currentBlockEnd, eventEnd),
+        });
+      }
+
+      currentBlockStart = currentBlockEnd;
+    }
+
+    return blocks;
+  }
+
   private normalizeDate(
     dateObj: { dateTime?: string; date?: string } | Date,
   ): Date {
@@ -608,59 +609,6 @@ export class CalendarWeekGridCard extends LitElement {
         return item;
       })
       .filter((item): item is EntityConfig => !!(item && item.entity));
-  }
-
-  private getCellConfig<T = string | number>(
-    path: string,
-    event?: Event,
-    defaultEventValue?: T,
-    defaultBlankValue?: T,
-  ): T | undefined {
-    const keys = path.split('.');
-
-    const getNested = (obj: CellConfig, pathKeys: string[]) => {
-      return pathKeys.reduce(
-        (
-          acc: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-          key,
-        ) =>
-          acc && typeof acc === 'object' && acc[key] !== undefined
-            ? acc[key]
-            : undefined,
-        obj,
-      );
-    };
-
-    const globalConfig = this.config?.cell
-      ? getNested(this.config.cell, keys)
-      : undefined;
-
-    if (event) {
-      const eventConfig = event.cell ? getNested(event.cell, keys) : undefined;
-      const filledGlobalConfig = this.config?.cell_filled
-        ? getNested(this.config.cell_filled, keys)
-        : undefined;
-      return (
-        eventConfig ?? filledGlobalConfig ?? globalConfig ?? defaultEventValue
-      );
-    } else {
-      const blankGlobalConfig = this.config?.cell_blank
-        ? getNested(this.config.cell_blank, keys)
-        : undefined;
-      return blankGlobalConfig ?? globalConfig ?? defaultBlankValue;
-    }
-  }
-
-  private getCellConfigStyle(path: string, event?: Event): string | undefined {
-    const config = this.getCellConfig<Style>(path, event);
-    return this.stylesObjectToString(config);
-  }
-
-  private stylesObjectToString(style?: Style): string {
-    if (!style) return '';
-    return Object.entries(style)
-      .map(([k, v]) => `${k}: ${v};`)
-      .join(' ');
   }
 
   private toHaTime(date: Date): Date {

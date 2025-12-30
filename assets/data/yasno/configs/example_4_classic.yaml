@@ -1,64 +1,78 @@
 type: custom:calendar-week-grid-card
 language: en
 time_format: HH:mm
-style:
-  '--event-border-radius': 4px
-  '--color-neutral': var(--secondary-text-color)
-  '--color-warning': '#FF9800'
-  '--color-error': '#FF0000'
-  '--color-info': '#29B6F6'
-  '--color-success': var(--success-color)
-cell_blank:
-  icon:
-    icon: mdi:checkbox-blank-circle-outline
-    style:
-      opacity: 0.3
 entities:
   - entity: calendar.planned_outages
     filter: Outage
-    cell:
-      icon:
-        icon: mdi:flash-off
-        style:
-          color: var(--color-error)
-      background:
-        block:
-          style:
-            background-color: rgb(from var(--color-error) r g b / 0.2)
   - entity: calendar.probable_outages
-    cell:
-      icon:
-        icon: mdi:alert-circle-outline
-        style:
-          color: var(--color-info)
-      background:
-        block:
-          style:
-            background-color: rgb(from var(--color-info) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
-    cell:
-      icon:
-        icon: mdi:transmission-tower-off
-        style:
-          color: var(--color-error)
-      background:
-        block:
-          style:
-            background-color: rgb(from var(--color-error) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
-    cell:
-      icon:
-        icon: mdi:timer-sand
-        style:
-          opacity: 0.6
-          color: var(--color-warning)
   - entity: calendar.planned_outages
     filter: Schedule Applies
-    cell:
-      icon:
-        icon: mdi:checkbox-blank-circle-outline
-        style:
-          opacity: 0.4
-          color: var(--color-error)
+css: |
+  ha-card {
+    --event-border-radius: 4px;
+    --color-neutral: var(--secondary-text-color);
+    --color-warning: #FF9800;
+    --color-error: #FF0000;
+    --color-info: #29B6F6;
+    --color-success: var(--success-color);
+  }
+
+  .cell {
+    &:not(.has-event) ha-icon {
+      --icon: mdi:checkbox-blank-circle-outline;
+      opacity: 0.3;
+    }
+
+    [data-entity="calendar.planned_outages"] {
+      color: var(--color-error);
+
+      &[data-filter="Outage"] {
+        &.event-icon {
+          --icon: mdi:flash-off;
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--color-error) r g b / 0.2);
+        }
+      }
+
+      &[data-filter="Emergency Shutdowns"] {
+        &.event-icon {
+          --icon: mdi:transmission-tower-off;
+        }
+        .event-sub-block {
+          background-color: rgb(from var(--color-error) r g b / 0.2);
+        }
+      }
+
+      &[data-filter="Waiting for Schedule"] {
+        &.event-icon {
+          --icon: mdi:timer-sand;
+          opacity: 0.6;
+          color: var(--color-warning);
+        }
+      }
+
+      &[data-filter="Schedule Applies"] {
+        &.event-icon {
+          --icon: mdi:checkbox-blank-circle-outline;
+          opacity: 0.4;
+        }
+      }
+    }
+
+    [data-entity="calendar.probable_outages"] {
+      &.event-icon {
+        --icon: mdi:alert-circle-outline;
+        color: var(--color-info);
+      }
+
+      .event-sub-block {
+        background-color: rgb(from var(--color-info) r g b / 0.2);
+      }
+    }
+  }

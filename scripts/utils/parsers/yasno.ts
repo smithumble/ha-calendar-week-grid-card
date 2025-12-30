@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import type { CalendarEvent } from '../../../src/calendar-week-grid-card';
+import type { CalendarEvent } from '../../../src/types';
 import {
   toTimeZoneISOString,
   minutesToTime,
@@ -214,11 +214,15 @@ function loadYasnoData(dataSource: string): {
 // ============================================================================
 
 /**
- * Parse probable events for all weekdays (0-6, where 0=Monday)
+ * Parse probable events for all weekdays (0-6)
+ * @param probableGroup - The probable group data
+ * @param baseDate - Base date (should be a Monday)
+ * @param mondayIndex - Which index in the data represents Monday (default: 0)
  */
 function parseProbableEvents(
   probableGroup: ProbableGroup,
   baseDate: Date,
+  mondayIndex: number = 0,
 ): CalendarEvent[] {
   const events: CalendarEvent[] = [];
 
@@ -226,7 +230,11 @@ function parseProbableEvents(
     const slots = probableGroup?.slots?.[weekday.toString()];
     if (!slots) continue;
 
-    const dayDate = getDayDate(baseDate, weekday);
+    // Map weekday index from data to actual day offset
+    // If mondayIndex=0: weekday 0 -> day offset 0 (Monday), 1 -> 1 (Tuesday), etc.
+    // If mondayIndex=1: weekday 0 -> day offset 6 (Sunday), 1 -> 0 (Monday), etc.
+    const dayOffset = (weekday - mondayIndex + 7) % 7;
+    const dayDate = getDayDate(baseDate, dayOffset);
 
     slots.forEach((slot: Slot) => {
       if (slot.type === SLOT_TYPE_DEFINITE) {
@@ -292,8 +300,13 @@ function parseAllDayStatusEvents(
 
 /**
  * Generate mock calendars based on the Monday, May 20, 2024 start date
+ * @param dataSource - Data source identifier
+ * @param mondayIndex - Which index in probable data represents Monday (default: 0)
  */
-export function getMockCalendars(dataSource?: string): MockCalendar[] {
+export function getMockCalendars(
+  dataSource?: string,
+  mondayIndex: number = 0,
+): MockCalendar[] {
   if (!dataSource) {
     throw new Error('Data source is required for yasno provider');
   }
@@ -304,7 +317,11 @@ export function getMockCalendars(dataSource?: string): MockCalendar[] {
   const { plannedGroup, probableGroup } = loadYasnoData(dataSource);
 
   // Parse all event types
-  const rawProbableEvents = parseProbableEvents(probableGroup, baseDate);
+  const rawProbableEvents = parseProbableEvents(
+    probableGroup,
+    baseDate,
+    mondayIndex,
+  );
   const rawPlannedSlotEvents = parsePlannedSlotEvents(plannedGroup, baseDate);
   const allDayEvents = parseAllDayStatusEvents(plannedGroup, baseDate);
 

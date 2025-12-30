@@ -54,22 +54,18 @@ type: module
 
 ## Configuration
 
-| Name          | Type   | Required | Description                                                    |
-| ------------- | ------ | -------- | -------------------------------------------------------------- |
-| `type`        | string | **Yes**  | `custom:calendar-week-grid-card`                               |
-| `entities`    | list   | **Yes**  | List of calendar entities or objects.                          |
-| `language`    | string | No       | Language code for days (e.g., `en`, `fr`).                     |
-| `time_format` | string | No       | Time format pattern (e.g., `h A`, `HH:mm`).                    |
-| `start_hour`  | number | No       | First hour to display (0-23). Default: 0.                      |
-| `end_hour`    | number | No       | Last hour to display (0-23). Default: 24.                      |
-| `filter`      | string | No       | Global filter text for event summary.                          |
-| `grid`        | object | No       | Configuration for the grid container (see Grid Configuration). |
-| `cell`        | object | No       | Configuration for cells (see Cell Configuration).              |
-| `cell_filled` | object | No       | Configuration for cells with events (see Cell Configuration).  |
-| `cell_blank`  | object | No       | Configuration for empty cells (see Cell Configuration).        |
-| `events`      | object | No       | Configuration for event icons (see Events Configuration).      |
-| `style`       | object | No       | CSS styles for the main card.                                  |
-| `raw_style`   | string | No       | Raw CSS string for the main card.                              |
+| Name              | Type   | Required | Description                                                                                |
+| ----------------- | ------ | -------- | ------------------------------------------------------------------------------------------ |
+| `type`            | string | **Yes**  | `custom:calendar-week-grid-card`                                                           |
+| `entities`        | list   | **Yes**  | List of calendar entities or objects.                                                      |
+| `language`        | string | No       | Language code for days (e.g., `en`, `fr`).                                                 |
+| `time_format`     | string | No       | Time format pattern (e.g., `h A`, `HH:mm`).                                                |
+| `start_hour`      | number | No       | First hour to display (0-23). Default: 0.                                                  |
+| `end_hour`        | number | No       | Last hour to display (0-23). Default: 24.                                                  |
+| `filter`          | string | No       | Global filter text for event summary.                                                      |
+| `icons_container` | string | No       | Where to render icons: `cell` (in the cell) or `event` (in event blocks). Default: `cell`. |
+| `icons_mode`      | string | No       | Which events show icons: `top` (only main event) or `all` (all events). Default: `top`.    |
+| `css`             | string | No       | CSS styles for the card.                                                                   |
 
 ### Time Format
 
@@ -88,64 +84,13 @@ You can use custom tokens:
 
 Example: `time_format: "h:mm A"` results in `1:00 PM`.
 
-### Cell Configuration
-
-Configuration object for `cell`, `cell_filled`, `cell_blank`, and `entity.cell`.
-
-| Name         | Type   | Description                                               |
-| ------------ | ------ | --------------------------------------------------------- |
-| `icon`       | object | Configuration for the icon (see Icon Configuration).      |
-| `background` | object | Configuration for the background (see Background Config). |
-| `style`      | object | CSS styles for the cell container.                        |
-| `raw_style`  | string | Raw CSS string for the cell container.                    |
-
-#### Icon Configuration
-
-| Name        | Type   | Description                   |
-| ----------- | ------ | ----------------------------- |
-| `icon`      | string | Icon name (e.g., `mdi:home`). |
-| `style`     | object | CSS styles for the icon.      |
-| `raw_style` | string | Raw CSS string for the icon.  |
-
-#### Background Configuration
-
-| Name        | Type   | Description                              |
-| ----------- | ------ | ---------------------------------------- |
-| `style`     | object | CSS styles for the background block.     |
-| `raw_style` | string | Raw CSS string for the background block. |
-
-### Grid Configuration
-
-Configuration object for `grid`.
-
-| Name        | Type   | Description                            |
-| ----------- | ------ | -------------------------------------- |
-| `style`     | object | CSS styles for the grid container.     |
-| `raw_style` | string | Raw CSS string for the grid container. |
-
-### Events Configuration
-
-Configuration object for `events`.
-
-| Name   | Type   | Description                                                    |
-| ------ | ------ | -------------------------------------------------------------- |
-| `icon` | object | Configuration for event icons (see Events Icon Configuration). |
-
-#### Events Icon Configuration
-
-| Name        | Type   | Default | Description                                                               |
-| ----------- | ------ | ------- | ------------------------------------------------------------------------- |
-| `container` | string | `cell`  | Where to render icons: `cell` (in the cell) or `event` (in event blocks). |
-| `mode`      | string | `top`   | Which events show icons: `top` (only main event) or `all` (all events).   |
-
 ### Entity Configuration
 
-| Name     | Type   | Required | Description                                          |
-| -------- | ------ | -------- | ---------------------------------------------------- |
-| `entity` | string | **Yes**  | The entity_id of the calendar.                       |
-| `name`   | string | No       | Friendly name for the entity (currently unused).     |
-| `filter` | string | No       | Filter text for events.                              |
-| `cell`   | object | No       | Configuration for the cell (see Cell Configuration). |
+| Name     | Type   | Required | Description                                      |
+| -------- | ------ | -------- | ------------------------------------------------ |
+| `entity` | string | **Yes**  | The entity_id of the calendar.                   |
+| `name`   | string | No       | Friendly name for the entity (currently unused). |
+| `filter` | string | No       | Filter text for events.                          |
 
 ## Examples
 
@@ -183,76 +128,111 @@ entities:
 type: custom:calendar-week-grid-card
 language: en
 time_format: 'HH:mm'
-style:
-  '--event-border-radius': 4px
-  '--main-color': var(--primary-text-color)
-cell_blank:
-  background:
-    style:
-      border: 1px dotted rgb(from var(--main-color) r g b / 0.3)
-  icon:
-    icon: mdi:checkbox-blank-circle-outline
-    style:
-      opacity: 0.3
 entities:
   - entity: calendar.planned_outages
     filter: Outage
-    cell:
-      icon:
-        icon: mdi:flash-off
-        style:
-          color: var(--main-color)
-      background:
-        style:
-          border: 1px solid var(--main-color)
-          background-color: rgb(from var(--main-color) r g b / 0.1)
   - entity: calendar.probable_outages
-    cell:
-      icon:
-        icon: mdi:alert-circle-outline
-        style:
-          color: var(--main-color)
-      background:
-        style:
-          border: 1px dashed var(--main-color)
-          background-color: rgb(from var(--main-color) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
-    cell:
-      icon:
-        icon: mdi:transmission-tower-off
-        style:
-          color: var(--main-color)
-      background:
-        style:
-          border: 1px double var(--main-color)
-          background-color: rgb(from var(--main-color) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
-    cell:
-      icon:
-        icon: mdi:timer-sand
-        style:
-          opacity: 0.4
-          color: var(--main-color)
-      background:
-        style:
-          opacity: 0.4
-          border: 1px dotted var(--main-color)
-          background-color: rgb(from var(--main-color) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Schedule Applies
-    cell:
-      icon:
-        icon: mdi:calendar-check
-        style:
-          opacity: 0.4
-          color: var(--main-color)
-      background:
-        style:
-          opacity: 0.4
-          border: 1px dotted var(--main-color)
-          background-color: rgb(from var(--main-color) r g b / 0.1)
+css: |
+  ha-card {
+    --event-border-radius: 4px;
+    --main-color: var(--primary-text-color);
+  }
+
+  .cell {
+    .event-block {
+      border: 1px dotted rgb(from var(--main-color) r g b / 0.3);
+    }
+
+    &:not(.has-event) ha-icon {
+      --icon: mdi:checkbox-blank-circle-outline;
+      opacity: 0.3;
+    }
+
+    [data-entity="calendar.planned_outages"] {
+      color: var(--main-color);
+
+      &[data-filter="Outage"] {
+        &.event-icon {
+          --icon: mdi:flash-off;
+        }
+
+        .event-block {
+          border: 1px solid var(--main-color);
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--main-color) r g b / 0.3);
+        }
+      }
+
+      &[data-filter="Emergency Shutdowns"] {
+        &.event-icon {
+          --icon: mdi:transmission-tower-off;
+        }
+
+        .event-block {
+          border: 1px double var(--main-color);
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--main-color) r g b / 0.2);
+        }
+      }
+
+      &[data-filter="Waiting for Schedule"] {
+        &.event-icon {
+          --icon: mdi:timer-sand;
+          opacity: 0.4;
+        }
+
+        .event-block {
+          opacity: 0.4;
+          border: 1px dotted var(--main-color);
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--main-color) r g b / 0.1);
+        }
+      }
+
+      &[data-filter="Schedule Applies"] {
+        &.event-icon {
+          --icon: mdi:calendar-check;
+          opacity: 0.4;
+        }
+
+        .event-block {
+          opacity: 0.4;
+          border: 1px dotted var(--main-color);
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--main-color) r g b / 0.1);
+        }
+      }
+    }
+
+    [data-entity="calendar.probable_outages"] {
+      &.event-icon {
+        --icon: mdi:alert-circle-outline;
+        color: var(--main-color);
+      }
+
+      .event-block {
+        border: 1px dashed var(--main-color);
+      }
+
+      .event-sub-block {
+        background-color: rgb(from var(--main-color) r g b / 0.1);
+      }
+    }
+  }
 ```
 
 </details>
@@ -272,80 +252,117 @@ entities:
 type: custom:calendar-week-grid-card
 language: en
 time_format: 'HH:mm'
-style:
-  '--event-border-radius': 4px
-  '--color-neutral': var(--secondary-text-color)
-  '--color-warning': var(--warning-color)
-  '--color-error': var(--error-color)
-  '--color-info': var(--info-color)
-  '--color-success': var(--success-color)
-cell_blank:
-  background:
-    style:
-      border: 1px dotted rgb(from var(--color-neutral) r g b / 0.3)
-  icon:
-    icon: mdi:checkbox-blank-circle-outline
-    style:
-      opacity: 0.3
 entities:
   - entity: calendar.planned_outages
     filter: Outage
-    cell:
-      icon:
-        icon: mdi:flash-off
-        style:
-          color: var(--color-error)
-      background:
-        style:
-          border: 1px solid var(--color-error)
-          background-color: rgb(from var(--color-error) r g b / 0.1)
   - entity: calendar.probable_outages
-    cell:
-      icon:
-        icon: mdi:alert-circle-outline
-        style:
-          color: var(--color-warning)
-      background:
-        style:
-          border: 1px dashed var(--color-warning)
-          background-color: rgb(from var(--color-warning) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
-    cell:
-      icon:
-        icon: mdi:transmission-tower-off
-        style:
-          color: var(--color-error)
-      background:
-        style:
-          border: 1px double var(--color-error)
-          background-color: rgb(from var(--color-error) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
-    cell:
-      icon:
-        icon: mdi:timer-sand
-        style:
-          opacity: 0.4
-          color: var(--color-info)
-      background:
-        style:
-          opacity: 0.4
-          border: 1px dotted var(--color-info)
-          background-color: rgb(from var(--color-info) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Schedule Applies
-    cell:
-      icon:
-        icon: mdi:calendar-check
-        style:
-          opacity: 0.4
-          color: var(--color-success)
-      background:
-        style:
-          opacity: 0.4
-          border: 1px dotted var(--color-success)
-          background-color: rgb(from var(--color-success) r g b / 0.1)
+css: |
+  ha-card {
+    --event-border-radius: 4px;
+    --color-neutral: var(--secondary-text-color);
+    --color-warning: var(--warning-color);
+    --color-error: var(--error-color);
+    --color-info: var(--info-color);
+    --color-success: var(--success-color);
+  }
+
+  .cell {
+    .event-block {
+      border: 1px dotted rgb(from var(--color-neutral) r g b / 0.3);
+    }
+
+    &:not(.has-event) ha-icon {
+      --icon: mdi:checkbox-blank-circle-outline;
+      opacity: 0.3;
+    }
+
+    [data-entity="calendar.planned_outages"] {
+      &[data-filter="Outage"] {
+        &.event-icon {
+          --icon: mdi:flash-off;
+          color: var(--color-error);
+        }
+
+        .event-block {
+          border: 1px solid var(--color-error);
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--color-error) r g b / 0.1);
+        }
+      }
+
+      &[data-filter="Emergency Shutdowns"] {
+        &.event-icon {
+          --icon: mdi:transmission-tower-off;
+          color: var(--color-error);
+        }
+
+        .event-block {
+          border: 1px double var(--color-error);
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--color-error) r g b / 0.2);
+        }
+      }
+
+      &[data-filter="Waiting for Schedule"] {
+        &.event-icon {
+          --icon: mdi:timer-sand;
+          opacity: 0.4;
+          color: var(--color-info);
+        }
+
+        .event-block {
+          opacity: 0.4;
+          border: 1px dotted var(--color-info);
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--color-info) r g b / 0.1);
+        }
+      }
+
+      &[data-filter="Schedule Applies"] {
+        &.event-icon {
+          --icon: mdi:calendar-check;
+          opacity: 0.4;
+          color: var(--color-success);
+        }
+
+        .event-block {
+          opacity: 0.4;
+          border: 1px dotted var(--color-info);
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--color-success) r g b / 0.1);
+        }
+      }
+    }
+
+    [data-entity="calendar.probable_outages"] {
+      &.event-icon {
+        --icon: mdi:alert-circle-outline;
+        color: var(--color-warning);
+      }
+
+      .event-block {
+        border: 1px dashed var(--color-warning);
+      }
+
+      .event-sub-block {
+        background-color: rgb(from var(--color-warning) r g b / 0.1);
+      }
+    }
+  }
 ```
 
 </details>
@@ -365,67 +382,81 @@ entities:
 type: custom:calendar-week-grid-card
 language: en
 time_format: HH:mm
-style:
-  '--event-border-radius': 4px
-  '--color-neutral': var(--secondary-text-color)
-  '--color-warning': '#FF9800'
-  '--color-error': '#FF0000'
-  '--color-info': '#29B6F6'
-  '--color-success': var(--success-color)
-cell_blank:
-  icon:
-    icon: mdi:checkbox-blank-circle-outline
-    style:
-      opacity: 0.3
 entities:
   - entity: calendar.planned_outages
     filter: Outage
-    cell:
-      icon:
-        icon: mdi:flash-off
-        style:
-          color: var(--color-error)
-      background:
-        block:
-          style:
-            background-color: rgb(from var(--color-error) r g b / 0.2)
   - entity: calendar.probable_outages
-    cell:
-      icon:
-        icon: mdi:alert-circle-outline
-        style:
-          color: var(--color-info)
-      background:
-        block:
-          style:
-            background-color: rgb(from var(--color-info) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
-    cell:
-      icon:
-        icon: mdi:transmission-tower-off
-        style:
-          color: var(--color-error)
-      background:
-        block:
-          style:
-            background-color: rgb(from var(--color-error) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
-    cell:
-      icon:
-        icon: mdi:timer-sand
-        style:
-          opacity: 0.6
-          color: var(--color-warning)
   - entity: calendar.planned_outages
     filter: Schedule Applies
-    cell:
-      icon:
-        icon: mdi:checkbox-blank-circle-outline
-        style:
-          opacity: 0.4
-          color: var(--color-error)
+css: |
+  ha-card {
+    --event-border-radius: 4px;
+    --color-neutral: var(--secondary-text-color);
+    --color-warning: #FF9800;
+    --color-error: #FF0000;
+    --color-info: #29B6F6;
+    --color-success: var(--success-color);
+  }
+
+  .cell {
+    &:not(.has-event) ha-icon {
+      --icon: mdi:checkbox-blank-circle-outline;
+      opacity: 0.3;
+    }
+
+    [data-entity="calendar.planned_outages"] {
+      color: var(--color-error);
+
+      &[data-filter="Outage"] {
+        &.event-icon {
+          --icon: mdi:flash-off;
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--color-error) r g b / 0.2);
+        }
+      }
+
+      &[data-filter="Emergency Shutdowns"] {
+        &.event-icon {
+          --icon: mdi:transmission-tower-off;
+        }
+        .event-sub-block {
+          background-color: rgb(from var(--color-error) r g b / 0.2);
+        }
+      }
+
+      &[data-filter="Waiting for Schedule"] {
+        &.event-icon {
+          --icon: mdi:timer-sand;
+          opacity: 0.6;
+          color: var(--color-warning);
+        }
+      }
+
+      &[data-filter="Schedule Applies"] {
+        &.event-icon {
+          --icon: mdi:checkbox-blank-circle-outline;
+          opacity: 0.4;
+        }
+      }
+    }
+
+    [data-entity="calendar.probable_outages"] {
+      &.event-icon {
+        --icon: mdi:alert-circle-outline;
+        color: var(--color-info);
+      }
+
+      .event-sub-block {
+        background-color: rgb(from var(--color-info) r g b / 0.2);
+      }
+    }
+  }
 ```
 
 </details>
@@ -445,118 +476,139 @@ entities:
 type: custom:calendar-week-grid-card
 language: en
 time_format: 'HH:mm'
-style:
-  '--neon-green': '#00E676'
-  '--neon-green-shadow': 'rgba(0, 230, 118, 0.3)'
-  '--neon-green-bg': 'rgba(0, 230, 118, 0.01)'
-  '--neon-grey': '#B0BEC5'
-  '--neon-grey-bg': 'rgba(255, 255, 255, 0.03)'
-  '--neon-orange': '#FF9800'
-  '--neon-orange-grad-1': 'rgba(255, 152, 0, 0.08)'
-  '--neon-orange-grad-2': 'rgba(255, 152, 0, 0.15)'
-  '--neon-red': '#FF5252'
-  '--neon-red-shadow': 'rgba(255, 82, 82, 0.3)'
-  '--neon-red-grad-1': 'rgba(244, 67, 54, 0.08)'
-  '--neon-red-grad-2': 'rgba(244, 67, 54, 0.15)'
-  '--neon-dark-red-bg': 'rgba(183, 28, 28, 0.2)'
-  '--neon-light-red': '#FF8A80'
-  '--neon-blue-grey': '#90A4AE'
-  '--neon-blue-grey-bg': 'rgba(120, 144, 156, 0.05)'
-  '--neon-light-blue-bg': 'rgba(3, 169, 244, 0.05)'
-  '--neon-light-blue': '#29B6F6'
-  '--shadow-color': 'rgba(0,0,0,0.1)'
-  border-radius: 12px
-  padding: 12px
-  box-shadow: 0 4px 6px var(--shadow-color)
-grid:
-  style:
-    gap: 4px
-cell:
-  style:
-    height: 28px
-    '--event-border-radius': 6px
-  icon:
-    style:
-      '--mdc-icon-size': 18px
-cell_blank:
-  icon:
-    icon: mdi:lightning-bolt
-    style:
-      color: var(--neon-green)
-      opacity: 0.7
-      filter: drop-shadow(0 0 2px var(--neon-green-shadow))
-  background:
-    style:
-      background-color: var(--neon-green-bg)
-      border-radius: 6px
-cell_filled:
-  icon:
-    icon: mdi:help-circle
-    style:
-      color: var(--neon-grey)
-  background:
-    style:
-      background-color: var(--neon-grey-bg)
 entities:
   - entity: calendar.planned_outages
     filter: Outage
-    cell:
-      background:
-        style:
-          background-color: transparent
-        raw_style: >-
-          background: repeating-linear-gradient(45deg, var(--neon-red-grad-1),
-          var(--neon-red-grad-1) 10px, var(--neon-red-grad-2) 10px, var(--neon-red-grad-2) 20px);
-      icon:
-        icon: mdi:power-plug-off
-        style:
-          color: var(--neon-red)
-          filter: drop-shadow(0 0 2px var(--neon-red-shadow))
   - entity: calendar.probable_outages
-    cell:
-      background:
-        style:
-          background-color: transparent
-        raw_style: >-
-          background: repeating-linear-gradient(45deg, var(--neon-orange-grad-1),
-          var(--neon-orange-grad-1) 10px, var(--neon-orange-grad-2) 10px, var(--neon-orange-grad-2) 20px);
-      icon:
-        icon: mdi:alert-circle-outline
-        style:
-          color: var(--neon-orange)
-          opacity: 0.9
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
-    cell:
-      background:
-        style:
-          background-color: var(--neon-dark-red-bg)
-          border: 1px dashed
-      icon:
-        icon: mdi:transmission-tower-off
-        style:
-          color: var(--neon-light-red)
-          opacity: 1
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
-    cell:
-      background:
-        style:
-          background-color: var(--neon-blue-grey-bg)
-      icon:
-        icon: mdi:timer-sand
-        style:
-          color: var(--neon-blue-grey)
   - entity: calendar.planned_outages
     filter: Schedule Applies
-    cell:
-      background:
-        style:
-          background-color: var(--neon-light-blue-bg)
-      icon:
-        icon: mdi:calendar-check
-        style:
-          color: var(--neon-light-blue)
+css: |
+  ha-card {
+    --neon-green: #00E676;
+    --neon-green-shadow: rgba(0, 230, 118, 0.3);
+    --neon-green-bg: rgba(0, 230, 118, 0.01);
+    --neon-grey: #B0BEC5;
+    --neon-grey-bg: rgba(255, 255, 255, 0.03);
+    --neon-orange: #FF9800;
+    --neon-orange-grad-1: rgba(255, 152, 0, 0.08);
+    --neon-orange-grad-2: rgba(255, 152, 0, 0.15);
+    --neon-red: #FF5252;
+    --neon-red-shadow: rgba(255, 82, 82, 0.3);
+    --neon-red-grad-1: rgba(244, 67, 54, 0.08);
+    --neon-red-grad-2: rgba(244, 67, 54, 0.15);
+    --neon-dark-red-bg: rgba(183, 28, 28, 0.2);
+    --neon-light-red: #FF8A80;
+    --neon-blue-grey: #90A4AE;
+    --neon-blue-grey-bg: rgba(120, 144, 156, 0.05);
+    --neon-light-blue-bg: rgba(3, 169, 244, 0.05);
+    --neon-light-blue: #29B6F6;
+    --shadow-color: rgba(0,0,0,0.1);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 4px 6px var(--shadow-color);
+  }
+
+  .grid-container {
+    gap: 4px;
+  }
+
+  .cell {
+    height: 28px;
+    --event-border-radius: 6px;
+
+    ha-icon {
+      --mdc-icon-size: 18px;
+    }
+
+    .event-block {
+      background-color: var(--neon-green-bg);
+      border-radius: 6px;
+    }
+
+    &:not(.has-event) ha-icon {
+      --icon: mdi:lightning-bolt;
+      color: var(--neon-green);
+      opacity: 0.7;
+      filter: drop-shadow(0 0 2px var(--neon-green-shadow));
+    }
+
+    .event-block-wrapper[data-entity] {
+      ha-icon {
+        --icon: mdi:help-circle;
+        color: var(--neon-grey);
+      }
+
+      .event-sub-block {
+        background-color: var(--neon-grey-bg);
+      }
+    }
+
+    [data-entity="calendar.planned_outages"] {
+      &[data-filter="Outage"] {
+        &.event-icon {
+          --icon: mdi:power-plug-off;
+          color: var(--neon-red);
+          filter: drop-shadow(0 0 2px var(--neon-red-shadow));
+        }
+
+        .event-sub-block {
+          background: repeating-linear-gradient(45deg, var(--neon-red-grad-1),
+            var(--neon-red-grad-1) 10px, var(--neon-red-grad-2) 10px, var(--neon-red-grad-2) 20px);
+        }
+      }
+
+      &[data-filter="Emergency Shutdowns"] {
+        &.event-icon {
+          --icon: mdi:transmission-tower-off;
+          color: var(--neon-light-red);
+          opacity: 1;
+        }
+
+        .event-sub-block {
+          background-color: var(--neon-dark-red-bg);
+        }
+      }
+
+      &[data-filter="Waiting for Schedule"] {
+        &.event-icon {
+          --icon: mdi:timer-sand;
+          color: var(--neon-blue-grey);
+        }
+
+        .event-sub-block {
+          background-color: var(--neon-blue-grey-bg);
+        }
+      }
+
+      &[data-filter="Schedule Applies"] {
+        &.event-icon {
+          --icon: mdi:calendar-check;
+          color: var(--neon-light-blue);
+        }
+
+        .event-sub-block {
+          background-color: var(--neon-light-blue-bg);
+        }
+      }
+    }
+
+    [data-entity="calendar.probable_outages"] {
+      &.event-icon {
+        --icon: mdi:alert-circle-outline;
+        color: var(--neon-orange);
+        opacity: 0.9;
+      }
+
+      .event-sub-block {
+        background: repeating-linear-gradient(45deg, var(--neon-orange-grad-1),
+          var(--neon-orange-grad-1) 10px, var(--neon-orange-grad-2) 10px, var(--neon-orange-grad-2) 20px);
+      }
+    }
+  }
 ```
 
 </details>
@@ -576,98 +628,119 @@ entities:
 type: custom:calendar-week-grid-card
 language: en
 time_format: 'HH:mm'
-style:
-  '--white': '#FFFFFF'
-  '--text-color': '#444'
-  '--blank-bg': '#F5F5F5'
-  '--blank-icon': '#E0E0E0'
-  '--probable-bg': '#B9F6CA'
-  '--probable-icon': '#1B5E20'
-  '--outage-bg': '#FF8A80'
-  '--emergency-bg': '#FF80AB'
-  '--waiting-bg': '#80DEEA'
-  '--waiting-icon': '#006064'
-  '--schedule-bg': '#FFF176'
-  '--schedule-icon': '#F57F17'
-  '--shadow-color': 'rgba(0,0,0,0.1)'
-  background: var(--white)
-  border-radius: 24px
-  padding: 16px
-  box-shadow: 0 8px 16px var(--shadow-color)
-  '--text-primary': var(--text-color)
-  '--text-secondary': var(--text-color)
-grid:
-  style:
-    gap: 8px
-cell:
-  style:
-    height: 34px
-    border-radius: 17px
-  icon:
-    style:
-      '--mdc-icon-size': 20px
-events:
-  icon:
-    container: event
-    mode: all
-cell_blank:
-  background:
-    style:
-      background-color: var(--blank-bg)
-  icon:
-    icon: mdi:check-circle
-    style:
-      color: var(--blank-icon)
+icons_container: event
+icons_mode: all
 entities:
   - entity: calendar.planned_outages
     filter: Outage
-    cell:
-      background:
-        style:
-          background-color: var(--outage-bg)
-      icon:
-        icon: mdi:close-circle
-        style:
-          color: var(--white)
   - entity: calendar.probable_outages
-    cell:
-      background:
-        style:
-          background-color: var(--probable-bg)
-      icon:
-        icon: mdi:close-circle
-        style:
-          color: var(--probable-icon)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
-    cell:
-      background:
-        style:
-          background-color: var(--emergency-bg)
-      icon:
-        icon: mdi:alert-circle
-        style:
-          color: var(--white)
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
-    cell:
-      background:
-        style:
-          background-color: var(--waiting-bg)
-      icon:
-        icon: mdi:clock-outline
-        style:
-          color: var(--waiting-icon)
   - entity: calendar.planned_outages
     filter: Schedule Applies
-    cell:
-      background:
-        style:
-          background-color: var(--schedule-bg)
-      icon:
-        icon: mdi:circle-outline
-        style:
-          color: var(--schedule-icon)
+css: |
+  ha-card {
+    --white: #FFFFFF;
+    --text-color: #444;
+    --blank-bg: #F5F5F5;
+    --blank-icon: #E0E0E0;
+    --probable-bg: #B9F6CA;
+    --probable-icon: #1B5E20;
+    --outage-bg: #FF8A80;
+    --emergency-bg: #FF80AB;
+    --waiting-bg: #80DEEA;
+    --waiting-icon: #006064;
+    --schedule-bg: #FFF176;
+    --schedule-icon: #F57F17;
+    --shadow-color: rgba(0,0,0,0.1);
+    background: var(--white);
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: 0 8px 16px var(--shadow-color);
+    --text-primary: var(--text-color);
+    --text-secondary: var(--text-color);
+  }
+
+  .grid-container {
+    gap: 8px;
+  }
+
+  .cell {
+    height: 34px;
+    border-radius: 17px;
+
+    ha-icon {
+      --mdc-icon-size: 20px;
+    }
+
+    .event-block {
+      background-color: var(--blank-bg);
+    }
+
+    .event-block-blank ha-icon {
+      --icon: mdi:circle-outline;
+      color: var(--blank-icon);
+    }
+
+    [data-entity="calendar.planned_outages"] {
+      &[data-filter="Outage"] {
+        &.event-icon {
+          --icon: mdi:close-circle;
+          color: var(--white);
+        }
+
+        .event-block {
+          background-color: var(--outage-bg);
+        }
+      }
+
+      &[data-filter="Emergency Shutdowns"] {
+        &.event-icon {
+          --icon: mdi:alert-circle;
+          color: var(--white);
+        }
+
+        .event-block {
+          background-color: var(--emergency-bg);
+        }
+      }
+
+      &[data-filter="Waiting for Schedule"] {
+        &.event-icon {
+          --icon: mdi:clock-outline;
+          color: var(--waiting-icon);
+        }
+
+        .event-block {
+          background-color: var(--waiting-bg);
+        }
+      }
+
+      &[data-filter="Schedule Applies"] {
+        &.event-icon {
+          --icon: mdi:circle-outline;
+          color: var(--schedule-icon);
+        }
+
+        .event-block {
+          background-color: var(--schedule-bg);
+        }
+      }
+    }
+
+    [data-entity="calendar.probable_outages"] {
+      &.event-icon {
+        --icon: mdi:close-circle;
+        color: var(--probable-icon);
+      }
+
+      .event-block {
+        background-color: var(--probable-bg);
+      }
+    }
+  }
 ```
 
 </details>

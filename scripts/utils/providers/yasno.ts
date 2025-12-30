@@ -8,30 +8,44 @@ import type { MockCalendar } from './index';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_DIR = path.resolve(__dirname, '../../../assets/data');
-const YASNO_DATA_DIR = path.join(DATA_DIR, 'yasno', 'calendars');
+
+// Mapping of data source to Monday index in probable events data
+const DATA_SOURCE_MONDAY_INDEX: Record<string, number> = {
+  yasno_1: 2,
+  yasno_2: 2,
+  yasno_3: 0,
+  yasno_4: 0,
+};
 
 export class YasnoProvider extends BaseProvider {
-  constructor() {
-    super('yasno');
+  constructor(name: string = 'yasno') {
+    super(name);
   }
 
   getCalendars(dataSource?: string): MockCalendar[] {
-    return getMockCalendars(dataSource);
+    if (!dataSource) {
+      return getMockCalendars(dataSource);
+    }
+
+    const mondayIndex = DATA_SOURCE_MONDAY_INDEX[dataSource] ?? 0;
+    return getMockCalendars(dataSource, mondayIndex);
   }
 
   getAvailableDataSources(): string[] {
     const dataSources: string[] = [];
 
+    const yasnoDataDir = path.join(DATA_DIR, 'yasno', 'calendars');
+
     try {
-      if (!fs.existsSync(YASNO_DATA_DIR)) {
+      if (!fs.existsSync(yasnoDataDir)) {
         return dataSources;
       }
 
-      const entries = fs.readdirSync(YASNO_DATA_DIR, { withFileTypes: true });
+      const entries = fs.readdirSync(yasnoDataDir, { withFileTypes: true });
       for (const entry of entries) {
         if (!entry.isDirectory()) continue;
 
-        const dirPath = path.join(YASNO_DATA_DIR, entry.name);
+        const dirPath = path.join(yasnoDataDir, entry.name);
         const plannedPath = path.join(dirPath, 'planned.json');
         const probablePath = path.join(dirPath, 'probable.json');
 

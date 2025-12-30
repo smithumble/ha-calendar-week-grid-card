@@ -1,73 +1,108 @@
 type: custom:calendar-week-grid-card
 language: en
 time_format: 'HH:mm'
-style:
-  '--event-border-radius': 4px
-  '--main-color': var(--primary-text-color)
-cell_blank:
-  background:
-    style:
-      border: 1px dotted rgb(from var(--main-color) r g b / 0.3)
-  icon:
-    icon: mdi:checkbox-blank-circle-outline
-    style:
-      opacity: 0.3
 entities:
   - entity: calendar.planned_outages
     filter: Outage
-    cell:
-      icon:
-        icon: mdi:flash-off
-        style:
-          color: var(--main-color)
-      background:
-        style:
-          border: 1px solid var(--main-color)
-          background-color: rgb(from var(--main-color) r g b / 0.1)
   - entity: calendar.probable_outages
-    cell:
-      icon:
-        icon: mdi:alert-circle-outline
-        style:
-          color: var(--main-color)
-      background:
-        style:
-          border: 1px dashed var(--main-color)
-          background-color: rgb(from var(--main-color) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
-    cell:
-      icon:
-        icon: mdi:transmission-tower-off
-        style:
-          color: var(--main-color)
-      background:
-        style:
-          border: 1px double var(--main-color)
-          background-color: rgb(from var(--main-color) r g b / 0.2)
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
-    cell:
-      icon:
-        icon: mdi:timer-sand
-        style:
-          opacity: 0.4
-          color: var(--main-color)
-      background:
-        style:
-          opacity: 0.4
-          border: 1px dotted var(--main-color)
-          background-color: rgb(from var(--main-color) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Schedule Applies
-    cell:
-      icon:
-        icon: mdi:calendar-check
-        style:
-          opacity: 0.4
-          color: var(--main-color)
-      background:
-        style:
-          opacity: 0.4
-          border: 1px dotted var(--main-color)
-          background-color: rgb(from var(--main-color) r g b / 0.1)
+css: |
+  ha-card {
+    --event-border-radius: 4px;
+    --main-color: var(--primary-text-color);
+  }
+
+  .cell {
+    .event-block {
+      border: 1px dotted rgb(from var(--main-color) r g b / 0.3);
+    }
+
+    &:not(.has-event) ha-icon {
+      --icon: mdi:checkbox-blank-circle-outline;
+      opacity: 0.3;
+    }
+
+    [data-entity="calendar.planned_outages"] {
+      color: var(--main-color);
+
+      &[data-filter="Outage"] {
+        &.event-icon {
+          --icon: mdi:flash-off;
+        }
+
+        .event-block {
+          border: 1px solid var(--main-color);
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--main-color) r g b / 0.3);
+        }
+      }
+
+      &[data-filter="Emergency Shutdowns"] {
+        &.event-icon {
+          --icon: mdi:transmission-tower-off;
+        }
+
+        .event-block {
+          border: 1px double var(--main-color);
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--main-color) r g b / 0.2);
+        }
+      }
+
+      &[data-filter="Waiting for Schedule"] {
+        &.event-icon {
+          --icon: mdi:timer-sand;
+          opacity: 0.4;
+        }
+
+        .event-block {
+          opacity: 0.4;
+          border: 1px dotted var(--main-color);
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--main-color) r g b / 0.1);
+        }
+      }
+
+      &[data-filter="Schedule Applies"] {
+        &.event-icon {
+          --icon: mdi:calendar-check;
+          opacity: 0.4;
+        }
+
+        .event-block {
+          opacity: 0.4;
+          border: 1px dotted var(--main-color);
+        }
+
+        .event-sub-block {
+          background-color: rgb(from var(--main-color) r g b / 0.1);
+        }
+      }
+    }
+
+    [data-entity="calendar.probable_outages"] {
+      &.event-icon {
+        --icon: mdi:alert-circle-outline;
+        color: var(--main-color);
+      }
+
+      .event-block {
+        border: 1px dashed var(--main-color);
+      }
+
+      .event-sub-block {
+        background-color: rgb(from var(--main-color) r g b / 0.1);
+      }
+    }
+  }
