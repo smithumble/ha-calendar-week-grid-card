@@ -8,7 +8,12 @@ import {
   unsafeCSS,
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { generateCssFromDeprecatedStyleConfig } from './deprecated';
+import {
+  generateCssFromDeprecatedStyleConfig,
+  getDeprecatedEventIcon,
+  getDeprecatedFilledIcon,
+  getDeprecatedBlankIcon,
+} from './deprecated';
 import styles from './styles.css';
 import type {
   CardConfig,
@@ -46,9 +51,9 @@ export class CalendarWeekGridCard extends LitElement {
     if (changedProps.has('hass')) {
       this.fetchEventsIfNeeded();
     }
-    // Update icons from CSS custom properties after DOM updates
+    // Update cell height from CSS after DOM updates
     requestAnimationFrame(() => {
-      this.updateIconsAndHeightFromCss();
+      this.updateHeightFromCss();
     });
   }
 
@@ -116,17 +121,7 @@ export class CalendarWeekGridCard extends LitElement {
     );
   }
 
-  private updateIconsAndHeightFromCss(): void {
-    // Find all ha-icon elements and check if they have --icon CSS custom property set
-    const icons = this.shadowRoot?.querySelectorAll('ha-icon') || [];
-    icons.forEach((iconEl) => {
-      const computedStyle = window.getComputedStyle(iconEl);
-      const iconValue = computedStyle.getPropertyValue('--icon').trim();
-      if (iconValue) {
-        iconEl.setAttribute('icon', iconValue);
-      }
-    });
-
+  private updateHeightFromCss(): void {
     const cell = this.shadowRoot?.querySelector('.cell');
     if (cell) {
       const heightStr = window.getComputedStyle(cell).height;
@@ -172,30 +167,23 @@ export class CalendarWeekGridCard extends LitElement {
 
     // Determine which event icons to show and whether to show blank icon
     let cellIconEvents: Event[] = [];
-    let showBlankIcon = false;
-
-    if (iconMode === 'all') {
-      if (iconPosition === 'cell') {
+    if (iconPosition === 'cell') {
+      if (iconMode === 'all') {
         cellIconEvents = cellEvents;
-        showBlankIcon = cellIconEvents.length === 0;
-      } else {
-        cellIconEvents = [];
-        showBlankIcon = true;
+        if (cellIconEvents.length > 1) {
+          cellIconEvents = cellIconEvents.filter(
+            (event) => event.entity !== '',
+          );
+        }
       }
-    } else {
-      if (iconPosition === 'cell') {
-        showBlankIcon = !mainEvent;
+      if (iconMode === 'top') {
         cellIconEvents = mainEvent ? [mainEvent] : [];
-      } else {
-        cellIconEvents = [];
-        showBlankIcon = true;
       }
     }
 
     return html`
       <div class="cell-wrapper">
-        <div class="cell ${mainEvent ? 'has-event' : ''}">
-          ${this.renderBlankEvent(showBlankIcon)}
+        <div class="cell">
           ${this.renderEvents(
             cellEvents,
             cellStartTime,
@@ -209,14 +197,6 @@ export class CalendarWeekGridCard extends LitElement {
     `;
   }
 
-  private renderBlankEvent(showBlankIcon: boolean = false): TemplateResult {
-    return html`<div class="event-wrapper" style="top: 0%; height: 100%;">
-      <div class="event-block event-block-blank" style="top: 0%; height: 100%;">
-        ${showBlankIcon ? this.renderEventIcon(undefined) : ''}
-      </div>
-    </div>`;
-  }
-
   private renderEvents(
     cellEvents: Event[],
     cellStartTime: number,
@@ -224,20 +204,12 @@ export class CalendarWeekGridCard extends LitElement {
     mainEvent?: Event,
   ): TemplateResult[] {
     return cellEvents.map((event) => {
-      const iconPosition = this.getIconPosition();
-      const iconMode = this.getIconMode();
-
-      // Determine if this event should show an icon
-      const shouldShowIcon =
-        iconPosition === 'event' &&
-        (iconMode === 'all' || (iconMode === 'top' && event === mainEvent));
-
       return this.renderEvent(
         event,
         cellStartTime,
         cellEndTime,
         cellEvents,
-        shouldShowIcon,
+        mainEvent,
       );
     });
   }
@@ -247,7 +219,7 @@ export class CalendarWeekGridCard extends LitElement {
     cellStartTime: number,
     cellEndTime: number,
     cellEvents: Event[],
-    shouldShowIcon?: boolean,
+    mainEvent?: Event,
   ): TemplateResult {
     const eventStartTime = event.start.getTime();
     const eventEndTime = event.end.getTime();
@@ -301,12 +273,27 @@ export class CalendarWeekGridCard extends LitElement {
 
     if (currentBlock) mergedBlocks.push(currentBlock);
 
+    // Determine if this event should show an icon
+    const iconPosition = this.getIconPosition();
+    const iconMode = this.getIconMode();
+    let shouldShowIcon = false;
+    if (iconPosition === 'event') {
+      if (iconMode === 'all') {
+        shouldShowIcon = true;
+      }
+      if (iconMode === 'top') {
+        shouldShowIcon = event === mainEvent;
+      }
+    }
+
     const wrapperStyle = `top: ${topPx}px; height: ${heightPx}px;`;
     const innerStyle = `top: ${innerTopPx}px; height: ${innerHeightPx}px;`;
 
     return html`<div
       class="event-wrapper"
       style="${wrapperStyle}"
+      data-name="${event.name || ''}"
+      data-type="${event.type || ''}"
       data-entity="${event.entity || ''}"
       data-filter="${event.filter || ''}"
     >
@@ -348,12 +335,33 @@ export class CalendarWeekGridCard extends LitElement {
     return html`<div class="event-sub-block" style="${style}"></div>`;
   }
 
-  private renderEventIcon(event?: Event | undefined): TemplateResult {
-    // Icon will be set via CSS --icon custom property by updateIconsFromCss
+  private renderEventIcon(event: Event): TemplateResult {
+    let icon;
+
+    if (event.entity === '') {
+      icon =
+        this.config?.blank_icon || getDeprecatedBlankIcon(this.config) || '';
+    } else {
+      const entities = this.getNormalizedEntities();
+      const entity = entities.find(
+        (e) => e.entity === event.entity && e.filter === event.filter,
+      );
+
+      icon =
+        entity?.icon ||
+        this.config?.event_icon ||
+        getDeprecatedEventIcon(entity) ||
+        getDeprecatedFilledIcon(this.config) ||
+        'mdi:check-circle';
+    }
+
     return html`<ha-icon
       class="event-icon"
-      data-entity="${event?.entity || ''}"
-      data-filter="${event?.filter || ''}"
+      data-name="${event.name || ''}"
+      data-type="${event.type || ''}"
+      data-entity="${event.entity || ''}"
+      data-filter="${event.filter || ''}"
+      icon="${icon}"
     ></ha-icon>`;
   }
 
@@ -427,12 +435,13 @@ export class CalendarWeekGridCard extends LitElement {
         end: this.normalizeDate(e.end),
       }));
 
-      // this.events.push({
-      //   start: new Date(start),
-      //   end: new Date(end),
-      //   entity: '',
-      //   filter: '',
-      // });
+      this.events.push({
+        start: new Date(start),
+        end: new Date(end),
+        entity: '',
+        filter: '',
+        type: 'blank',
+      });
     } catch (e) {
       console.error('CalendarWeekGridCard: Error fetching events:', e);
       this.events = [];

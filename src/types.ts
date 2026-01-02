@@ -1,7 +1,9 @@
 export interface EntityConfig {
-  entity: string;
   name?: string;
+  type?: string;
+  entity: string;
   filter?: string;
+  icon?: string;
 }
 
 export interface CardConfig {
@@ -13,6 +15,8 @@ export interface CardConfig {
   filter?: string;
   icons_container?: 'event' | 'cell';
   icons_mode?: 'top' | 'all';
+  event_icon?: string;
+  blank_icon?: string;
   entities: (string | EntityConfig)[];
   css?: string;
 }
@@ -26,8 +30,11 @@ export interface CalendarEvent {
 export interface Event extends Omit<CalendarEvent, 'start' | 'end'> {
   start: Date; // override with Date object
   end: Date; // override with Date object
+  name?: string;
+  type?: string;
   entity?: string;
   filter?: string;
+  icon?: string;
 }
 
 export interface DayInfo {

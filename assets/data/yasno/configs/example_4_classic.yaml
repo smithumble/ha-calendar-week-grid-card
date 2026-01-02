@@ -1,65 +1,58 @@
 type: custom:calendar-week-grid-card
 language: en
 time_format: HH:mm
+blank_icon: mdi:checkbox-blank-circle-outline
 entities:
   - entity: calendar.planned_outages
     filter: Outage
+    icon: mdi:flash-off
   - entity: calendar.probable_outages
+    icon: mdi:alert-circle-outline
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
+    icon: mdi:transmission-tower-off
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
+    icon: mdi:timer-sand
   - entity: calendar.planned_outages
     filter: Schedule Applies
+    icon: mdi:circle-outline
 css: |
-  ha-card {
-    --event-border-radius: 4px;
-    --color-neutral: var(--secondary-text-color);
-    --color-warning: #FF9800;
-    --color-error: #FF0000;
-    --color-info: #29B6F6;
-    --color-success: var(--success-color);
-  }
-
   .cell {
-    &:not(.has-event) ha-icon {
-      --icon: mdi:checkbox-blank-circle-outline;
+    border-radius: 4px;
+
+    .event-block {
+      border-radius: 4px;
+    }
+
+    ha-icon[data-type="blank"] {
       opacity: 0.3;
     }
 
     [data-entity="calendar.planned_outages"] {
-      color: var(--color-error);
+      color: #FF0000;
 
       &[data-filter="Outage"] {
-        &.event-icon {
-          --icon: mdi:flash-off;
-        }
-
         .event-sub-block {
-          background-color: rgb(from var(--color-error) r g b / 0.2);
+          background-color: rgb(from #FF0000 r g b / 0.2);
         }
       }
 
       &[data-filter="Emergency Shutdowns"] {
-        &.event-icon {
-          --icon: mdi:transmission-tower-off;
-        }
         .event-sub-block {
-          background-color: rgb(from var(--color-error) r g b / 0.2);
+          background-color: rgb(from #FF0000 r g b / 0.2);
         }
       }
 
       &[data-filter="Waiting for Schedule"] {
         &.event-icon {
-          --icon: mdi:timer-sand;
           opacity: 0.6;
-          color: var(--color-warning);
+          color: #FF9800;
         }
       }
 
       &[data-filter="Schedule Applies"] {
         &.event-icon {
-          --icon: mdi:checkbox-blank-circle-outline;
           opacity: 0.4;
         }
       }
@@ -67,12 +60,11 @@ css: |
 
     [data-entity="calendar.probable_outages"] {
       &.event-icon {
-        --icon: mdi:alert-circle-outline;
-        color: var(--color-info);
+        color: #29B6F6;
       }
 
       .event-sub-block {
-        background-color: rgb(from var(--color-info) r g b / 0.2);
+        background-color: rgb(from #29B6F6 r g b / 0.2);
       }
     }
   }

@@ -71,27 +71,9 @@ export function generateCssFromDeprecatedStyleConfig(
 
   // Cell filled styles - only apply when event has no entity-specific style
   if (config.cell_filled) {
-    if (config.cell_filled.style || config.cell_filled.raw_style) {
-      cssRules.push('.cell.has-event {');
-      if (config.cell_filled.style) {
-        cssRules.push(styleObjectToCss(config.cell_filled.style));
-      }
-      if (config.cell_filled.raw_style) {
-        cssRules.push(config.cell_filled.raw_style);
-      }
-      cssRules.push('}');
-    }
-
     // Cell filled icon styles - exclude entities with cell config
-    if (
-      config.cell_filled.icon?.icon ||
-      config.cell_filled.icon?.style ||
-      config.cell_filled.icon?.raw_style
-    ) {
-      cssRules.push(`.cell.has-event .event-wrapper[data-entity] ha-icon {`);
-      if (config.cell_filled.icon.icon) {
-        cssRules.push(`  --icon: ${config.cell_filled.icon.icon};`);
-      }
+    if (config.cell_filled.icon?.style || config.cell_filled.icon?.raw_style) {
+      cssRules.push(`.cell .event-wrapper[data-entity] ha-icon {`);
       if (config.cell_filled.icon.style) {
         cssRules.push(styleObjectToCss(config.cell_filled.icon.style));
       }
@@ -106,9 +88,7 @@ export function generateCssFromDeprecatedStyleConfig(
       config.cell_filled.background?.style ||
       config.cell_filled.background?.raw_style
     ) {
-      cssRules.push(
-        `.cell.has-event .event-wrapper[data-entity] .event-block {`,
-      );
+      cssRules.push(`.cell .event-wrapper[data-entity] .event-block {`);
       if (config.cell_filled.background.style) {
         cssRules.push(styleObjectToCss(config.cell_filled.background.style));
       }
@@ -121,27 +101,9 @@ export function generateCssFromDeprecatedStyleConfig(
 
   // Cell blank styles
   if (config.cell_blank) {
-    if (config.cell_blank.style || config.cell_blank.raw_style) {
-      cssRules.push('.cell:not(.has-event) {');
-      if (config.cell_blank.style) {
-        cssRules.push(styleObjectToCss(config.cell_blank.style));
-      }
-      if (config.cell_blank.raw_style) {
-        cssRules.push(config.cell_blank.raw_style);
-      }
-      cssRules.push('}');
-    }
-
     // Cell blank icon styles
-    if (
-      config.cell_blank.icon?.icon ||
-      config.cell_blank.icon?.style ||
-      config.cell_blank.icon?.raw_style
-    ) {
-      cssRules.push('.cell .event-block-blank ha-icon {');
-      if (config.cell_blank.icon.icon) {
-        cssRules.push(`  --icon: ${config.cell_blank.icon.icon};`);
-      }
+    if (config.cell_blank.icon?.style || config.cell_blank.icon?.raw_style) {
+      cssRules.push('.cell ha-icon[data-type="blank"] {');
       if (config.cell_blank.icon.style) {
         cssRules.push(styleObjectToCss(config.cell_blank.icon.style));
       }
@@ -156,7 +118,7 @@ export function generateCssFromDeprecatedStyleConfig(
       config.cell_blank.background?.style ||
       config.cell_blank.background?.raw_style
     ) {
-      cssRules.push('.cell .event-block {');
+      cssRules.push('.cell .event-wrapper[data-type="blank"] .event-block {');
       if (config.cell_blank.background.style) {
         cssRules.push(styleObjectToCss(config.cell_blank.background.style));
       }
@@ -168,15 +130,8 @@ export function generateCssFromDeprecatedStyleConfig(
   }
 
   // Global cell icon styles (if not overridden by cell_filled/cell_blank)
-  if (
-    config.cell?.icon?.icon ||
-    config.cell?.icon?.style ||
-    config.cell?.icon?.raw_style
-  ) {
+  if (config.cell?.icon?.style || config.cell?.icon?.raw_style) {
     cssRules.push('.cell ha-icon {');
-    if (config.cell.icon.icon) {
-      cssRules.push(`  --icon: ${config.cell.icon.icon};`);
-    }
     if (config.cell.icon.style) {
       cssRules.push(styleObjectToCss(config.cell.icon.style));
     }
@@ -222,23 +177,16 @@ export function generateCssFromDeprecatedStyleConfig(
       }
 
       // Entity icon styles (in cell and in event-block)
-      if (
-        entityConfig.cell.icon?.icon ||
-        entityConfig.cell.icon?.style ||
-        entityConfig.cell.icon?.raw_style
-      ) {
+      if (entityConfig.cell.icon?.style || entityConfig.cell.icon?.raw_style) {
         // Icons with data-entity attribute (works for both cell and event-block contexts)
         // If filter is specified, add it to the selector
-        // Increase specificity to override cell_filled styles by including .cell.has-event
+        // Increase specificity to override cell_filled styles by including .cell
         const filterSelector = entityConfig.filter
           ? `[data-filter="${entityConfig.filter}"]`
           : '';
         cssRules.push(
-          `.cell.has-event ha-icon[data-entity="${entityConfig.entity}"]${filterSelector} {`,
+          `.cell ha-icon[data-entity="${entityConfig.entity}"]${filterSelector} {`,
         );
-        if (entityConfig.cell.icon.icon) {
-          cssRules.push(`  --icon: ${entityConfig.cell.icon.icon};`);
-        }
         if (entityConfig.cell.icon.style) {
           cssRules.push(styleObjectToCss(entityConfig.cell.icon.style));
         }
@@ -272,4 +220,31 @@ export function generateCssFromDeprecatedStyleConfig(
   );
 
   return cssRules.join('\n');
+}
+
+/**
+ * Gets deprecated event icon from entity-specific config
+ */
+export function getDeprecatedEventIcon(
+  entity: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+): string | undefined {
+  return entity?.cell?.icon?.icon;
+}
+
+/**
+ * Gets deprecated filled icon from config
+ */
+export function getDeprecatedFilledIcon(
+  config: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+): string | undefined {
+  return config?.cell_filled?.icon?.icon;
+}
+
+/**
+ * Gets deprecated blank icon from config
+ */
+export function getDeprecatedBlankIcon(
+  config: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+): string | undefined {
+  return config?.cell_blank?.icon?.icon;
 }

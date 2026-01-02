@@ -1,18 +1,24 @@
 type: custom:calendar-week-grid-card
 language: en
 time_format: 'HH:mm'
+blank_icon: mdi:lightning-bolt
 entities:
   - entity: calendar.planned_outages
     filter: Outage
+    icon: mdi:power-plug-off
   - entity: calendar.probable_outages
+    icon: mdi:alert-circle-outline
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
+    icon: mdi:transmission-tower-off
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
+    icon: mdi:timer-sand
   - entity: calendar.planned_outages
     filter: Schedule Applies
+    icon: mdi:calendar-check
 css: |
-  ha-card {
+  :host {
     --neon-green: #00E676;
     --neon-green-shadow: rgba(0, 230, 118, 0.3);
     --neon-green-bg: rgba(0, 230, 118, 0.01);
@@ -32,6 +38,10 @@ css: |
     --neon-light-blue-bg: rgba(3, 169, 244, 0.05);
     --neon-light-blue: #29B6F6;
     --shadow-color: rgba(0,0,0,0.1);
+    --icon-size: 18px;
+  }
+
+  ha-card {
     border-radius: 12px;
     padding: 12px;
     box-shadow: 0 4px 6px var(--shadow-color);
@@ -43,19 +53,14 @@ css: |
 
   .cell {
     height: 28px;
-    --event-border-radius: 6px;
-
-    ha-icon {
-      --mdc-icon-size: 18px;
-    }
+    border-radius: 6px;
 
     .event-block {
       background-color: var(--neon-green-bg);
       border-radius: 6px;
     }
 
-    &:not(.has-event) ha-icon {
-      --icon: mdi:lightning-bolt;
+    ha-icon[data-type="blank"] {
       color: var(--neon-green);
       opacity: 0.7;
       filter: drop-shadow(0 0 2px var(--neon-green-shadow));
@@ -63,7 +68,6 @@ css: |
 
     .event-block-wrapper[data-entity] {
       ha-icon {
-        --icon: mdi:help-circle;
         color: var(--neon-grey);
       }
 
@@ -75,20 +79,22 @@ css: |
     [data-entity="calendar.planned_outages"] {
       &[data-filter="Outage"] {
         &.event-icon {
-          --icon: mdi:power-plug-off;
           color: var(--neon-red);
           filter: drop-shadow(0 0 2px var(--neon-red-shadow));
         }
 
         .event-sub-block {
-          background: repeating-linear-gradient(45deg, var(--neon-red-grad-1),
-            var(--neon-red-grad-1) 10px, var(--neon-red-grad-2) 10px, var(--neon-red-grad-2) 20px);
+          background: repeating-linear-gradient(
+            45deg, 
+            var(--neon-red-grad-1),
+            var(--neon-red-grad-1) 10px,
+            var(--neon-red-grad-2) 10px,
+            var(--neon-red-grad-2) 20px);
         }
       }
 
       &[data-filter="Emergency Shutdowns"] {
         &.event-icon {
-          --icon: mdi:transmission-tower-off;
           color: var(--neon-light-red);
           opacity: 1;
         }
@@ -100,7 +106,6 @@ css: |
 
       &[data-filter="Waiting for Schedule"] {
         &.event-icon {
-          --icon: mdi:timer-sand;
           color: var(--neon-blue-grey);
         }
 
@@ -111,7 +116,6 @@ css: |
 
       &[data-filter="Schedule Applies"] {
         &.event-icon {
-          --icon: mdi:calendar-check;
           color: var(--neon-light-blue);
         }
 
@@ -123,14 +127,17 @@ css: |
 
     [data-entity="calendar.probable_outages"] {
       &.event-icon {
-        --icon: mdi:alert-circle-outline;
         color: var(--neon-orange);
         opacity: 0.9;
       }
 
       .event-sub-block {
-        background: repeating-linear-gradient(45deg, var(--neon-orange-grad-1),
-          var(--neon-orange-grad-1) 10px, var(--neon-orange-grad-2) 10px, var(--neon-orange-grad-2) 20px);
+        background: repeating-linear-gradient(
+          45deg, 
+          var(--neon-orange-grad-1),
+          var(--neon-orange-grad-1) 10px, 
+          var(--neon-orange-grad-2) 10px, 
+          var(--neon-orange-grad-2) 20px);
       }
     }
   }

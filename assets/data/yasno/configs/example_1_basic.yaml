@@ -2,6 +2,7 @@ type: custom:calendar-week-grid-card
 language: en
 time_format: 'HH:mm'
 entities:
-  - calendar.probable_outages
   - entity: calendar.planned_outages
     filter: Outage
+    icon: mdi:check-circle-outline
+  - calendar.probable_outages

@@ -3,37 +3,34 @@ language: en
 time_format: 'HH:mm'
 icons_container: event
 icons_mode: all
+blank_icon: mdi:circle-outline
 entities:
   - entity: calendar.planned_outages
     filter: Outage
+    icon: mdi:close-circle
   - entity: calendar.probable_outages
+    icon: mdi:close-circle
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
+    icon: mdi:alert-circle
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
+    icon: mdi:clock-outline
   - entity: calendar.planned_outages
     filter: Schedule Applies
+    icon: mdi:circle-outline
 css: |
-  ha-card {
-    --white: #FFFFFF;
+  :host {
     --text-color: #444;
-    --blank-bg: #F5F5F5;
-    --blank-icon: #E0E0E0;
-    --probable-bg: #B9F6CA;
-    --probable-icon: #1B5E20;
-    --outage-bg: #FF8A80;
-    --emergency-bg: #FF80AB;
-    --waiting-bg: #80DEEA;
-    --waiting-icon: #006064;
-    --schedule-bg: #FFF176;
-    --schedule-icon: #F57F17;
-    --shadow-color: rgba(0,0,0,0.1);
-    background: var(--white);
-    border-radius: 24px;
-    padding: 16px;
-    box-shadow: 0 8px 16px var(--shadow-color);
     --text-primary: var(--text-color);
     --text-secondary: var(--text-color);
+  }
+
+  ha-card {
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
   }
 
   .grid-container {
@@ -49,68 +46,62 @@ css: |
     }
 
     .event-block {
-      background-color: var(--blank-bg);
+      background-color: #F5F5F5;
     }
 
-    .event-block-blank ha-icon {
-      --icon: mdi:circle-outline;
-      color: var(--blank-icon);
+    ha-icon[data-type="blank"] {
+      color: #E0E0E0;
     }
 
     [data-entity="calendar.planned_outages"] {
       &[data-filter="Outage"] {
         &.event-icon {
-          --icon: mdi:close-circle;
-          color: var(--white);
+          color: #FFFFFF;
         }
 
         .event-block {
-          background-color: var(--outage-bg);
+          background-color: #FF8A80;
         }
       }
 
       &[data-filter="Emergency Shutdowns"] {
         &.event-icon {
-          --icon: mdi:alert-circle;
-          color: var(--white);
+          color: #FFFFFF;
         }
 
         .event-block {
-          background-color: var(--emergency-bg);
+          background-color: #FF80AB;
         }
       }
 
       &[data-filter="Waiting for Schedule"] {
         &.event-icon {
-          --icon: mdi:clock-outline;
-          color: var(--waiting-icon);
+          color: #006064;
         }
 
         .event-block {
-          background-color: var(--waiting-bg);
+          background-color: #80DEEA;
         }
       }
 
       &[data-filter="Schedule Applies"] {
         &.event-icon {
-          --icon: mdi:circle-outline;
-          color: var(--schedule-icon);
+          color: #F57F17;
         }
 
         .event-block {
-          background-color: var(--schedule-bg);
+          background-color: #FFF176;
         }
       }
     }
 
     [data-entity="calendar.probable_outages"] {
       &.event-icon {
-        --icon: mdi:close-circle;
-        color: var(--probable-icon);
+        color: #1B5E20;
       }
 
       .event-block {
-        background-color: var(--probable-bg);
+        background-color: #B9F6CA;
       }
     }
   }

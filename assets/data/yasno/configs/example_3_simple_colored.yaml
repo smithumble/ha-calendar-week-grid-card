@@ -1,114 +1,108 @@
 type: custom:calendar-week-grid-card
 language: en
 time_format: 'HH:mm'
+blank_icon: mdi:checkbox-blank-circle-outline
 entities:
   - entity: calendar.planned_outages
     filter: Outage
+    icon: mdi:flash-off
   - entity: calendar.probable_outages
+    icon: mdi:alert-circle-outline
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
+    icon: mdi:transmission-tower-off
   - entity: calendar.planned_outages
     filter: Waiting for Schedule
+    icon: mdi:timer-sand
   - entity: calendar.planned_outages
     filter: Schedule Applies
+    icon: mdi:calendar-check
 css: |
-  ha-card {
-    --event-border-radius: 4px;
-    --color-neutral: var(--secondary-text-color);
-    --color-warning: var(--warning-color);
-    --color-error: var(--error-color);
-    --color-info: var(--info-color);
-    --color-success: var(--success-color);
-  }
-
   .cell {
+    border-radius: 4px;
+
     .event-block {
-      border: 1px dotted rgb(from var(--color-neutral) r g b / 0.3);
+      border-radius: 4px;
+      border: 1px dotted rgb(from var(--secondary-text-color) r g b / 0.3);
     }
 
-    &:not(.has-event) ha-icon {
-      --icon: mdi:checkbox-blank-circle-outline;
+    ha-icon[data-type="blank"] {
       opacity: 0.3;
     }
 
     [data-entity="calendar.planned_outages"] {
       &[data-filter="Outage"] {
         &.event-icon {
-          --icon: mdi:flash-off;
-          color: var(--color-error);
+          color: var(--error-color);
         }
 
         .event-block {
-          border: 1px solid var(--color-error);
+          border: 1px solid var(--error-color);
         }
 
         .event-sub-block {
-          background-color: rgb(from var(--color-error) r g b / 0.1);
+          background-color: rgb(from var(--error-color) r g b / 0.1);
         }
       }
 
       &[data-filter="Emergency Shutdowns"] {
         &.event-icon {
-          --icon: mdi:transmission-tower-off;
-          color: var(--color-error);
+          color: var(--error-color);
         }
 
         .event-block {
-          border: 1px double var(--color-error);
+          border: 1px double var(--error-color);
         }
 
         .event-sub-block {
-          background-color: rgb(from var(--color-error) r g b / 0.2);
+          background-color: rgb(from var(--error-color) r g b / 0.2);
         }
       }
 
       &[data-filter="Waiting for Schedule"] {
         &.event-icon {
-          --icon: mdi:timer-sand;
           opacity: 0.4;
-          color: var(--color-info);
+          color: var(--info-color);
         }
 
         .event-block {
           opacity: 0.4;
-          border: 1px dotted var(--color-info);
+          border: 1px dotted var(--info-color);
         }
 
         .event-sub-block {
-          background-color: rgb(from var(--color-info) r g b / 0.1);
+          background-color: rgb(from var(--info-color) r g b / 0.1);
         }
       }
 
       &[data-filter="Schedule Applies"] {
         &.event-icon {
-          --icon: mdi:calendar-check;
           opacity: 0.4;
-          color: var(--color-success);
+          color: var(--success-color);
         }
 
         .event-block {
           opacity: 0.4;
-          border: 1px dotted var(--color-info);
+          border: 1px dotted var(--info-color);
         }
 
         .event-sub-block {
-          background-color: rgb(from var(--color-success) r g b / 0.1);
+          background-color: rgb(from var(--success-color) r g b / 0.1);
         }
       }
     }
 
     [data-entity="calendar.probable_outages"] {
       &.event-icon {
-        --icon: mdi:alert-circle-outline;
-        color: var(--color-warning);
+        color: var(--warning-color);
       }
 
       .event-block {
-        border: 1px dashed var(--color-warning);
+        border: 1px dashed var(--warning-color);
       }
 
       .event-sub-block {
-        background-color: rgb(from var(--color-warning) r g b / 0.1);
+        background-color: rgb(from var(--warning-color) r g b / 0.1);
       }
     }
   }
