@@ -162,9 +162,22 @@ export class CalendarWeekGridCard extends LitElement {
     // Reverse the list to render the events in the correct order
     cellEvents.reverse();
 
+    // Determine if this is the current hour (for all days)
+    const now = new Date();
+    const isNow = now.getHours() === hour;
+
+    // Build cell classes
+    const cellClasses = [];
+    if (day.isToday) {
+      cellClasses.push('today');
+    }
+    if (isNow) {
+      cellClasses.push('now');
+    }
+
     return html`
       <div class="cell-wrapper">
-        <div class="cell">
+        <div class="cell ${cellClasses.join(' ')}">
           ${this.renderEvents(cellEvents, cellStartTime, cellEndTime)}
           ${this.renderCellIcons(cellEvents)}
         </div>
