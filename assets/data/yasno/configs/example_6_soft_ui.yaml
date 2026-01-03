@@ -5,18 +5,23 @@ icons_container: event
 icons_mode: all
 blank_icon: mdi:circle-outline
 entities:
-  - entity: calendar.planned_outages
+  - name: planned_outages
+    entity: calendar.planned_outages
     filter: Outage
     icon: mdi:close-circle
-  - entity: calendar.probable_outages
+  - name: probable_outages
+    entity: calendar.probable_outages
     icon: mdi:close-circle
-  - entity: calendar.planned_outages
+  - name: emergency_shutdowns
+    entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:alert-circle
-  - entity: calendar.planned_outages
+  - name: waiting_for_schedule
+    entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:clock-outline
-  - entity: calendar.planned_outages
+  - name: schedule_applies
+    entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:circle-outline
 css: |
@@ -40,68 +45,66 @@ css: |
   .cell {
     height: 34px;
     border-radius: 17px;
+  }
 
-    ha-icon {
-      --mdc-icon-size: 20px;
+  .event-icon {
+    --icon-size: 20px;
+  }
+
+  .event-block {
+    background-color: #F5F5F5;
+  }
+
+  ha-icon[data-type="blank"] {
+    color: #E0E0E0;
+  }
+
+  [data-name="planned_outages"] {
+    &.event-icon {
+      color: #FFFFFF;
     }
 
     .event-block {
-      background-color: #F5F5F5;
+      background-color: #FF8A80;
+    }
+  }
+
+  [data-name="emergency_shutdowns"] {
+    &.event-icon {
+      color: #FFFFFF;
     }
 
-    ha-icon[data-type="blank"] {
-      color: #E0E0E0;
+    .event-block {
+      background-color: #FF80AB;
+    }
+  }
+
+  [data-name="waiting_for_schedule"] {
+    &.event-icon {
+      color: #006064;
     }
 
-    [data-entity="calendar.planned_outages"] {
-      &[data-filter="Outage"] {
-        &.event-icon {
-          color: #FFFFFF;
-        }
+    .event-block {
+      background-color: #80DEEA;
+    }
+  }
 
-        .event-block {
-          background-color: #FF8A80;
-        }
-      }
-
-      &[data-filter="Emergency Shutdowns"] {
-        &.event-icon {
-          color: #FFFFFF;
-        }
-
-        .event-block {
-          background-color: #FF80AB;
-        }
-      }
-
-      &[data-filter="Waiting for Schedule"] {
-        &.event-icon {
-          color: #006064;
-        }
-
-        .event-block {
-          background-color: #80DEEA;
-        }
-      }
-
-      &[data-filter="Schedule Applies"] {
-        &.event-icon {
-          color: #F57F17;
-        }
-
-        .event-block {
-          background-color: #FFF176;
-        }
-      }
+  [data-name="schedule_applies"] {
+    &.event-icon {
+      color: #F57F17;
     }
 
-    [data-entity="calendar.probable_outages"] {
-      &.event-icon {
-        color: #1B5E20;
-      }
+    .event-block {
+      background-color: #FFF176;
+    }
+  }
 
-      .event-block {
-        background-color: #B9F6CA;
-      }
+  [data-name="probable_outages"] {
+    &.event-icon {
+      color: #1B5E20;
+    }
+
+    .event-block {
+      background-color: #B9F6CA;
     }
   }

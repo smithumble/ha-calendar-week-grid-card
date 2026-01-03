@@ -15,6 +15,7 @@ const DATA_SOURCE_MONDAY_INDEX: Record<string, number> = {
   yasno_2: 2,
   yasno_3: 0,
   yasno_4: 0,
+  yasno_5: 0,
 };
 
 export class YasnoProvider extends BaseProvider {

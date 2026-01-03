@@ -3,68 +3,76 @@ language: en
 time_format: HH:mm
 blank_icon: mdi:checkbox-blank-circle-outline
 entities:
-  - entity: calendar.planned_outages
+  - name: planned_outages
+    entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-  - entity: calendar.probable_outages
+  - name: probable_outages
+    entity: calendar.probable_outages
     icon: mdi:alert-circle-outline
-  - entity: calendar.planned_outages
+  - name: emergency_shutdowns
+    entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-  - entity: calendar.planned_outages
+  - name: waiting_for_schedule
+    entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-  - entity: calendar.planned_outages
+  - name: schedule_applies
+    entity: calendar.planned_outages
     filter: Schedule Applies
-    icon: mdi:circle-outline
+    icon: mdi:checkbox-blank-circle-outline
 css: |
-  .cell {
+  .event-block {
     border-radius: 4px;
+  }
 
-    .event-block {
-      border-radius: 4px;
-    }
-
-    ha-icon[data-type="blank"] {
+  [data-type="blank"] {
+    &.event-icon {
       opacity: 0.3;
     }
+  }
 
-    [data-entity="calendar.planned_outages"] {
+  [data-name="planned_outages"] {
+    &.event-icon {
       color: #FF0000;
-
-      &[data-filter="Outage"] {
-        .event-sub-block {
-          background-color: rgb(from #FF0000 r g b / 0.2);
-        }
-      }
-
-      &[data-filter="Emergency Shutdowns"] {
-        .event-sub-block {
-          background-color: rgb(from #FF0000 r g b / 0.2);
-        }
-      }
-
-      &[data-filter="Waiting for Schedule"] {
-        &.event-icon {
-          opacity: 0.6;
-          color: #FF9800;
-        }
-      }
-
-      &[data-filter="Schedule Applies"] {
-        &.event-icon {
-          opacity: 0.4;
-        }
-      }
     }
 
-    [data-entity="calendar.probable_outages"] {
-      &.event-icon {
-        color: #29B6F6;
-      }
+    .event-sub-block {
+      background-color: rgb(from #FF0000 r g b / 0.2);
+    }
+  }
 
-      .event-sub-block {
-        background-color: rgb(from #29B6F6 r g b / 0.2);
-      }
+  [data-name="emergency_shutdowns"] {
+    &.event-icon {
+      color: #FF0000;
+    }
+
+    .event-sub-block {
+      background-color: rgb(from #FF0000 r g b / 0.2);
+    }
+  }
+
+  [data-name="waiting_for_schedule"] {
+    &.event-icon {
+      opacity: 0.6;
+      color: #FF9800;
+    }
+  }
+
+  [data-name="schedule_applies"] {
+    &.event-icon {
+      color: #FF0000;
+      opacity: 0.4;
+    }
+  }
+
+  [data-name="probable_outages"] {
+    &.event-icon {
+      color: #29B6F6;
+    }
+
+    .event-sub-block {
+      background-color: rgb(from #29B6F6 r g b / 0.2);
     }
   }

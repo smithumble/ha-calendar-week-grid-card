@@ -97,8 +97,10 @@ export class CalendarWeekGridCard extends LitElement {
         <div></div>
         ${days.map(
           (day) => html`
-            <div class="day-header ${day.isToday ? 'today' : ''}">
-              ${day.label}
+            <div class="day-header-wrapper">
+              <div class="day-header ${day.isToday ? 'today' : ''}">
+                ${day.label}
+              </div>
             </div>
           `,
         )}
@@ -141,8 +143,15 @@ export class CalendarWeekGridCard extends LitElement {
 
   private renderRow(hour: number, days: DayInfo[]): TemplateResult {
     const timeLabel = this.formatTime(hour);
+
+    // Determine if this is the current hour (for all days)
+    const now = new Date();
+    const isNow = now.getHours() === hour;
+
     return html`
-      <div class="time-label">${timeLabel}</div>
+      <div class="time-label-wrapper">
+        <div class="time-label ${isNow ? 'now' : ''}">${timeLabel}</div>
+      </div>
       ${days.map((day) => this.renderCell(day, hour))}
     `;
   }
@@ -265,10 +274,9 @@ export class CalendarWeekGridCard extends LitElement {
       data-entity="${event.entity || ''}"
       data-filter="${event.filter || ''}"
     >
-      <div class="event-sub-blocks" style="${innerStyle}">
+      <div class="event-block" style="${innerStyle}">
         ${this.renderEventSubBlocks(mergedBlocks, cellStartTime, duration)}
       </div>
-      <div class="event-block" style="${innerStyle}"></div>
       <div class="event-icon-overlay" style="${innerStyle}">
         ${this.renderEventIcon(event)}
       </div>

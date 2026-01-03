@@ -3,18 +3,23 @@ language: en
 time_format: 'HH:mm'
 blank_icon: mdi:lightning-bolt
 entities:
-  - entity: calendar.planned_outages
+  - name: planned_outages
+    entity: calendar.planned_outages
     filter: Outage
-    icon: mdi:power-plug-off
-  - entity: calendar.probable_outages
+    icon: mdi:flash-off
+  - name: probable_outages
+    entity: calendar.probable_outages
     icon: mdi:alert-circle-outline
-  - entity: calendar.planned_outages
+  - name: emergency_shutdowns
+    entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-  - entity: calendar.planned_outages
+  - name: waiting_for_schedule
+    entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-  - entity: calendar.planned_outages
+  - name: schedule_applies
+    entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:calendar-check
 css: |
@@ -47,97 +52,83 @@ css: |
     box-shadow: 0 4px 6px var(--shadow-color);
   }
 
-  .grid-container {
-    gap: 4px;
-  }
-
   .cell {
     height: 28px;
     border-radius: 6px;
+  }
 
-    .event-block {
-      background-color: var(--neon-green-bg);
-      border-radius: 6px;
-    }
+  .event-block {
+    background-color: var(--neon-green-bg);
+    border-radius: 6px;
+  }
 
-    ha-icon[data-type="blank"] {
+  [data-type="blank"] {
+    &.event-icon {
       color: var(--neon-green);
       opacity: 0.7;
       filter: drop-shadow(0 0 2px var(--neon-green-shadow));
     }
+  }
 
-    .event-block-wrapper[data-entity] {
-      ha-icon {
-        color: var(--neon-grey);
-      }
-
-      .event-sub-block {
-        background-color: var(--neon-grey-bg);
-      }
+  [data-name="planned_outages"] {
+    &.event-icon {
+      color: var(--neon-red);
+      filter: drop-shadow(0 0 2px var(--neon-red-shadow));
     }
 
-    [data-entity="calendar.planned_outages"] {
-      &[data-filter="Outage"] {
-        &.event-icon {
-          color: var(--neon-red);
-          filter: drop-shadow(0 0 2px var(--neon-red-shadow));
-        }
+    .event-sub-block {
+      background: repeating-linear-gradient(
+        45deg, 
+        var(--neon-red-grad-1),
+        var(--neon-red-grad-1) 10px,
+        var(--neon-red-grad-2) 10px,
+        var(--neon-red-grad-2) 20px);
+    }
+  }
 
-        .event-sub-block {
-          background: repeating-linear-gradient(
-            45deg, 
-            var(--neon-red-grad-1),
-            var(--neon-red-grad-1) 10px,
-            var(--neon-red-grad-2) 10px,
-            var(--neon-red-grad-2) 20px);
-        }
-      }
-
-      &[data-filter="Emergency Shutdowns"] {
-        &.event-icon {
-          color: var(--neon-light-red);
-          opacity: 1;
-        }
-
-        .event-sub-block {
-          background-color: var(--neon-dark-red-bg);
-        }
-      }
-
-      &[data-filter="Waiting for Schedule"] {
-        &.event-icon {
-          color: var(--neon-blue-grey);
-        }
-
-        .event-sub-block {
-          background-color: var(--neon-blue-grey-bg);
-        }
-      }
-
-      &[data-filter="Schedule Applies"] {
-        &.event-icon {
-          color: var(--neon-light-blue);
-        }
-
-        .event-sub-block {
-          background-color: var(--neon-light-blue-bg);
-        }
-      }
+  [data-name="emergency_shutdowns"] {
+    &.event-icon {
+      color: var(--neon-light-red);
+      opacity: 1;
     }
 
-    [data-entity="calendar.probable_outages"] {
-      &.event-icon {
-        color: var(--neon-orange);
-        opacity: 0.9;
-      }
+    .event-sub-block {
+      background-color: var(--neon-dark-red-bg);
+    }
+  }
 
-      .event-sub-block {
-        background: repeating-linear-gradient(
-          45deg, 
-          var(--neon-orange-grad-1),
-          var(--neon-orange-grad-1) 10px, 
-          var(--neon-orange-grad-2) 10px, 
-          var(--neon-orange-grad-2) 20px);
-      }
+  [data-name="waiting_for_schedule"] {
+    &.event-icon {
+      color: var(--neon-blue-grey);
+    }
+
+    .event-sub-block {
+      background-color: var(--neon-blue-grey-bg);
+    }
+  }
+
+  [data-name="schedule_applies"] {
+    &.event-icon {
+      color: var(--neon-light-blue);
+    }
+
+    .event-sub-block {
+      background-color: var(--neon-light-blue-bg);
+    }
+  }
+
+  [data-name="probable_outages"] {
+    &.event-icon {
+      color: var(--neon-orange);
+      opacity: 0.9;
+    }
+
+    .event-sub-block {
+      background: repeating-linear-gradient(
+        45deg, 
+        var(--neon-orange-grad-1),
+        var(--neon-orange-grad-1) 10px, 
+        var(--neon-orange-grad-2) 10px, 
+        var(--neon-orange-grad-2) 20px);
     }
   }
