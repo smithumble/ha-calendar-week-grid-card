@@ -1,6 +1,8 @@
 type: custom:calendar-week-grid-card
 language: en
-time_format: 'HH:mm'
+time_format: 'h A'
+start_hour: 6
+end_hour: 22
 style:
   '--event-border-radius': 4px
   '--main-color': var(--primary-text-color)
@@ -13,16 +15,6 @@ cell_blank:
     style:
       opacity: 0.3
 entities:
-  - entity: calendar.probable_outages
-    cell:
-      icon:
-        icon: mdi:alert-circle-outline
-        style:
-          color: var(--main-color)
-      background:
-        style:
-          border: 1px dashed var(--main-color)
-          background-color: rgb(from var(--main-color) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Outage
     cell:
@@ -33,6 +25,16 @@ entities:
       background:
         style:
           border: 1px solid var(--main-color)
+          background-color: rgb(from var(--main-color) r g b / 0.1)
+  - entity: calendar.probable_outages
+    cell:
+      icon:
+        icon: mdi:alert-circle-outline
+        style:
+          color: var(--main-color)
+      background:
+        style:
+          border: 1px dashed var(--main-color)
           background-color: rgb(from var(--main-color) r g b / 0.1)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns

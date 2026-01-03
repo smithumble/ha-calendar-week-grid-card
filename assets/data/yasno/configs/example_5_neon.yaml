@@ -1,0 +1,134 @@
+type: custom:calendar-week-grid-card
+language: en
+time_format: 'HH:mm'
+blank_icon: mdi:lightning-bolt
+entities:
+  - name: planned_outages
+    entity: calendar.planned_outages
+    filter: Outage
+    icon: mdi:flash-off
+  - name: probable_outages
+    entity: calendar.probable_outages
+    icon: mdi:alert-circle-outline
+  - name: emergency_shutdowns
+    entity: calendar.planned_outages
+    filter: Emergency Shutdowns
+    icon: mdi:transmission-tower-off
+  - name: waiting_for_schedule
+    entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    icon: mdi:timer-sand
+  - name: schedule_applies
+    entity: calendar.planned_outages
+    filter: Schedule Applies
+    icon: mdi:calendar-check
+css: |
+  :host {
+    --neon-green: #00E676;
+    --neon-green-shadow: rgba(0, 230, 118, 0.3);
+    --neon-green-bg: rgba(0, 230, 118, 0.01);
+    --neon-grey: #B0BEC5;
+    --neon-grey-bg: rgba(255, 255, 255, 0.03);
+    --neon-orange: #FF9800;
+    --neon-orange-grad-1: rgba(255, 152, 0, 0.08);
+    --neon-orange-grad-2: rgba(255, 152, 0, 0.15);
+    --neon-red: #FF5252;
+    --neon-red-shadow: rgba(255, 82, 82, 0.3);
+    --neon-red-grad-1: rgba(244, 67, 54, 0.08);
+    --neon-red-grad-2: rgba(244, 67, 54, 0.15);
+    --neon-dark-red-bg: rgba(183, 28, 28, 0.2);
+    --neon-light-red: #FF8A80;
+    --neon-blue-grey: #90A4AE;
+    --neon-blue-grey-bg: rgba(120, 144, 156, 0.05);
+    --neon-light-blue-bg: rgba(3, 169, 244, 0.05);
+    --neon-light-blue: #29B6F6;
+    --shadow-color: rgba(0,0,0,0.1);
+    --icon-size: 18px;
+  }
+
+  ha-card {
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 4px 6px var(--shadow-color);
+  }
+
+  .cell {
+    height: 28px;
+    border-radius: 6px;
+  }
+
+  .event-block {
+    background-color: var(--neon-green-bg);
+    border-radius: 6px;
+  }
+
+  [data-type="blank"] {
+    &.event-icon {
+      color: var(--neon-green);
+      opacity: 0.7;
+      filter: drop-shadow(0 0 2px var(--neon-green-shadow));
+    }
+  }
+
+  [data-name="planned_outages"] {
+    &.event-icon {
+      color: var(--neon-red);
+      filter: drop-shadow(0 0 2px var(--neon-red-shadow));
+    }
+
+    .event-sub-block {
+      background: repeating-linear-gradient(
+        45deg, 
+        var(--neon-red-grad-1),
+        var(--neon-red-grad-1) 10px,
+        var(--neon-red-grad-2) 10px,
+        var(--neon-red-grad-2) 20px);
+    }
+  }
+
+  [data-name="emergency_shutdowns"] {
+    &.event-icon {
+      color: var(--neon-light-red);
+      opacity: 1;
+    }
+
+    .event-sub-block {
+      background-color: var(--neon-dark-red-bg);
+    }
+  }
+
+  [data-name="waiting_for_schedule"] {
+    &.event-icon {
+      color: var(--neon-blue-grey);
+    }
+
+    .event-sub-block {
+      background-color: var(--neon-blue-grey-bg);
+    }
+  }
+
+  [data-name="schedule_applies"] {
+    &.event-icon {
+      color: var(--neon-light-blue);
+    }
+
+    .event-sub-block {
+      background-color: var(--neon-light-blue-bg);
+    }
+  }
+
+  [data-name="probable_outages"] {
+    &.event-icon {
+      color: var(--neon-orange);
+      opacity: 0.9;
+    }
+
+    .event-sub-block {
+      background: repeating-linear-gradient(
+        45deg, 
+        var(--neon-orange-grad-1),
+        var(--neon-orange-grad-1) 10px, 
+        var(--neon-orange-grad-2) 10px, 
+        var(--neon-orange-grad-2) 20px);
+    }
+  }

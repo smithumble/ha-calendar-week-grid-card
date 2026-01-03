@@ -1,0 +1,85 @@
+type: custom:calendar-week-grid-card
+language: en
+time_format: HH:mm
+start_hour: 6
+end_hour: 24
+blank_icon: mdi:checkbox-blank-circle-outline
+entities:
+  - entity: calendar.work_schedule
+    filter: Sleep
+    icon: mdi:pause-circle-outline
+  - entity: calendar.work_schedule
+    filter: Beer
+    icon: mdi:beer
+  - entity: calendar.work_schedule
+    filter: Planning
+    icon: mdi:calendar-clock
+  - entity: calendar.work_schedule
+    filter: Stand Up
+    icon: mdi:account-group
+  - entity: calendar.work_schedule
+    filter: Working Hours
+    icon: mdi:checkbox-blank-circle-outline
+css: |
+  ha-card {
+    --event-border-radius: 4px;
+    --color-neutral: var(--secondary-text-color);
+    --color-warning: #FF9800;
+    --color-error: #FF0000;
+    --color-info: #29B6F6;
+    --color-success: var(--success-color);
+  }
+
+  .cell {
+    .event-icon[data-type="blank"] {
+      opacity: 0.3;
+    }
+
+    [data-entity="calendar.work_schedule"] {
+      &[data-filter="Sleep"] {
+        &.event-icon {
+          opacity: 0.3;
+        }
+      }
+
+      &[data-filter="Beer"] {
+        &.event-icon {
+          color: var(--color-warning);
+        }
+
+        .event-block {
+          background-color: rgb(from var(--color-warning) r g b / 0.2);
+        }
+      }
+
+      &[data-filter="Planning"] {
+        &.event-icon {
+          color: var(--color-info);
+        }
+
+        .event-block {
+          background-color: rgb(from var(--color-info) r g b / 0.2);
+        }
+      }
+
+      &[data-filter="Stand Up"] {
+        &.event-icon {
+          color: var(--color-success);
+        }
+
+        .event-block {
+          background-color: rgb(from var(--color-success) r g b / 0.2);
+        }
+      }
+
+      &[data-filter="Working Hours"] {
+        &.event-icon {
+          color: rgb(from var(--color-neutral) r g b / 0.3);
+        }
+
+        .event-block {
+          border: 1px dotted rgb(from var(--color-neutral) r g b / 0.3);
+        }
+      }
+    }
+  }
