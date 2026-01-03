@@ -51,15 +51,12 @@ export class CalendarWeekGridCard extends LitElement {
     if (changedProps.has('hass')) {
       this.fetchEventsIfNeeded();
     }
-    // Update cell height from CSS after DOM updates
     requestAnimationFrame(() => {
       this.updateHeightFromCss();
     });
   }
 
   protected render(): TemplateResult {
-    // Always render the same outer structure to preserve card_mod injections
-    // Only the content inside ha-card changes
     return html`
       <style>
         ${unsafeCSS(styles)}
@@ -67,9 +64,7 @@ export class CalendarWeekGridCard extends LitElement {
       <style>
         ${this.getDynamicStyles()}
       </style>
-      <ha-card>
-        ${this.renderCardContent()}
-      </ha-card>
+      <ha-card>${this.renderCardContent()}</ha-card>
     `;
   }
 
@@ -93,7 +88,11 @@ export class CalendarWeekGridCard extends LitElement {
     );
 
     return html`
-      <div class="grid-container">
+      <div
+        class="grid-container"
+        data-icons-container="${this.config?.icons_container || 'cell'}"
+        data-icons-mode="${this.config?.icons_mode || 'top'}"
+      >
         <!-- Header Row -->
         <div></div>
         ${days.map(
@@ -122,11 +121,7 @@ export class CalendarWeekGridCard extends LitElement {
     }
 
     // Deprecated: generate CSS from config objects
-    return unsafeCSS(
-      generateCssFromDeprecatedStyleConfig(
-        this.config as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-      ),
-    );
+    return unsafeCSS(generateCssFromDeprecatedStyleConfig(this.config));
   }
 
   private updateHeightFromCss(): void {
@@ -167,38 +162,11 @@ export class CalendarWeekGridCard extends LitElement {
     // Reverse the list to render the events in the correct order
     cellEvents.reverse();
 
-    // Main event is the last one in the list
-    const mainEvent = cellEvents[cellEvents.length - 1];
-
-    const iconPosition = this.getIconPosition();
-    const iconMode = this.getIconMode();
-
-    // Determine which event icons to show and whether to show blank icon
-    let cellIconEvents: Event[] = [];
-    if (iconPosition === 'cell') {
-      if (iconMode === 'all') {
-        cellIconEvents = cellEvents;
-        if (cellIconEvents.length > 1) {
-          cellIconEvents = cellIconEvents.filter(
-            (event) => event.entity !== '',
-          );
-        }
-      }
-      if (iconMode === 'top') {
-        cellIconEvents = mainEvent ? [mainEvent] : [];
-      }
-    }
-
     return html`
       <div class="cell-wrapper">
         <div class="cell">
-          ${this.renderEvents(
-            cellEvents,
-            cellStartTime,
-            cellEndTime,
-            mainEvent,
-          )}
-          ${this.renderCellIcons(cellIconEvents)}
+          ${this.renderEvents(cellEvents, cellStartTime, cellEndTime)}
+          ${this.renderCellIcons(cellEvents)}
         </div>
         ${this.renderCurrentTimeLine(day, hour)}
       </div>
@@ -209,16 +177,9 @@ export class CalendarWeekGridCard extends LitElement {
     cellEvents: Event[],
     cellStartTime: number,
     cellEndTime: number,
-    mainEvent?: Event,
   ): TemplateResult[] {
     return cellEvents.map((event) => {
-      return this.renderEvent(
-        event,
-        cellStartTime,
-        cellEndTime,
-        cellEvents,
-        mainEvent,
-      );
+      return this.renderEvent(event, cellStartTime, cellEndTime, cellEvents);
     });
   }
 
@@ -227,7 +188,6 @@ export class CalendarWeekGridCard extends LitElement {
     cellStartTime: number,
     cellEndTime: number,
     cellEvents: Event[],
-    mainEvent?: Event,
   ): TemplateResult {
     const eventStartTime = event.start.getTime();
     const eventEndTime = event.end.getTime();
@@ -281,19 +241,6 @@ export class CalendarWeekGridCard extends LitElement {
 
     if (currentBlock) mergedBlocks.push(currentBlock);
 
-    // Determine if this event should show an icon
-    const iconPosition = this.getIconPosition();
-    const iconMode = this.getIconMode();
-    let shouldShowIcon = false;
-    if (iconPosition === 'event') {
-      if (iconMode === 'all') {
-        shouldShowIcon = true;
-      }
-      if (iconMode === 'top') {
-        shouldShowIcon = event === mainEvent;
-      }
-    }
-
     const wrapperStyle = `top: ${topPx}px; height: ${heightPx}px;`;
     const innerStyle = `top: ${innerTopPx}px; height: ${innerHeightPx}px;`;
 
@@ -310,7 +257,7 @@ export class CalendarWeekGridCard extends LitElement {
       </div>
       <div class="event-block" style="${innerStyle}"></div>
       <div class="event-icon-overlay" style="${innerStyle}">
-        ${shouldShowIcon ? this.renderEventIcon(event) : ''}
+        ${this.renderEventIcon(event)}
       </div>
     </div>`;
   }
@@ -344,23 +291,33 @@ export class CalendarWeekGridCard extends LitElement {
   }
 
   private renderEventIcon(event: Event): TemplateResult {
+    if (!event) {
+      return html``;
+    }
+
     let icon;
 
-    if (event.entity === '') {
-      icon =
-        this.config?.blank_icon || getDeprecatedBlankIcon(this.config) || '';
-    } else {
-      const entities = this.getNormalizedEntities();
-      const entity = entities.find(
-        (e) => e.entity === event.entity && e.filter === event.filter,
-      );
+    if (event.type === 'blank') {
+      // Configured
+      icon = this.config?.blank_icon;
 
-      icon =
-        entity?.icon ||
-        this.config?.event_icon ||
-        getDeprecatedEventIcon(entity) ||
-        getDeprecatedFilledIcon(this.config) ||
-        'mdi:check-circle';
+      // Deprecated
+      icon = icon || getDeprecatedBlankIcon(this.config);
+
+      // Default
+      icon = icon || '';
+    }
+
+    if (event.type !== 'blank') {
+      // Configured
+      icon = event?.icon || this.config?.event_icon;
+
+      // Deprecated
+      icon = icon || getDeprecatedEventIcon(event);
+      icon = icon || getDeprecatedFilledIcon(this.config);
+
+      // Default
+      icon = icon || 'mdi:check-circle';
     }
 
     return html`<ha-icon
@@ -374,7 +331,9 @@ export class CalendarWeekGridCard extends LitElement {
   }
 
   private renderCellIcons(events: Event[]): TemplateResult {
-    return html`${events.map((event) => this.renderEventIcon(event))}`;
+    return html`<div class="cell-icons">
+      ${events.map((event) => this.renderEventIcon(event))}
+    </div>`;
   }
 
   private renderCurrentTimeLine(

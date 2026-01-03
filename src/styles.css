@@ -61,6 +61,16 @@ ha-card {
   pointer-events: none;
 }
 
+.cell-icons {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
 .event-wrapper {
   position: absolute;
   left: 0;
@@ -132,4 +142,26 @@ ha-card {
   height: 6px;
   border-radius: 50%;
   background-color: var(--current-time-color);
+}
+
+/* Icons Logic */
+
+.grid-container[data-icons-container='cell'] .event-icon-overlay {
+  display: none;
+}
+
+.grid-container[data-icons-container='event'] .cell-icons {
+  display: none;
+}
+
+.grid-container[data-icons-mode='all']
+  .cell-icons:has(ha-icon[data-type]:not([data-type='blank']))
+  ha-icon[data-type='blank'] {
+  /* Hide all blank icons if there are other not blank icons */
+  display: none;
+}
+
+.grid-container[data-icons-mode='top'] .cell-icons ha-icon:not(:last-child) {
+  /* Hide all icons except the last one */
+  display: none;
 }

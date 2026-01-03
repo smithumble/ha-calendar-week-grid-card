@@ -226,9 +226,9 @@ export function generateCssFromDeprecatedStyleConfig(
  * Gets deprecated event icon from entity-specific config
  */
 export function getDeprecatedEventIcon(
-  entity: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  event: any, // eslint-disable-line @typescript-eslint/no-explicit-any
 ): string | undefined {
-  return entity?.cell?.icon?.icon;
+  return event?.cell?.icon?.icon;
 }
 
 /**
