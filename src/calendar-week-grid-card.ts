@@ -58,13 +58,29 @@ export class CalendarWeekGridCard extends LitElement {
   }
 
   protected render(): TemplateResult {
+    // Always render the same outer structure to preserve card_mod injections
+    // Only the content inside ha-card changes
+    return html`
+      <style>
+        ${unsafeCSS(styles)}
+      </style>
+      <style>
+        ${this.getDynamicStyles()}
+      </style>
+      <ha-card>
+        ${this.renderCardContent()}
+      </ha-card>
+    `;
+  }
+
+  private renderCardContent(): TemplateResult {
     if (!this.hass || !this.config) {
       return html``;
     }
 
     if (!this.lastFetched) {
       this.fetchEvents();
-      return html`<ha-card>Loading...</ha-card>`;
+      return html`Loading...`;
     }
 
     const days = this.getDays();
@@ -77,28 +93,20 @@ export class CalendarWeekGridCard extends LitElement {
     );
 
     return html`
-      <style>
-        ${unsafeCSS(styles)}
-      </style>
-      <style>
-        ${this.getDynamicStyles()}
-      </style>
-      <ha-card>
-        <div class="grid-container">
-          <!-- Header Row -->
-          <div></div>
-          ${days.map(
-            (day) => html`
-              <div class="day-header ${day.isToday ? 'today' : ''}">
-                ${day.label}
-              </div>
-            `,
-          )}
+      <div class="grid-container">
+        <!-- Header Row -->
+        <div></div>
+        ${days.map(
+          (day) => html`
+            <div class="day-header ${day.isToday ? 'today' : ''}">
+              ${day.label}
+            </div>
+          `,
+        )}
 
-          <!-- Grid Rows -->
-          ${hours.map((hour) => this.renderRow(hour, days))}
-        </div>
-      </ha-card>
+        <!-- Grid Rows -->
+        ${hours.map((hour) => this.renderRow(hour, days))}
+      </div>
     `;
   }
 
