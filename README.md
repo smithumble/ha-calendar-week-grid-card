@@ -1,6 +1,6 @@
 # HA Calendar Week Grid Card
 
-A custom Home Assistant card that displays calendar events in a week grid format.
+A custom Home Assistant card that displays calendar events in a week grid format. Check out the **[Demo](https://smithumble.github.io/ha-calendar-week-grid-card/)**
 
 ![Calendar Week Grid Card Screenshot](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/image.png)
 
