@@ -28,5 +28,5 @@ export default {
     postcssLit(),
     typescript(),
     !dev && terser(),
-  ],
+  ].filter(Boolean),
 };

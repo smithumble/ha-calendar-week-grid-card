@@ -1,0 +1,78 @@
+type: custom:calendar-week-grid-card
+language: en
+time_format: HH:mm
+blank_icon: mdi:checkbox-blank-circle-outline
+entities:
+  - name: planned_outages
+    entity: calendar.planned_outages
+    filter: Outage
+    icon: mdi:flash-off
+  - name: probable_outages
+    entity: calendar.probable_outages
+    icon: mdi:alert-circle-outline
+  - name: emergency_shutdowns
+    entity: calendar.planned_outages
+    filter: Emergency Shutdowns
+    icon: mdi:transmission-tower-off
+  - name: waiting_for_schedule
+    entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    icon: mdi:timer-sand
+  - name: schedule_applies
+    entity: calendar.planned_outages
+    filter: Schedule Applies
+    icon: mdi:checkbox-blank-circle-outline
+css: |
+  .event-block {
+    border-radius: 4px;
+  }
+
+  [data-type="blank"] {
+    &.event-icon {
+      opacity: 0.3;
+    }
+  }
+
+  [data-name="planned_outages"] {
+    &.event-icon {
+      color: #FF0000;
+    }
+
+    .event-sub-block {
+      background-color: rgb(from #FF0000 r g b / 0.2);
+    }
+  }
+
+  [data-name="emergency_shutdowns"] {
+    &.event-icon {
+      color: #FF0000;
+    }
+
+    .event-sub-block {
+      background-color: rgb(from #FF0000 r g b / 0.2);
+    }
+  }
+
+  [data-name="waiting_for_schedule"] {
+    &.event-icon {
+      opacity: 0.6;
+      color: #FF9800;
+    }
+  }
+
+  [data-name="schedule_applies"] {
+    &.event-icon {
+      color: #FF0000;
+      opacity: 0.4;
+    }
+  }
+
+  [data-name="probable_outages"] {
+    &.event-icon {
+      color: #29B6F6;
+    }
+
+    .event-sub-block {
+      background-color: rgb(from #29B6F6 r g b / 0.2);
+    }
+  }

@@ -1,0 +1,110 @@
+type: custom:calendar-week-grid-card
+language: en
+time_format: 'HH:mm'
+icons_container: event
+icons_mode: all
+blank_icon: mdi:circle-outline
+entities:
+  - name: planned_outages
+    entity: calendar.planned_outages
+    filter: Outage
+    icon: mdi:close-circle
+  - name: probable_outages
+    entity: calendar.probable_outages
+    icon: mdi:close-circle
+  - name: emergency_shutdowns
+    entity: calendar.planned_outages
+    filter: Emergency Shutdowns
+    icon: mdi:alert-circle
+  - name: waiting_for_schedule
+    entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    icon: mdi:clock-outline
+  - name: schedule_applies
+    entity: calendar.planned_outages
+    filter: Schedule Applies
+    icon: mdi:circle-outline
+css: |
+  :host {
+    --text-color: #444;
+    --text-primary: var(--text-color);
+    --text-secondary: var(--text-color);
+  }
+
+  ha-card {
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  }
+
+  .grid-container {
+    gap: 8px;
+  }
+
+  .cell {
+    height: 34px;
+    border-radius: 17px;
+  }
+
+  .event-icon {
+    --icon-size: 20px;
+  }
+
+  .event-block {
+    background-color: #F5F5F5;
+  }
+
+  ha-icon[data-type="blank"] {
+    color: #E0E0E0;
+  }
+
+  [data-name="planned_outages"] {
+    &.event-icon {
+      color: #FFFFFF;
+    }
+
+    .event-block {
+      background-color: #FF8A80;
+    }
+  }
+
+  [data-name="emergency_shutdowns"] {
+    &.event-icon {
+      color: #FFFFFF;
+    }
+
+    .event-block {
+      background-color: #FF80AB;
+    }
+  }
+
+  [data-name="waiting_for_schedule"] {
+    &.event-icon {
+      color: #006064;
+    }
+
+    .event-block {
+      background-color: #80DEEA;
+    }
+  }
+
+  [data-name="schedule_applies"] {
+    &.event-icon {
+      color: #F57F17;
+    }
+
+    .event-block {
+      background-color: #FFF176;
+    }
+  }
+
+  [data-name="probable_outages"] {
+    &.event-icon {
+      color: #1B5E20;
+    }
+
+    .event-block {
+      background-color: #B9F6CA;
+    }
+  }

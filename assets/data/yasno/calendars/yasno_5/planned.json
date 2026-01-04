@@ -1,0 +1,72 @@
+{
+  "6.1": {
+    "today": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 420,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 420,
+          "end": 630,
+          "type": "Definite"
+        },
+        {
+          "start": 630,
+          "end": 1020,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1020,
+          "end": 1230,
+          "type": "Definite"
+        },
+        {
+          "start": 1230,
+          "end": 1440,
+          "type": "NotPlanned"
+        }
+      ],
+      "date": "2025-11-27T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "tomorrow": {
+      "slots": [
+        {
+          "start": 0,
+          "end": 120,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 120,
+          "end": 540,
+          "type": "Definite"
+        },
+        {
+          "start": 540,
+          "end": 750,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 750,
+          "end": 1170,
+          "type": "Definite"
+        },
+        {
+          "start": 1170,
+          "end": 1380,
+          "type": "NotPlanned"
+        },
+        {
+          "start": 1380,
+          "end": 1440,
+          "type": "Definite"
+        }
+      ],
+      "date": "2025-11-28T00:00:00+02:00",
+      "status": "ScheduleApplies"
+    },
+    "updatedOn": "2025-11-26T19:53:57+00:00"
+  }
+}

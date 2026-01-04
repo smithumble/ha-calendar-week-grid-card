@@ -1,19 +1,18 @@
 :host {
   display: block;
-  --event-border-radius: 0px;
-  --event-color: var(--primary-text-color, #ffffff);
-  --event-bg: transparent;
-  --normal-color: var(--primary-text-color, #555);
-  --normal-bg: transparent;
   --grid-bg: var(--card-background-color, #1c1c1e);
+  --normal-bg: transparent;
+  --normal-color: var(--primary-text-color, #555);
+  --event-border-radius: 0px;
+  --cell-border-radius: var(--event-border-radius);
   --text-primary: var(--primary-text-color, #ffffff);
   --text-secondary: var(--secondary-text-color, #999999);
   --current-time-color: var(--primary-color, #ea4335);
 }
 
 ha-card {
-  color: var(--text-primary);
   padding: 8px 16px 16px 8px;
+  color: var(--text-primary);
 }
 
 .grid-container {
@@ -23,68 +22,117 @@ ha-card {
   overflow-x: auto;
 }
 
+.cell-wrapper,
+.day-header-wrapper,
+.time-label-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .time-label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
   font-size: 12px;
   color: var(--text-secondary);
-  text-align: right;
-  padding-right: 8px;
-  align-self: center;
 }
 
 .day-header {
-  text-align: center;
-  font-weight: bold;
-  padding: 8px 4px;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.cell-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
+  padding: 8px 4px;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
 }
 
 .cell {
-  width: 100%;
-  height: 100%;
   position: relative;
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
+  width: 100%;
+  height: 24px;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+  border-radius: var(--cell-border-radius);
   background-color: var(--normal-bg);
   color: var(--normal-color);
-  height: 24px;
-  border-radius: var(--event-border-radius);
+  pointer-events: none;
 }
 
-.cell.has-event {
-  color: var(--event-color);
-}
-
-.event-block-wrapper {
+.cell-icons {
   position: absolute;
   left: 0;
   right: 0;
-  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.event-wrapper {
+  position: absolute;
+  left: 0;
+  right: 0;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .event-block {
   position: absolute;
   left: 0;
   right: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
   border-radius: var(--event-border-radius);
 }
 
-ha-icon {
-  --mdc-icon-size: var(--icon-size, 18px);
+.event-sub-blocks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+}
+
+.event-sub-block {
+  position: absolute;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+}
+
+.event-icon-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.event-icon {
   position: relative;
-  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  --mdc-icon-size: var(--icon-size, 18px);
 }
 
 .current-time-line {
@@ -92,18 +140,40 @@ ha-icon {
   left: 0;
   right: 0;
   height: 2px;
+  margin-top: -1px;
   background-color: var(--current-time-color);
   z-index: 5;
   pointer-events: none;
-  margin-top: -1px;
 }
 
 .current-time-circle {
-  width: 6px;
-  height: 6px;
-  background-color: var(--current-time-color);
-  border-radius: 50%;
   position: absolute;
   left: -3px;
   top: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--current-time-color);
+}
+
+/* Icons Logic */
+
+.grid-container[data-icons-container='cell'] .event-icon-overlay {
+  display: none;
+}
+
+.grid-container[data-icons-container='event'] .cell-icons {
+  display: none;
+}
+
+.grid-container[data-icons-mode='all']
+  .cell-icons:has(ha-icon[data-type]:not([data-type='blank']))
+  ha-icon[data-type='blank'] {
+  /* Hide all blank icons if there are other not blank icons */
+  display: none;
+}
+
+.grid-container[data-icons-mode='top'] .cell-icons ha-icon:not(:last-child) {
+  /* Hide all icons except the last one */
+  display: none;
 }

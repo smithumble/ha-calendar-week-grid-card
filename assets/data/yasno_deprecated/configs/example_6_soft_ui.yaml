@@ -40,15 +40,6 @@ cell_blank:
     style:
       color: var(--blank-icon)
 entities:
-  - entity: calendar.probable_outages
-    cell:
-      background:
-        style:
-          background-color: var(--probable-bg)
-      icon:
-        icon: mdi:close-circle
-        style:
-          color: var(--probable-icon)
   - entity: calendar.planned_outages
     filter: Outage
     cell:
@@ -59,6 +50,15 @@ entities:
         icon: mdi:close-circle
         style:
           color: var(--white)
+  - entity: calendar.probable_outages
+    cell:
+      background:
+        style:
+          background-color: var(--probable-bg)
+      icon:
+        icon: mdi:close-circle
+        style:
+          color: var(--probable-icon)
   - entity: calendar.planned_outages
     filter: Emergency Shutdowns
     cell:
