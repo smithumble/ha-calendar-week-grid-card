@@ -21,6 +21,7 @@ import type {
   Event,
   DayInfo,
   EntityConfig,
+  ShiftCriteria,
 } from './types';
 
 @customElement('calendar-week-grid-card')
@@ -161,15 +162,16 @@ export class CalendarWeekGridCard extends LitElement {
     const cellStartTime = cellDate.setHours(hour);
     const cellEndTime = cellDate.setHours(hour + 1);
 
-    // Filter events that are within the cell time range
-    const cellEvents = this.filterEvents(
-      this.events,
-      cellStartTime,
-      cellEndTime,
-    );
+    let cellEvents = [...this.events];
 
     // Reverse the list to render the events in the correct order
     cellEvents.reverse();
+
+    // Filter events that are within the cell time range
+    cellEvents = this.filterEvents(cellEvents, cellStartTime, cellEndTime);
+
+    // Sort events based on shift configuration
+    cellEvents = this.shiftEvents(cellEvents);
 
     // Determine if this is the current hour (for all days)
     const now = new Date();
@@ -243,7 +245,10 @@ export class CalendarWeekGridCard extends LitElement {
 
     for (const block of blocks) {
       // Find all events that overlap with this block time period
-      const events = this.filterEvents(cellEvents, block.start, block.end);
+      let events = this.filterEvents(cellEvents, block.start, block.end);
+
+      // Sort events based on shift configuration
+      events = this.shiftEvents(events);
 
       // The last one is the topmost event
       if (events.length > 0 && events[events.length - 1] === event) {
@@ -523,12 +528,187 @@ export class CalendarWeekGridCard extends LitElement {
     });
   }
 
-  private getIconPosition(): 'event' | 'cell' {
-    return this.config?.icons_container || 'cell';
-  }
+  private shiftEvents(events: Event[]): Event[] {
+    if (!this.config) return events;
 
-  private getIconMode(): 'top' | 'all' {
-    return this.config?.icons_mode || 'top';
+    // Build maps of entity name -> shift criteria lists from config
+    const entityShiftLeftMap = new Map<string, ShiftCriteria[]>();
+    const entityShiftRightMap = new Map<string, ShiftCriteria[]>();
+    const normalizedEntities = this.getNormalizedEntities();
+
+    for (const entityConfig of normalizedEntities) {
+      if (entityConfig.name) {
+        // Process shift_left
+        if (entityConfig.shift_left && entityConfig.shift_left.length > 0) {
+          const criteria: ShiftCriteria[] = entityConfig.shift_left.map(
+            (shift) => {
+              if (typeof shift === 'string') {
+                // String is treated as name
+                return { name: shift };
+              }
+              return shift;
+            },
+          );
+          entityShiftLeftMap.set(entityConfig.name, criteria);
+        }
+
+        // Process shift_right
+        if (entityConfig.shift_right && entityConfig.shift_right.length > 0) {
+          const criteria: ShiftCriteria[] = entityConfig.shift_right.map(
+            (shift) => {
+              if (typeof shift === 'string') {
+                // String is treated as name
+                return { name: shift };
+              }
+              return shift;
+            },
+          );
+          entityShiftRightMap.set(entityConfig.name, criteria);
+        }
+      }
+    }
+
+    // If no entities have shift configuration, return events as-is
+    if (entityShiftLeftMap.size === 0 && entityShiftRightMap.size === 0) {
+      return events;
+    }
+
+    // Helper function to check if an event matches shift criteria (AND logic within object)
+    const matchesCriteria = (
+      event: Event,
+      criteria: ShiftCriteria,
+    ): boolean => {
+      // Check if at least one field is specified
+      const hasAnyField =
+        criteria.name !== undefined ||
+        criteria.type !== undefined ||
+        criteria.entity !== undefined ||
+        criteria.filter !== undefined;
+      if (!hasAnyField) return false;
+
+      // Match only if all specified criteria fields match (AND logic)
+      if (criteria.name !== undefined && event.name !== criteria.name)
+        return false;
+      if (criteria.type !== undefined && event.type !== criteria.type)
+        return false;
+      if (criteria.entity !== undefined && event.entity !== criteria.entity)
+        return false;
+      if (criteria.filter !== undefined && event.filter !== criteria.filter)
+        return false;
+      return true;
+    };
+
+    // Start with events in original order
+    const result = [...events];
+
+    // Process shift-left: move matching events before the current event
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
+      const shiftLeftCriteria = event.name
+        ? entityShiftLeftMap.get(event.name)
+        : undefined;
+
+      if (shiftLeftCriteria && shiftLeftCriteria.length > 0) {
+        // Check if any events match the shift-left criteria
+        let hasMatchingEvents = false;
+        for (const originalEvent of events) {
+          for (const criteria of shiftLeftCriteria) {
+            if (matchesCriteria(originalEvent, criteria)) {
+              hasMatchingEvents = true;
+              break;
+            }
+          }
+          if (hasMatchingEvents) break;
+        }
+
+        if (hasMatchingEvents) {
+          // Find the current position of the event with shift-left in result
+          const eventIndex = result.indexOf(event);
+          if (eventIndex < 0) continue;
+
+          // Find all events that match shift-left criteria and come after this event
+          const eventsToMove: Array<{ event: Event; originalIndex: number }> =
+            [];
+          for (let j = i + 1; j < events.length; j++) {
+            const laterEvent = events[j];
+            for (const criteria of shiftLeftCriteria) {
+              if (matchesCriteria(laterEvent, criteria)) {
+                eventsToMove.push({ event: laterEvent, originalIndex: j });
+                break;
+              }
+            }
+          }
+
+          // Move matching events to come before the event with shift-left
+          for (const { event: eventToMove } of eventsToMove) {
+            const eventToMoveIndex = result.indexOf(eventToMove);
+            if (eventToMoveIndex >= 0 && eventToMoveIndex > eventIndex) {
+              // Remove from current position
+              result.splice(eventToMoveIndex, 1);
+              // Insert before the event with shift-left
+              const newEventIndex = result.indexOf(event);
+              result.splice(newEventIndex, 0, eventToMove);
+            }
+          }
+        }
+      }
+    }
+
+    // Process shift-right: move matching events after the current event
+    // Process in reverse order to maintain correct positioning
+    for (let i = events.length - 1; i >= 0; i--) {
+      const event = events[i];
+      const shiftRightCriteria = event.name
+        ? entityShiftRightMap.get(event.name)
+        : undefined;
+
+      if (shiftRightCriteria && shiftRightCriteria.length > 0) {
+        // Check if any events match the shift-right criteria
+        let hasMatchingEvents = false;
+        for (const originalEvent of events) {
+          for (const criteria of shiftRightCriteria) {
+            if (matchesCriteria(originalEvent, criteria)) {
+              hasMatchingEvents = true;
+              break;
+            }
+          }
+          if (hasMatchingEvents) break;
+        }
+
+        if (hasMatchingEvents) {
+          // Find the current position of the event with shift-right in result
+          const eventIndex = result.indexOf(event);
+          if (eventIndex < 0) continue;
+
+          // Find all events that match shift-right criteria and come before this event
+          const eventsToMove: Array<{ event: Event; originalIndex: number }> =
+            [];
+          for (let j = i - 1; j >= 0; j--) {
+            const earlierEvent = events[j];
+            for (const criteria of shiftRightCriteria) {
+              if (matchesCriteria(earlierEvent, criteria)) {
+                eventsToMove.push({ event: earlierEvent, originalIndex: j });
+                break;
+              }
+            }
+          }
+
+          // Move matching events to come after the event with shift-right
+          for (const { event: eventToMove } of eventsToMove) {
+            const eventToMoveIndex = result.indexOf(eventToMove);
+            if (eventToMoveIndex >= 0 && eventToMoveIndex < eventIndex) {
+              // Remove from current position
+              result.splice(eventToMoveIndex, 1);
+              // Insert after the event with shift-right
+              const newEventIndex = result.indexOf(event);
+              result.splice(newEventIndex + 1, 0, eventToMove);
+            }
+          }
+        }
+      }
+    }
+
+    return result;
   }
 
   private generateEventSubBlocks(

@@ -19,6 +19,8 @@ entities:
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    shift_left:
+      - planned_outages
 css: |
   :host {
     --color-highlight: #FDD631;
@@ -77,6 +79,7 @@ css: |
   [data-name="waiting_for_schedule"] {
     &.event-icon {
       color: var(--color-highlight-light-icon);
+      opacity: 0.5;
     }
   }
 

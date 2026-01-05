@@ -20,6 +20,8 @@ entities:
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:clock-outline
+    shift_left:
+      - planned_outages
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies

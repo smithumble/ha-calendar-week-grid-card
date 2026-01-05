@@ -88,17 +88,19 @@ Example: `time_format: "h:mm A"` results in `1:00 PM`.
 
 ### Entity Configuration
 
-| Name     | Type   | Required | Description                     |
-| -------- | ------ | -------- | ------------------------------- |
-| `name`   | string | No       | Friendly name for the entity.   |
-| `entity` | string | **Yes**  | The entity_id of the calendar.  |
-| `filter` | string | No       | Filter text for events.         |
-| `icon`   | string | No       | Icon for the entity.            |
-| `type`   | string | No       | Type identifier for the entity. |
+| Name          | Type   | Required | Description                                                             |
+| ------------- | ------ | -------- | ----------------------------------------------------------------------- |
+| `name`        | string | No       | Friendly name for the entity.                                           |
+| `entity`      | string | **Yes**  | The entity_id of the calendar.                                          |
+| `filter`      | string | No       | Filter text for events.                                                 |
+| `icon`        | string | No       | Icon for the entity.                                                    |
+| `type`        | string | No       | Type identifier for the entity.                                         |
+| `shift_left`  | array  | No       | Events to shift before this one. See [Event Shifting](#event-shifting). |
+| `shift_right` | array  | No       | Events to shift after this one. See [Event Shifting](#event-shifting).  |
 
 ### Data Attributes
 
-Event elements (`.event-wrapper` and `ha-icon.event-icon`) include the following data attributes that can be used for CSS styling:
+Event elements (`.event-wrapper` and `.event-icon`) include the following data attributes that can be used for CSS styling:
 
 | Attribute     | Description                                        |
 | ------------- | -------------------------------------------------- |
@@ -107,17 +109,28 @@ Event elements (`.event-wrapper` and `ha-icon.event-icon`) include the following
 | `data-filter` | The filter text for events.                        |
 | `data-type`   | The type identifier from the entity configuration. |
 
-Example CSS usage:
+### Event Shifting
 
-```css
-[data-entity='calendar.planned_outages'][data-type='outage'] {
-  color: var(--error-color);
-}
+The `shift_left` and `shift_right` options allow you to control the rendering order of events. Events are matched using OR logic - if an event matches any of the criteria in the list, it will be shifted.
 
-[data-name='Planned Outages'] {
-  font-weight: bold;
-}
-```
+#### Shift Criteria
+
+Each item in `shift_left` or `shift_right` can be:
+
+- A **string**: Treated as a `name` match (e.g., `"planned_outages"`)
+- An **object** with one or more of:
+  - `name`: Match by entity name
+  - `type`: Match by entity type
+  - `entity`: Match by entity ID
+  - `filter`: Match by filter text
+
+#### Shift Left
+
+Events matching `shift_left` criteria that appear **after** the current event will be moved **before** it.
+
+#### Shift Right
+
+Events matching `shift_right` criteria that appear **before** the current event will be moved **after** it.
 
 ## Examples
 
@@ -173,6 +186,8 @@ entities:
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    shift_left:
+      - planned_outages
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
@@ -292,6 +307,8 @@ entities:
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    shift_left:
+      - planned_outages
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
@@ -421,6 +438,8 @@ entities:
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    shift_left:
+      - planned_outages
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
@@ -515,6 +534,8 @@ entities:
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    shift_left:
+      - planned_outages
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
@@ -667,6 +688,8 @@ entities:
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:clock-outline
+    shift_left:
+      - planned_outages
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
@@ -792,6 +815,8 @@ entities:
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    shift_left:
+      - planned_outages
 css: |
   :host {
     --color-highlight: #FDD631;
@@ -850,6 +875,7 @@ css: |
   [data-name="waiting_for_schedule"] {
     &.event-icon {
       color: var(--color-highlight-light-icon);
+      opacity: 0.5;
     }
   }
 

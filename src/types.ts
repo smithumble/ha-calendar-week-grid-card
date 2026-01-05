@@ -1,9 +1,18 @@
+export interface ShiftCriteria {
+  name?: string;
+  type?: string;
+  entity?: string;
+  filter?: string;
+}
+
 export interface EntityConfig {
   name?: string;
   type?: string;
   entity: string;
   filter?: string;
   icon?: string;
+  shift_left?: (string | ShiftCriteria)[];
+  shift_right?: (string | ShiftCriteria)[];
 }
 
 export interface CardConfig {
