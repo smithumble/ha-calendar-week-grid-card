@@ -185,6 +185,11 @@ entities:
 ```yaml
 type: custom:calendar-week-grid-card
 language: en
+primary_date_format:
+  weekday: 'short'
+secondary_date_format:
+  day: 'numeric'
+  month: 'short'
 time_format: 'HH:mm'
 blank_icon: mdi:checkbox-blank-circle-outline
 all_day_icon: ''
@@ -218,7 +223,7 @@ css: |
   }
 
   .event-sub-block {
-    margin: -1px;
+
   }
 
   [data-type="blank"] {
@@ -298,6 +303,11 @@ css: |
 ```yaml
 type: custom:calendar-week-grid-card
 language: en
+primary_date_format:
+  weekday: 'short'
+secondary_date_format:
+  day: 'numeric'
+  month: 'short'
 time_format: 'HH:mm'
 blank_icon: mdi:checkbox-blank-circle-outline
 all_day_icon: mdi:checkbox-blank-circle
@@ -328,10 +338,6 @@ css: |
   .event-block {
     border-radius: 4px;
     border: 1px dotted rgb(from var(--secondary-text-color) r g b / 0.3);
-  }
-
-  .event-sub-block {
-    margin: -1px;
   }
 
   [data-type="blank"] {
@@ -427,6 +433,11 @@ css: |
 ```yaml
 type: custom:calendar-week-grid-card
 language: en
+primary_date_format:
+  weekday: 'short'
+secondary_date_format:
+  day: 'numeric'
+  month: 'short'
 time_format: HH:mm
 blank_icon: mdi:checkbox-blank-circle-outline
 all_day_icon: mdi:checkbox-blank-circle
@@ -525,6 +536,11 @@ css: |
 ```yaml
 type: custom:calendar-week-grid-card
 language: en
+primary_date_format:
+  weekday: 'short'
+secondary_date_format:
+  day: 'numeric'
+  month: 'short'
 time_format: 'HH:mm'
 blank_icon: mdi:lightning-bolt
 all_day_icon: mdi:circle-outline
@@ -679,6 +695,11 @@ css: |
 ```yaml
 type: custom:calendar-week-grid-card
 language: en
+primary_date_format:
+  weekday: 'short'
+secondary_date_format:
+  day: 'numeric'
+  month: 'short'
 time_format: 'HH:mm'
 icons_container: event
 icons_mode: all

@@ -1,5 +1,9 @@
 type: custom:calendar-week-grid-card
 language: en
+primary_date_format:
+  weekday: 'short'
+secondary_date_format:
+  day: 'numeric'
 time_format: HH:mm
 icons_mode: all
 icons_container: event
@@ -34,6 +38,7 @@ css: |
     --secondary-text-color: #444746;
     --event-text-color: #fff;
     --accent-color: #0b57d0;
+    --accent-text-color: #fff;
     --planned-outages-color: #F3511E;
     --probable-outages-color: #4285F4;
     --emergency-shutdowns-color: #D40101;
@@ -48,6 +53,7 @@ css: |
     --secondary-text-color: #c4c7c5;
     --event-text-color: #131314;
     --accent-color: #a8c7fa;
+    --accent-text-color: #062e6f;
     --planned-outages-color: #E3683E;
     --probable-outages-color: #678AE1;
     --emergency-shutdowns-color: #D95234;
@@ -109,15 +115,36 @@ css: |
   }
 
   .day-header {
-    text-transform: uppercase;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--secondary-text-color);
     padding: 16px 0;
   }
 
   .day-header.today {
     color: var(--accent-color);
+  }
+
+  .day-header-primary {
+    text-transform: uppercase;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--secondary-text-color);
+  }
+
+  .day-header-secondary {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--primary-text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-top: 2px;
+  }
+
+  .day-header.today .day-header-secondary {
+    background-color: var(--accent-color);
+    color: var(--accent-text-color);
   }
 
   .time-label {

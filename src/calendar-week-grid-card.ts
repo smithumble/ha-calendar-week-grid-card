@@ -105,7 +105,12 @@ export class CalendarWeekGridCard extends LitElement {
           (day) => html`
             <div class="day-header-wrapper">
               <div class="day-header ${day.isToday ? 'today' : ''}">
-                ${day.label}
+                <div class="day-header-primary">${day.label}</div>
+                ${day.secondaryLabel
+                  ? html`<div class="day-header-secondary">
+                      ${day.secondaryLabel}
+                    </div>`
+                  : ''}
               </div>
             </div>
           `,
@@ -516,18 +521,35 @@ export class CalendarWeekGridCard extends LitElement {
     today.setHours(0, 0, 0, 0);
 
     const lang = this.config?.language || this.hass?.language || 'en';
-    const dateFormat = new Intl.DateTimeFormat(lang, { weekday: 'short' });
+
+    // Primary date format (default: weekday:short)
+    const primaryFormat = this.config?.primary_date_format || {
+      weekday: 'short',
+    };
+    const primaryDateFormat = new Intl.DateTimeFormat(lang, primaryFormat);
+
+    // Secondary date format (optional)
+    const secondaryFormat = this.config?.secondary_date_format;
+    const secondaryDateFormat = secondaryFormat
+      ? new Intl.DateTimeFormat(lang, secondaryFormat)
+      : null;
 
     for (let i = 0; i < 7; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
 
-      const weekday = dateFormat.format(date);
-      const label = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+      const primaryLabel = primaryDateFormat.format(date);
+      const label =
+        primaryLabel.charAt(0).toUpperCase() + primaryLabel.slice(1);
+
+      const secondaryLabel = secondaryDateFormat
+        ? secondaryDateFormat.format(date)
+        : undefined;
 
       days.push({
         date: date,
         label: label,
+        secondaryLabel: secondaryLabel,
         isToday: i === 0,
       });
     }

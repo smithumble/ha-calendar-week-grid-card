@@ -19,6 +19,8 @@ export interface EntityConfig {
 export interface CardConfig {
   type: string;
   language?: string;
+  primary_date_format?: Intl.DateTimeFormatOptions;
+  secondary_date_format?: Intl.DateTimeFormatOptions;
   time_format?: string;
   start_hour?: number;
   end_hour?: number;
@@ -52,5 +54,6 @@ export interface Event
 export interface DayInfo {
   date: Date;
   label: string;
+  secondaryLabel?: string;
   isToday: boolean;
 }
