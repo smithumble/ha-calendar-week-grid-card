@@ -29,7 +29,6 @@ export class CalendarWeekGridCard extends LitElement {
   @property({ attribute: false }) public hass?: HomeAssistant;
   @state() private config?: CardConfig;
   @state() private events: Event[] = [];
-  @state() private cellHeight: number = 24;
 
   private lastFetched: number = 0;
 
@@ -52,9 +51,6 @@ export class CalendarWeekGridCard extends LitElement {
     if (changedProps.has('hass')) {
       this.fetchEventsIfNeeded();
     }
-    requestAnimationFrame(() => {
-      this.updateHeightFromCss();
-    });
   }
 
   protected render(): TemplateResult {
@@ -125,17 +121,6 @@ export class CalendarWeekGridCard extends LitElement {
 
     // Deprecated: generate CSS from config objects
     return unsafeCSS(generateCssFromDeprecatedStyleConfig(this.config));
-  }
-
-  private updateHeightFromCss(): void {
-    const cell = this.shadowRoot?.querySelector('.cell');
-    if (cell) {
-      const heightStr = window.getComputedStyle(cell).height;
-      const height = parseFloat(heightStr);
-      if (height && Math.abs(height - this.cellHeight) > 0.1) {
-        this.cellHeight = height;
-      }
-    }
   }
 
   // ============================================================================
@@ -224,10 +209,9 @@ export class CalendarWeekGridCard extends LitElement {
     const startRatio = (start - cellStartTime) / duration;
     const endRatio = (end - cellStartTime) / duration;
 
-    const topPx = Math.round(startRatio * this.cellHeight);
-    const bottomPx = Math.round(endRatio * this.cellHeight);
-
-    const heightPx = bottomPx - topPx;
+    const topPct = startRatio * 100;
+    const heightRatio = endRatio - startRatio;
+    const heightPct = heightRatio * 100;
 
     const blocks = this.generateEventSubBlocks(
       start,
@@ -236,8 +220,8 @@ export class CalendarWeekGridCard extends LitElement {
       cellEndTime,
     );
 
-    const innerHeightPx = this.cellHeight;
-    const innerTopPx = -topPx;
+    const innerHeightPct = heightRatio > 0 ? 100 / heightRatio : 100;
+    const innerTopPct = heightRatio > 0 ? -(startRatio / heightRatio) * 100 : 0;
 
     // Filter and merge blocks that should be rendered
     const mergedBlocks: Array<{ start: number; end: number }> = [];
@@ -268,8 +252,8 @@ export class CalendarWeekGridCard extends LitElement {
 
     if (currentBlock) mergedBlocks.push(currentBlock);
 
-    const wrapperStyle = `top: ${topPx}px; height: ${heightPx}px;`;
-    const innerStyle = `top: ${innerTopPx}px; height: ${innerHeightPx}px;`;
+    const wrapperStyle = `top: ${topPct}%; height: ${heightPct}%;`;
+    const innerStyle = `top: ${innerTopPct}%; height: ${innerHeightPct}%;`;
 
     return html`<div
       class="event-wrapper"
@@ -306,12 +290,10 @@ export class CalendarWeekGridCard extends LitElement {
     const startRatio = (block.start - cellStartTime) / duration;
     const endRatio = (block.end - cellStartTime) / duration;
 
-    const blockTopPx = Math.round(startRatio * this.cellHeight);
-    const blockBottomPx = Math.round(endRatio * this.cellHeight);
+    const blockTopPct = startRatio * 100;
+    const blockHeightPct = (endRatio - startRatio) * 100;
 
-    const blockHeightPx = blockBottomPx - blockTopPx;
-
-    const style = `top: ${blockTopPx}px; height: ${blockHeightPx}px;`;
+    const style = `top: ${blockTopPct}%; height: ${blockHeightPct}%;`;
 
     return html`<div class="event-sub-block" style="${style}"></div>`;
   }
