@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import type { CalendarEvent } from '../../../src/types';
 import {
   toTimeZoneISOString,
+  getDateString,
   minutesToTime,
   getDayDate,
   MOCK_DATE_STR,
@@ -100,11 +101,10 @@ function createAllDayEvent(dayDate: Date, summary: string): CalendarEvent {
   const start = new Date(dayDate);
   const end = new Date(dayDate);
   end.setDate(dayDate.getDate() + 1);
-  end.setHours(0, 0, 0, 0);
 
   return {
-    start: { dateTime: toTimeZoneISOString(start) },
-    end: { dateTime: toTimeZoneISOString(end) },
+    start: { date: getDateString(start) },
+    end: { date: getDateString(end) },
     summary,
   };
 }

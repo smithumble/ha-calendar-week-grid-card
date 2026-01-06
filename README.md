@@ -54,20 +54,21 @@ type: module
 
 ## Configuration
 
-| Name              | Type   | Required | Description                                                                                 |
-| ----------------- | ------ | -------- | ------------------------------------------------------------------------------------------- |
-| `type`            | string | **Yes**  | `custom:calendar-week-grid-card`                                                            |
-| `entities`        | list   | **Yes**  | List of calendar entities or objects.                                                       |
-| `language`        | string | No       | Language code for days (e.g., `en`, `fr`).                                                  |
-| `time_format`     | string | No       | Time format pattern (e.g., `h A`, `HH:mm`).                                                 |
-| `start_hour`      | number | No       | First hour to display (0-23). Default: 0.                                                   |
-| `end_hour`        | number | No       | Last hour to display (0-23). Default: 24.                                                   |
-| `filter`          | string | No       | Global filter text for event summary.                                                       |
-| `icons_container` | string | No       | Where to render icons: `cell` (in the cell) or `event` (in event blocks). Default: `cell`.  |
-| `icons_mode`      | string | No       | Which events show icons: `top` (only main event) or `all` (all events). Default: `top`.     |
-| `event_icon`      | string | No       | Default icon for events when entity doesn't have its own icon. Default: `mdi:check-circle`. |
-| `blank_icon`      | string | No       | Icon for cells with no events.                                                              |
-| `css`             | string | No       | CSS styles for the card.                                                                    |
+| Name              | Type   | Required | Description                                                                                                                                         |
+| ----------------- | ------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`            | string | **Yes**  | `custom:calendar-week-grid-card`                                                                                                                    |
+| `entities`        | list   | **Yes**  | List of calendar entities or objects.                                                                                                               |
+| `language`        | string | No       | Language code for days (e.g., `en`, `fr`).                                                                                                          |
+| `time_format`     | string | No       | Time format pattern (e.g., `h A`, `HH:mm`).                                                                                                         |
+| `start_hour`      | number | No       | First hour to display (0-23). Default: 0.                                                                                                           |
+| `end_hour`        | number | No       | Last hour to display (0-23). Default: 24.                                                                                                           |
+| `filter`          | string | No       | Global filter text for event summary.                                                                                                               |
+| `icons_container` | string | No       | Where to render icons: `cell` (in the cell) or `event` (in event blocks). Default: `cell`.                                                          |
+| `icons_mode`      | string | No       | Which events show icons: `top` (only main event) or `all` (all events). Default: `top`.                                                             |
+| `event_icon`      | string | No       | Default icon for events when entity doesn't have its own icon. Default: `mdi:check-circle`.                                                         |
+| `blank_icon`      | string | No       | Icon for cells with no events.                                                                                                                      |
+| `all_day`         | string | No       | Where to display all-day events: `grid` (in the grid), `row` (in a separate row), or `both` (in both the grid and a separate row). Default: `grid`. |
+| `css`             | string | No       | CSS styles for the card.                                                                                                                            |
 
 ### Time Format
 
@@ -88,15 +89,16 @@ Example: `time_format: "h:mm A"` results in `1:00 PM`.
 
 ### Entity Configuration
 
-| Name          | Type   | Required | Description                                                             |
-| ------------- | ------ | -------- | ----------------------------------------------------------------------- |
-| `name`        | string | No       | Friendly name for the entity.                                           |
-| `entity`      | string | **Yes**  | The entity_id of the calendar.                                          |
-| `filter`      | string | No       | Filter text for events.                                                 |
-| `icon`        | string | No       | Icon for the entity.                                                    |
-| `type`        | string | No       | Type identifier for the entity.                                         |
-| `shift_left`  | array  | No       | Events to shift before this one. See [Event Shifting](#event-shifting). |
-| `shift_right` | array  | No       | Events to shift after this one. See [Event Shifting](#event-shifting).  |
+| Name     | Type   | Required | Description                                                                   |
+| -------- | ------ | -------- | ----------------------------------------------------------------------------- |
+| `name`   | string | No       | Friendly name for the entity.                                                 |
+| `entity` | string | **Yes**  | The entity_id of the calendar.                                                |
+| `filter` | string | No       | Filter text for events.                                                       |
+| `icon`   | string | No       | Icon for the entity.                                                          |
+| `type`   | string | No       | Type identifier for the entity.                                               |
+| `under`  | array  | No       | Events to render underneath this one. See [Event Layering](#event-layering).  |
+| `over`   | array  | No       | Events to render on top of this one. See [Event Layering](#event-layering).   |
+| `hide`   | array  | No       | Events to hide when this event is present. See [Event Hiding](#event-hiding). |
 
 ### Data Attributes
 
@@ -109,28 +111,43 @@ Event elements (`.event-wrapper` and `.event-icon`) include the following data a
 | `data-filter` | The filter text for events.                        |
 | `data-type`   | The type identifier from the entity configuration. |
 
-### Event Shifting
+### Event Layering
 
-The `shift_left` and `shift_right` options allow you to control the rendering order of events. Events are matched using OR logic - if an event matches any of the criteria in the list, it will be shifted.
+The `under` and `over` options allow you to control the rendering order (z-index) of overlapping events. Events are matched using OR logic - if an event matches any of the criteria in the list, it will be repositioned.
 
-#### Shift Criteria
+#### Layer Criteria
 
-Each item in `shift_left` or `shift_right` can be:
+Each item in `under` or `over` can be:
 
-- A **string**: Treated as a `name` match (e.g., `"planned_outages"`)
+- A **string**: Treated as a `name` match
 - An **object** with one or more of:
   - `name`: Match by entity name
   - `type`: Match by entity type
   - `entity`: Match by entity ID
   - `filter`: Match by filter text
 
-#### Shift Left
+#### Under
 
-Events matching `shift_left` criteria that appear **after** the current event will be moved **before** it.
+Events matching `under` criteria that appear **after** the current event will be moved **before** it, rendering them underneath (behind) the current event.
 
-#### Shift Right
+#### Over
 
-Events matching `shift_right` criteria that appear **before** the current event will be moved **after** it.
+Events matching `over` criteria that appear **before** the current event will be moved **after** it, rendering them on top (in front) of the current event.
+
+### Event Hiding
+
+The `hide` option allows you to hide specific events when the current event is present in the same cell. Events are matched using OR logic - if an event matches any of the criteria in the list, it will be removed from the display.
+
+#### Hide Criteria
+
+Each item in `hide` can be:
+
+- A **string**: Treated as a `name` match
+- An **object** with one or more of:
+  - `name`: Match by entity name
+  - `type`: Match by entity type
+  - `entity`: Match by entity ID
+  - `filter`: Match by filter text
 
 ## Examples
 
@@ -170,6 +187,8 @@ type: custom:calendar-week-grid-card
 language: en
 time_format: 'HH:mm'
 blank_icon: mdi:checkbox-blank-circle-outline
+all_day_icon: ''
+all_day: row
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -182,16 +201,16 @@ entities:
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
+  - name: schedule_applies
+    entity: calendar.planned_outages
+    filter: Schedule Applies
+    icon: mdi:checkbox-marked-circle
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    shift_left:
+    hide:
       - planned_outages
-  - name: schedule_applies
-    entity: calendar.planned_outages
-    filter: Schedule Applies
-    icon: mdi:calendar-check
 css: |
   .event-block {
     border-radius: 4px;
@@ -229,12 +248,7 @@ css: |
   }
 
   [data-name="waiting_for_schedule"]  {
-    &.event-icon {
-      opacity: 0.4;
-    }
-
     .event-block {
-      opacity: 0.4;
       border: 1px dotted var(--primary-text-color);
     }
 
@@ -244,12 +258,7 @@ css: |
   }
 
   [data-name="schedule_applies"] {
-    &.event-icon {
-      opacity: 0.4;
-    }
-
     .event-block {
-      opacity: 0.4;
       border: 1px dotted var(--primary-text-color);
     }
 
@@ -291,6 +300,8 @@ type: custom:calendar-week-grid-card
 language: en
 time_format: 'HH:mm'
 blank_icon: mdi:checkbox-blank-circle-outline
+all_day_icon: mdi:checkbox-blank-circle
+all_day: row
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -303,16 +314,16 @@ entities:
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
+  - name: schedule_applies
+    entity: calendar.planned_outages
+    filter: Schedule Applies
+    icon: mdi:checkbox-marked-circle
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    shift_left:
+    hide:
       - planned_outages
-  - name: schedule_applies
-    entity: calendar.planned_outages
-    filter: Schedule Applies
-    icon: mdi:calendar-check
 css: |
   .event-block {
     border-radius: 4px;
@@ -359,12 +370,10 @@ css: |
 
   [data-name="waiting_for_schedule"] {
     &.event-icon {
-      opacity: 0.4;
       color: var(--info-color);
     }
 
     .event-block {
-      opacity: 0.4;
       border: 1px dotted var(--info-color);
     }
 
@@ -375,13 +384,11 @@ css: |
 
   [data-name="schedule_applies"] {
     &.event-icon {
-      opacity: 0.4;
       color: var(--success-color);
     }
 
     .event-block {
-      opacity: 0.4;
-      border: 1px dotted var(--info-color);
+      border: 1px dotted var(--success-color);
     }
 
     .event-sub-block {
@@ -422,6 +429,8 @@ type: custom:calendar-week-grid-card
 language: en
 time_format: HH:mm
 blank_icon: mdi:checkbox-blank-circle-outline
+all_day_icon: mdi:checkbox-blank-circle
+all_day: row
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -434,16 +443,16 @@ entities:
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
+  - name: schedule_applies
+    entity: calendar.planned_outages
+    filter: Schedule Applies
+    icon: mdi:checkbox-blank-circle
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    shift_left:
+    hide:
       - planned_outages
-  - name: schedule_applies
-    entity: calendar.planned_outages
-    filter: Schedule Applies
-    icon: mdi:checkbox-blank-circle-outline
 css: |
   .event-block {
     border-radius: 4px;
@@ -518,6 +527,8 @@ type: custom:calendar-week-grid-card
 language: en
 time_format: 'HH:mm'
 blank_icon: mdi:lightning-bolt
+all_day_icon: mdi:circle-outline
+all_day: row
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -530,16 +541,16 @@ entities:
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-  - name: waiting_for_schedule
-    entity: calendar.planned_outages
-    filter: Waiting for Schedule
-    icon: mdi:timer-sand
-    shift_left:
-      - planned_outages
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:calendar-check
+  - name: waiting_for_schedule
+    entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    icon: mdi:timer-sand
+    hide:
+      - planned_outages
 css: |
   :host {
     --neon-green: #00E676;
@@ -672,6 +683,7 @@ time_format: 'HH:mm'
 icons_container: event
 icons_mode: all
 blank_icon: mdi:circle-outline
+all_day: row
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -684,16 +696,16 @@ entities:
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:alert-circle
-  - name: waiting_for_schedule
-    entity: calendar.planned_outages
-    filter: Waiting for Schedule
-    icon: mdi:clock-outline
-    shift_left:
-      - planned_outages
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:circle-outline
+  - name: waiting_for_schedule
+    entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    icon: mdi:clock-outline
+    hide:
+      - planned_outages
 css: |
   :host {
     --text-color: #444;
@@ -799,6 +811,7 @@ language: en
 time_format: HH:mm
 icons_container: event
 icons_mode: all
+all_day: row
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -815,7 +828,7 @@ entities:
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    shift_left:
+    hide:
       - planned_outages
 css: |
   :host {

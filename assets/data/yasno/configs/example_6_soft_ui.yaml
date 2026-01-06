@@ -4,6 +4,7 @@ time_format: 'HH:mm'
 icons_container: event
 icons_mode: all
 blank_icon: mdi:circle-outline
+all_day: row
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -16,16 +17,16 @@ entities:
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:alert-circle
-  - name: waiting_for_schedule
-    entity: calendar.planned_outages
-    filter: Waiting for Schedule
-    icon: mdi:clock-outline
-    shift_left:
-      - planned_outages
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:circle-outline
+  - name: waiting_for_schedule
+    entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    icon: mdi:clock-outline
+    hide:
+      - planned_outages
 css: |
   :host {
     --text-color: #444;

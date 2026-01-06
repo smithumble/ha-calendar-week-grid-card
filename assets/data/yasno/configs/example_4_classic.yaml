@@ -2,6 +2,8 @@ type: custom:calendar-week-grid-card
 language: en
 time_format: HH:mm
 blank_icon: mdi:checkbox-blank-circle-outline
+all_day_icon: mdi:checkbox-blank-circle
+all_day: row
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -14,16 +16,16 @@ entities:
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
+  - name: schedule_applies
+    entity: calendar.planned_outages
+    filter: Schedule Applies
+    icon: mdi:checkbox-blank-circle
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    shift_left:
+    hide:
       - planned_outages
-  - name: schedule_applies
-    entity: calendar.planned_outages
-    filter: Schedule Applies
-    icon: mdi:checkbox-blank-circle-outline
 css: |
   .event-block {
     border-radius: 4px;

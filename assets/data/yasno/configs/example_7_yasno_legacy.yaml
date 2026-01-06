@@ -3,6 +3,7 @@ language: en
 time_format: HH:mm
 icons_container: event
 icons_mode: all
+all_day: row
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -19,7 +20,7 @@ entities:
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    shift_left:
+    hide:
       - planned_outages
 css: |
   :host {

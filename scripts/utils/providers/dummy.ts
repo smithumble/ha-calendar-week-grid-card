@@ -1,4 +1,4 @@
-import { toTimeZoneISOString, MOCK_DATE_STR } from '../datetime';
+import { toTimeZoneISOString, getDateString, MOCK_DATE_STR } from '../datetime';
 import { BaseProvider } from './base';
 import type { MockCalendar } from './index';
 
@@ -100,6 +100,19 @@ export class DummyProvider extends BaseProvider {
             ),
           },
           summary: 'Planning',
+        });
+
+        // Thursday - Company Holiday (All Day)
+        const thursdayDate = new Date(
+          baseDate.getTime() + 3 * 24 * 60 * 60 * 1000,
+        );
+        const fridayDate = new Date(
+          baseDate.getTime() + 4 * 24 * 60 * 60 * 1000,
+        );
+        events.push({
+          start: { date: getDateString(thursdayDate) },
+          end: { date: getDateString(fridayDate) },
+          summary: 'Company Holiday',
         });
 
         // Friday - Beer: 18:30 - 20:00

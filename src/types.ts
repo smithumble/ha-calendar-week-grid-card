@@ -1,4 +1,4 @@
-export interface ShiftCriteria {
+export interface EventCriteria {
   name?: string;
   type?: string;
   entity?: string;
@@ -11,8 +11,9 @@ export interface EntityConfig {
   entity: string;
   filter?: string;
   icon?: string;
-  shift_left?: (string | ShiftCriteria)[];
-  shift_right?: (string | ShiftCriteria)[];
+  under?: (string | EventCriteria)[];
+  over?: (string | EventCriteria)[];
+  hide?: (string | EventCriteria)[];
 }
 
 export interface CardConfig {
@@ -22,6 +23,8 @@ export interface CardConfig {
   start_hour?: number;
   end_hour?: number;
   filter?: string;
+  all_day?: 'grid' | 'row' | 'both';
+  all_day_icon?: string;
   icons_container?: 'event' | 'cell';
   icons_mode?: 'top' | 'all';
   event_icon?: string;
@@ -36,14 +39,14 @@ export interface CalendarEvent {
   summary?: string;
 }
 
-export interface Event extends Omit<CalendarEvent, 'start' | 'end'> {
+export interface RawEvent extends CalendarEvent, Partial<EntityConfig> {}
+
+export interface Event
+  extends Omit<CalendarEvent, 'start' | 'end'>,
+    Partial<EntityConfig> {
   start: Date; // override with Date object
   end: Date; // override with Date object
-  name?: string;
-  type?: string;
-  entity?: string;
-  filter?: string;
-  icon?: string;
+  isAllDay?: boolean;
 }
 
 export interface DayInfo {
