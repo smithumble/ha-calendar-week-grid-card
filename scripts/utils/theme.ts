@@ -18,12 +18,12 @@ export interface ThemeCSS {
 
 export function loadTheme(): ThemeCSS {
   try {
-    const themePath = path.join(THEMES_DIR, 'catppuccin.yaml');
+    const themePath = path.join(THEMES_DIR, 'gruvbox.yaml');
     if (!fs.existsSync(themePath)) throw new Error('Theme file not found');
 
     const content = fs.readFileSync(themePath, 'utf8');
     const themes = yaml.load(content) as RawThemeNode;
-    const themeName = 'Catppuccin Auto Latte Mocha';
+    const themeName = 'Gruvbox';
     const themeData = themes[themeName] as RawThemeNode;
     const themeModes = themeData.modes as RawThemeNode;
 

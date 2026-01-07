@@ -725,9 +725,7 @@ css: |
   }
 
   ha-card {
-    border-radius: 12px;
     padding: 12px;
-    box-shadow: 0 4px 6px var(--shadow-color);
   }
 
   .cell {
@@ -1086,11 +1084,11 @@ css: |
 
 <!-- END_CONFIG -->
 
-### Example 8: Google Calendar 1
+### Example 8 (1): Google Calendar
 
-![Calendar Week Grid Card Example 8: Google Calendar 1](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_google_calendar_1.png)
+![Calendar Week Grid Card Example 8 (1): Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_1_google_calendar.png)
 
-<!-- CONFIG:yasno/example_8_google_calendar_1 -->
+<!-- CONFIG:yasno/example_8_1_google_calendar -->
 
 <details>
 <summary>Configuration</summary>
@@ -1109,7 +1107,6 @@ time_format:
 icons_mode: all
 icons_container: event
 all_day: row
-days: 8
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -1134,49 +1131,45 @@ entities:
       - planned_outages
 css: |
   ha-card { 
-    --grid-bg: #FFF;
-    --grid-border-color: #dde3ea;
-    --grid-primary-text-color: #1f1f1f;
-    --grid-secondary-text-color: #444746;
-    --grid-event-text-color: #fff;
-    --grid-accent-color: #0b57d0;
-    --grid-accent-text-color: #fff;
-    --planned-outages-color: #F3511E;
-    --probable-outages-color: #4285F4;
-    --emergency-shutdowns-color: #D40101;
-    --schedule-applies-color: #34B779;
-    --waiting-for-schedule-color: #F6BE28;
+    --grid-bg: var(--card-background-color, #FFF);
+    --grid-border-color: var(--divider-color, #dde3ea);
+    --grid-primary-text-color: var(--primary-text-color, #1f1f1f);
+    --grid-secondary-text-color: var(--secondary-text-color, #444746);
+    --grid-event-text-color: var(--card-background-color, #fff);
+    --grid-accent-color: var(--primary-color, #0b57d0);
+    --grid-accent-text-color: var(--card-background-color, #fff);
+    --planned-outages-color: var(--error-color, #F3511E);
+    --probable-outages-color: var(--primary-color, #4285F4);
+    --emergency-shutdowns-color: var(--error-color, #D40101);
+    --schedule-applies-color: var(--success-color, #34B779);
+    --waiting-for-schedule-color: var(--warning-color, #F6BE28);
   }
 
   ha-card.theme-dark {
-    --grid-bg: #202124;
-    --grid-border-color: #3c4043;
-    --grid-primary-text-color: #e3e3e3;
-    --grid-secondary-text-color: #c4c7c5;
-    --grid-event-text-color: #131314;
-    --grid-accent-color: #a8c7fa;
-    --grid-accent-text-color: #062e6f;
-    --planned-outages-color: #E3683E;
-    --probable-outages-color: #678AE1;
-    --emergency-shutdowns-color: #D95234;
-    --schedule-applies-color: #56B080;
-    --waiting-for-schedule-color: #E6BA50;
+    --grid-bg: var(--card-background-color, #202124);
+    --grid-border-color: var(--divider-color, #3c4043);
+    --grid-primary-text-color: var(--primary-text-color, #e3e3e3);
+    --grid-secondary-text-color: var(--secondary-text-color, #c4c7c5);
+    --grid-event-text-color: var(--card-background-color, #131314);
+    --grid-accent-color: var(--primary-color, #a8c7fa);
+    --grid-accent-text-color: var(--card-background-color, #062e6f);
+    --planned-outages-color: var(--error-color, #E3683E);
+    --probable-outages-color: var(--primary-color, #678AE1);
+    --emergency-shutdowns-color: var(--error-color, #D95234);
+    --schedule-applies-color: var(--success-color, #56B080);
+    --waiting-for-schedule-color: var(--warning-color, #E6BA50);
   }
 
   ha-card {
     background-color: var(--grid-bg);
-    box-shadow: none !important;
-    border: none !important;
-    border-radius: 16px;
-    font-family: 'Google Sans', Roboto, Arial, sans-serif;
     padding: 15px;
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
   }
 
   /* Grid Styling */
 
   .grid-container {
     gap: 0px;
-    border-radius: 8px;
     overflow: hidden;
   }
 
@@ -1271,7 +1264,233 @@ css: |
 
   .event-icon {
     color: var(--grid-event-text-color);
-    --mdc-icon-size: 14px;
+    --icon-size: 14px;
+  }
+
+  /* Current Time Line */
+
+  .current-time-line {
+    background-color: var(--warning-color);
+    height: 2px;
+  }
+  .current-time-circle {
+    background-color: var(--warning-color);
+    width: 8px;
+    height: 8px;
+    left: -4px;
+    top: -3px;
+  }
+
+  /* Specific Event Styles */
+
+  [data-name="planned_outages"] .event-sub-block {
+    background-color: var(--planned-outages-color);
+  }
+
+  [data-name="probable_outages"] .event-sub-block {
+    background-color: var(--probable-outages-color);
+  }
+
+  [data-name="emergency_shutdowns"] .event-sub-block {
+    background-color: var(--emergency-shutdowns-color);
+  }
+
+  [data-name="schedule_applies"] .event-sub-block {
+    background-color: var(--schedule-applies-color); 
+  }
+
+  [data-name="waiting_for_schedule"] .event-sub-block {
+    background-color: var(--waiting-for-schedule-color);
+  }
+```
+
+</details>
+
+<!-- END_CONFIG -->
+
+### Example 8 (2): Google Calendar Original
+
+![Calendar Week Grid Card Example 8 (2): Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_2_google_calendar_original.png)
+
+<!-- CONFIG:yasno/example_8_2_google_calendar_original -->
+
+<details>
+<summary>Configuration</summary>
+
+```yaml
+type: custom:calendar-week-grid-card
+language: en
+primary_date_format:
+  weekday: 'short'
+secondary_date_format:
+  day: 'numeric'
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
+  hour12: false
+icons_mode: all
+icons_container: event
+all_day: row
+entities:
+  - name: planned_outages
+    entity: calendar.planned_outages
+    filter: Outage
+    icon: mdi:flash-off
+  - name: probable_outages
+    entity: calendar.probable_outages
+    icon: mdi:flash-off
+  - name: emergency_shutdowns
+    entity: calendar.planned_outages
+    filter: Emergency Shutdowns
+    icon: mdi:transmission-tower-off
+  - name: schedule_applies
+    entity: calendar.planned_outages
+    filter: Schedule Applies
+    icon: mdi:checkbox-blank-circle-outline
+  - name: waiting_for_schedule
+    entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    icon: mdi:timer-sand
+    hide:
+      - planned_outages
+css: |
+  ha-card { 
+    --grid-bg: #FFF;
+    --grid-border-color: #dde3ea;
+    --grid-primary-text-color: #1f1f1f;
+    --grid-secondary-text-color: #444746;
+    --grid-event-text-color: #fff;
+    --grid-accent-color: #0b57d0;
+    --grid-accent-text-color: #fff;
+    --planned-outages-color: #F3511E;
+    --probable-outages-color: #4285F4;
+    --emergency-shutdowns-color: #D40101;
+    --schedule-applies-color: #34B779;
+    --waiting-for-schedule-color: #F6BE28;
+  }
+
+  ha-card.theme-dark {
+    --grid-bg: #202124;
+    --grid-border-color: #3c4043;
+    --grid-primary-text-color: #e3e3e3;
+    --grid-secondary-text-color: #c4c7c5;
+    --grid-event-text-color: #131314;
+    --grid-accent-color: #a8c7fa;
+    --grid-accent-text-color: #062e6f;
+    --planned-outages-color: #E3683E;
+    --probable-outages-color: #678AE1;
+    --emergency-shutdowns-color: #D95234;
+    --schedule-applies-color: #56B080;
+    --waiting-for-schedule-color: #E6BA50;
+  }
+
+  ha-card {
+    background-color: var(--grid-bg);
+    box-shadow: none !important;
+    border: none !important;
+    padding: 15px;
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+  }
+
+  /* Grid Styling */
+
+  .grid-container {
+    gap: 0px;
+    overflow: hidden;
+  }
+
+  .time-label-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+  }
+
+  .time-label-wrapper + .cell-wrapper,
+  .cell-wrapper + .cell-wrapper,
+  .time-label-wrapper::after {
+    border-bottom: 1px solid var(--grid-border-color);
+  }
+
+  .time-label-wrapper + .cell-wrapper,
+  .cell-wrapper + .cell-wrapper {
+    border-left: 1px solid var(--grid-border-color);
+    padding-right: 4px;
+    padding-bottom: 4px;
+  }
+
+  .cell-wrapper {
+    box-sizing: border-box;
+    height: 28px;
+  }
+
+  .cell {
+    margin-top: -1px;
+    margin-left: -1px;
+    height: 100%;
+  }
+
+  .day-header {
+    padding-bottom: 16px;
+  }
+
+  .day-header.today {
+    color: var(--grid-accent-color);
+  }
+
+  .day-header-primary {
+    text-transform: uppercase;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--grid-secondary-text-color);
+  }
+
+  .day-header-secondary {
+    position: relative;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--grid-primary-text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  .day-header.today .day-header-secondary {
+    color: var(--grid-accent-text-color);
+  }
+
+  .day-header.today .day-header-secondary:before {
+    content: '';
+    position: absolute;
+    z-index: -1; 
+    width: 100%;
+    max-width: 30px;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    background-color: var(--grid-accent-color);
+  }
+
+  .time-label {
+    top: -14px;
+    font-size: 10px;
+    color: var(--grid-secondary-text-color);
+    justify-content: flex-end;
+    padding-right: 20px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .event-block {
+    border-radius: 6px;
+  }
+
+  /* Icons: Subtle placement */
+
+  .event-icon {
+    color: var(--grid-event-text-color);
+    --icon-size: 14px;
   }
 
   /* Current Time Line */
@@ -1315,11 +1534,11 @@ css: |
 
 <!-- END_CONFIG -->
 
-### Example 9: Google Calendar 2
+### Example 8 (3): Google Calendar Original Separated
 
-![Calendar Week Grid Card Example 9: Google Calendar 2](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_9_google_calendar_2.png)
+![Calendar Week Grid Card Example 8 (3): Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_3_google_calendar_original_separated.png)
 
-<!-- CONFIG:yasno/example_9_google_calendar_2 -->
+<!-- CONFIG:yasno/example_8_3_google_calendar_original_separated -->
 
 <details>
 <summary>Configuration</summary>
@@ -1396,15 +1615,14 @@ css: |
     box-shadow: none !important;
     border: none !important;
     border-radius: 16px;
-    font-family: 'Google Sans', Roboto, Arial, sans-serif;
     padding: 15px;
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
   }
 
   /* Grid Styling */
 
   .grid-container {
     gap: 0px;
-    border-radius: 8px;
     overflow: hidden;
   }
 
@@ -1505,7 +1723,7 @@ css: |
 
   .event-icon {
     color: var(--grid-event-text-color);
-    --mdc-icon-size: 14px;
+    --icon-size: 14px;
   }
 
   .event-wrapper:has(.event-sub-block:not([style*="top: 0%;"][style*="height: 100%;"])) .event-icon-overlay {

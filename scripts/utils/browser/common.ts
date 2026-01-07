@@ -72,7 +72,7 @@ function mockHaCard() {
                   display: block;
                   background: var(--ha-card-background, var(--card-background-color, #fff));
                   box-shadow: var(--ha-card-box-shadow, none);
-                  border-radius: var(--ha-card-border-radius, 4px);
+                  border-radius: var(--ha-card-border-radius, 12px);
                   color: var(--primary-text-color);
                   transition: all 0.3s ease-out;
                   position: relative;

@@ -59,9 +59,7 @@ css: |
   }
 
   ha-card {
-    border-radius: 12px;
     padding: 12px;
-    box-shadow: 0 4px 6px var(--shadow-color);
   }
 
   .cell {

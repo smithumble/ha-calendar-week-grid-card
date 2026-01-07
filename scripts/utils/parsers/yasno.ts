@@ -214,7 +214,7 @@ function loadYasnoData(dataSource: string): {
 // ============================================================================
 
 /**
- * Parse probable events for all weekdays (0-6)
+ * Parse probable events for all weekdays (0-6) across 3 weeks (21 days total)
  * @param probableGroup - The probable group data
  * @param baseDate - Base date (should be a Monday)
  * @param mondayIndex - Which index in the data represents Monday (default: 0)
@@ -226,21 +226,28 @@ function parseProbableEvents(
 ): CalendarEvent[] {
   const events: CalendarEvent[] = [];
 
-  for (let weekday = 0; weekday < 7; weekday++) {
-    const slots = probableGroup?.slots?.[weekday.toString()];
-    if (!slots) continue;
+  // Process 3 weeks: previous week (-7), current week (0), next week (+7)
+  const weekOffsets = [-7, 0, 7];
 
-    // Map weekday index from data to actual day offset
-    // If mondayIndex=0: weekday 0 -> day offset 0 (Monday), 1 -> 1 (Tuesday), etc.
-    // If mondayIndex=1: weekday 0 -> day offset 6 (Sunday), 1 -> 0 (Monday), etc.
-    const dayOffset = (weekday - mondayIndex + 7) % 7;
-    const dayDate = getDayDate(baseDate, dayOffset);
+  for (const weekOffset of weekOffsets) {
+    const weekBaseDate = getDayDate(baseDate, weekOffset);
 
-    slots.forEach((slot: Slot) => {
-      if (slot.type === SLOT_TYPE_DEFINITE) {
-        events.push(createEventFromSlot(slot, dayDate, 'Probable Outage'));
-      }
-    });
+    for (let weekday = 0; weekday < 7; weekday++) {
+      const slots = probableGroup?.slots?.[weekday.toString()];
+      if (!slots) continue;
+
+      // Map weekday index from data to actual day offset
+      // If mondayIndex=0: weekday 0 -> day offset 0 (Monday), 1 -> 1 (Tuesday), etc.
+      // If mondayIndex=1: weekday 0 -> day offset 6 (Sunday), 1 -> 0 (Monday), etc.
+      const dayOffset = (weekday - mondayIndex + 7) % 7;
+      const dayDate = getDayDate(weekBaseDate, dayOffset);
+
+      slots.forEach((slot: Slot) => {
+        if (slot.type === SLOT_TYPE_DEFINITE) {
+          events.push(createEventFromSlot(slot, dayDate, 'Probable Outage'));
+        }
+      });
+    }
   }
 
   return events;
