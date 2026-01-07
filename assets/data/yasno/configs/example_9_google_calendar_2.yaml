@@ -34,14 +34,14 @@ entities:
     hide:
       - planned_outages
 css: |
-  :host {
+  ha-card {
     --grid-bg: #FFF;
     --grid-border-color: #dde3ea;
-    --primary-text-color: #1f1f1f;
-    --secondary-text-color: #444746;
-    --event-text-color: #fff;
-    --accent-color: #0b57d0;
-    --accent-text-color: #fff;
+    --grid-primary-text-color: #1f1f1f;
+    --grid-secondary-text-color: #444746;
+    --grid-event-text-color: #fff;
+    --grid-accent-color: #0b57d0;
+    --grid-accent-text-color: #fff;
     --planned-outages-color: #F3511E;
     --probable-outages-color: #4285F4;
     --emergency-shutdowns-color: #D40101;
@@ -49,14 +49,14 @@ css: |
     --waiting-for-schedule-color: #F6BE28;
   }
 
-  :host-context(.theme-dark) {
+  ha-card.theme-dark {
     --grid-bg: #202124;
     --grid-border-color: #3c4043;
-    --primary-text-color: #e3e3e3;
-    --secondary-text-color: #c4c7c5;
-    --event-text-color: #131314;
-    --accent-color: #a8c7fa;
-    --accent-text-color: #062e6f;
+    --grid-primary-text-color: #e3e3e3;
+    --grid-secondary-text-color: #c4c7c5;
+    --grid-event-text-color: #131314;
+    --grid-accent-color: #a8c7fa;
+    --grid-accent-text-color: #062e6f;
     --planned-outages-color: #E3683E;
     --probable-outages-color: #678AE1;
     --emergency-shutdowns-color: #D95234;
@@ -116,38 +116,47 @@ css: |
   }
 
   .day-header.today {
-    color: var(--accent-color);
+    color: var(--grid-accent-color);
   }
 
   .day-header-primary {
     text-transform: uppercase;
     font-size: 10px;
     font-weight: 500;
-    color: var(--secondary-text-color);
+    color: var(--grid-secondary-text-color);
   }
 
   .day-header-secondary {
+    position: relative;
     font-size: 16px;
     font-weight: 400;
-    color: var(--primary-text-color);
+    color: var(--grid-primary-text-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-top: 2px;
+    margin-top: 8px;
+    width: 100%;
   }
 
   .day-header.today .day-header-secondary {
-    background-color: var(--accent-color);
-    color: var(--accent-text-color);
+    color: var(--grid-accent-text-color);
+  }
+
+  .day-header.today .day-header-secondary:before {
+    content: '';
+    position: absolute;
+    z-index: -1; 
+    width: 100%;
+    max-width: 30px;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    background-color: var(--grid-accent-color);
   }
 
   .time-label {
     top: -14px;
     font-size: 10px;
-    color: var(--secondary-text-color);
+    color: var(--grid-secondary-text-color);
     justify-content: flex-end;
     padding-right: 20px;
     font-variant-numeric: tabular-nums;
@@ -168,7 +177,7 @@ css: |
   /* Icons: Subtle placement */
 
   .event-icon {
-    color: var(--event-text-color);
+    color: var(--grid-event-text-color);
     --mdc-icon-size: 14px;
   }
 

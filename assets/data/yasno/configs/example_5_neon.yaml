@@ -35,7 +35,7 @@ entities:
     hide:
       - planned_outages
 css: |
-  :host {
+  ha-card {
     --neon-green: #00E676;
     --neon-green-shadow: rgba(0, 230, 118, 0.3);
     --neon-green-bg: rgba(0, 230, 118, 0.01);

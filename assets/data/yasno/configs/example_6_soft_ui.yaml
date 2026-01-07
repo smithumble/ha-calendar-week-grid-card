@@ -36,7 +36,7 @@ entities:
     hide:
       - planned_outages
 css: |
-  :host {
+  ha-card {
     --text-color: #444;
     --text-primary: var(--text-color);
     --text-secondary: var(--text-color);

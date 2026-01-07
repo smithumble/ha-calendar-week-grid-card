@@ -110,7 +110,7 @@ export function generateScreenshotPageHTML(): string {
 
           #card-container-light, #card-container-dark {
             width: 100%;
-            max-width: 400px;
+            max-width: 440px;
           }
         </style>
       </head>

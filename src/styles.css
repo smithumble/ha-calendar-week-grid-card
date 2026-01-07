@@ -17,7 +17,7 @@ ha-card {
 
 .grid-container {
   display: grid;
-  grid-template-columns: auto repeat(7, 1fr);
+  grid-template-columns: auto repeat(7, 1fr); /* Default fallback, overridden by inline style */
   gap: 4px;
   overflow-x: auto;
 }

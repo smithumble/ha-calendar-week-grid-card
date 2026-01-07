@@ -51,7 +51,36 @@ export class CalendarWeekGridCard extends LitElement {
   protected updated(changedProps: PropertyValues): void {
     if (changedProps.has('hass')) {
       this.fetchEventsIfNeeded();
+      this.updateThemeClass();
     }
+    if (changedProps.has('config')) {
+      this.updateThemeClass();
+    }
+  }
+
+  private updateThemeClass(): void {
+    const themeConfig = this.config?.theme || 'auto';
+    let isDark = false;
+
+    if (themeConfig === 'dark') {
+      isDark = true;
+    } else if (themeConfig === 'light') {
+      isDark = false;
+    } else {
+      const themes = this.hass?.themes as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      isDark = themes?.darkMode || false;
+    }
+
+    this.classList.toggle('theme-dark', !!isDark);
+    this.classList.toggle('theme-light', !isDark);
+
+    const haCard = this.shadowRoot?.querySelector('ha-card');
+    if (!haCard) {
+      return;
+    }
+
+    haCard.classList.toggle('theme-dark', !!isDark);
+    haCard.classList.toggle('theme-light', !isDark);
   }
 
   protected render(): TemplateResult {
@@ -92,9 +121,11 @@ export class CalendarWeekGridCard extends LitElement {
     const showAllDayRow =
       this.config?.all_day === 'row' || this.config?.all_day === 'both';
 
+    const daysCount = days.length;
     return html`
       <div
         class="grid-container"
+        style="grid-template-columns: auto repeat(${daysCount}, minmax(0, 1fr));"
         data-icons-container="${this.config?.icons_container || 'cell'}"
         data-icons-mode="${this.config?.icons_mode || 'top'}"
         data-all-day="${this.config?.all_day || 'grid'}"
@@ -450,11 +481,20 @@ export class CalendarWeekGridCard extends LitElement {
 
     this.lastFetched = Date.now();
 
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    start.setDate(start.getDate() - 1);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 10);
+    const daysCount = this.config?.days ?? 7;
+    const today = this.toHaTime(new Date());
+    today.setHours(0, 0, 0, 0);
+
+    // Calculate the start date based on week_start config (same as in getDays)
+    const weekStart = this.config?.week_start || 'today';
+    const displayStartDate = this.getWeekStartDate(today, weekStart);
+
+    // Fetch events starting from a few days before the display start (buffer)
+    // and extending to cover all displayed days
+    const start = new Date(displayStartDate);
+    start.setDate(start.getDate() - daysCount - 1);
+    const end = new Date(displayStartDate);
+    end.setDate(end.getDate() + daysCount + 1);
 
     const startIso = start.toISOString();
     const endIso = end.toISOString();
@@ -520,6 +560,10 @@ export class CalendarWeekGridCard extends LitElement {
     const today = this.toHaTime(new Date());
     today.setHours(0, 0, 0, 0);
 
+    // Calculate the start date based on week_start config
+    const weekStart = this.config?.week_start || 'today';
+    const startDate = this.getWeekStartDate(today, weekStart);
+
     const lang = this.config?.language || this.hass?.language || 'en';
 
     // Primary date format (default: weekday:short)
@@ -534,9 +578,10 @@ export class CalendarWeekGridCard extends LitElement {
       ? new Intl.DateTimeFormat(lang, secondaryFormat)
       : null;
 
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
+    const daysCount = this.config?.days ?? 7;
+    for (let i = 0; i < daysCount; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
 
       const primaryLabel = primaryDateFormat.format(date);
       const label =
@@ -546,14 +591,47 @@ export class CalendarWeekGridCard extends LitElement {
         ? secondaryDateFormat.format(date)
         : undefined;
 
+      // Check if this date is today
+      const isToday = date.toDateString() === today.toDateString();
+
       days.push({
         date: date,
         label: label,
         secondaryLabel: secondaryLabel,
-        isToday: i === 0,
+        isToday: isToday,
       });
     }
     return days;
+  }
+
+  private getWeekStartDate(today: Date, weekStart: string): Date {
+    if (weekStart === 'today') {
+      return new Date(today);
+    }
+
+    // Map day names to day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+    const dayMap: Record<string, number> = {
+      sunday: 0,
+      monday: 1,
+      tuesday: 2,
+      wednesday: 3,
+      thursday: 4,
+      friday: 5,
+      saturday: 6,
+    };
+
+    const targetDay = dayMap[weekStart.toLowerCase()];
+    if (targetDay === undefined) {
+      // Invalid week_start, default to today
+      return new Date(today);
+    }
+
+    const currentDay = today.getDay();
+    let daysToSubtract = (currentDay - targetDay + 7) % 7;
+
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - daysToSubtract);
+    return startDate;
   }
 
   private formatTime(hour: number): string {

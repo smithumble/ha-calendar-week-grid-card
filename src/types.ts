@@ -33,6 +33,17 @@ export interface CardConfig {
   icons_mode?: 'top' | 'all';
   event_icon?: string;
   blank_icon?: string;
+  week_start?:
+    | 'today'
+    | 'sunday'
+    | 'monday'
+    | 'tuesday'
+    | 'wednesday'
+    | 'thursday'
+    | 'friday'
+    | 'saturday';
+  days?: number;
+  theme?: 'dark' | 'light' | 'auto';
   entities: (string | EntityConfig)[];
   css?: string;
 }

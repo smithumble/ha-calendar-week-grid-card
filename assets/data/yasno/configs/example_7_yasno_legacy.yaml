@@ -26,15 +26,14 @@ entities:
     hide:
       - planned_outages
 css: |
-  :host {
+  ha-card {
     --color-highlight: #FDD631;
     --color-highlight-icon: #1e1e2e;
-
     --color-highlight-light: #FDD631;
     --color-highlight-light-icon: var(--primary-text-color);
   }
 
-  :host-context(.theme-dark) {
+  ha-card.theme-dark {
     --color-highlight-light-icon: #FDD631;
   }
 
