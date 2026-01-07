@@ -71,7 +71,10 @@ type: module
 | `event_icon`            | string        | No       | Default icon for events when entity doesn't have its own icon. Default: `mdi:check-circle`.                                                                  |
 | `blank_icon`            | string        | No       | Icon for cells with no events.                                                                                                                               |
 | `all_day`               | string        | No       | Where to display all-day events: `grid` (in the grid), `row` (in a separate row), or `both` (in both the grid and a separate row). Default: `grid`.          |
+| `all_day_icon`         | string        | No       | Icon for all-day events. If not specified, uses `blank_icon` for all-day cells.                                                                             |
 | `all_day_label`         | string        | No       | Label text for the all-day row in the time column. Default: empty string.                                                                                    |
+| `week_start`            | string        | No       | Day of the week to start the calendar: `today`, `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, or `saturday`. Default: `today`.           |
+| `days`                  | number        | No       | Number of days to display. Default: `7`.                                                                                                                    |
 | `theme`                 | string        | No       | Theme mode: `dark`, `light`, or `auto` (default). `auto` automatically detects the theme from Home Assistant. `dark` and `light` force the respective theme. |
 | `css`                   | string        | No       | CSS styles for the card.                                                                                                                                     |
 
