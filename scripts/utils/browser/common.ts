@@ -19,10 +19,17 @@ interface MockCard extends HTMLElement {
   setConfig: (config: any) => void;
 }
 
-function createMockHass(config: any, calendars: MockCalendar[]) {
+function createMockHass(
+  config: any,
+  calendars: MockCalendar[],
+  darkMode: boolean = false,
+) {
   return {
     language: config.language || 'en',
     config: { time_zone: 'Europe/Kiev' },
+    themes: {
+      darkMode: darkMode,
+    },
     callApi: async (_method: string, path: string) => {
       if (!path.startsWith('calendars/')) return [];
 
@@ -65,7 +72,7 @@ function mockHaCard() {
                   display: block;
                   background: var(--ha-card-background, var(--card-background-color, #fff));
                   box-shadow: var(--ha-card-box-shadow, none);
-                  border-radius: var(--ha-card-border-radius, 4px);
+                  border-radius: var(--ha-card-border-radius, 12px);
                   color: var(--primary-text-color);
                   transition: all 0.3s ease-out;
                   position: relative;
@@ -177,10 +184,11 @@ function setupCard(
   card: MockCard,
   cardConfig: any,
   calendars: MockCalendar[],
+  darkMode: boolean = false,
 ): void {
   Promise.resolve().then(() => {
     try {
-      card.hass = createMockHass(cardConfig, calendars);
+      card.hass = createMockHass(cardConfig, calendars, darkMode);
       card.setConfig(cardConfig);
     } catch (error) {
       console.error('Error setting up card:', error);
@@ -196,10 +204,13 @@ function renderCardToContainer(
   const container = document.getElementById(containerId);
   if (!container) return;
 
+  // Determine theme based on container ID
+  const isDarkMode = containerId.includes('dark');
+
   container.innerHTML = '';
   const card = createCard();
   container.appendChild(card);
-  setupCard(card, cardConfig, calendars);
+  setupCard(card, cardConfig, calendars, isDarkMode);
 }
 
 export function renderCards(config: any, calendars: MockCalendar[]) {

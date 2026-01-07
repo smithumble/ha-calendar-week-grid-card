@@ -1,9 +1,13 @@
 type: custom:calendar-week-grid-card
 language: en
-time_format: HH:mm
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
 start_hour: 6
 end_hour: 24
 blank_icon: mdi:checkbox-blank-circle-outline
+all_day_icon: mdi:circle
+all_day: row
 entities:
   - entity: calendar.work_schedule
     filter: Sleep
@@ -20,6 +24,9 @@ entities:
   - entity: calendar.work_schedule
     filter: Working Hours
     icon: mdi:checkbox-blank-circle-outline
+  - entity: calendar.work_schedule
+    filter: Company Holiday
+    icon: mdi:calendar-check
 css: |
   ha-card {
     --event-border-radius: 4px;
@@ -75,6 +82,16 @@ css: |
       &[data-filter="Working Hours"] {
         &.event-icon {
           color: rgb(from var(--color-neutral) r g b / 0.3);
+        }
+
+        .event-block {
+          border: 1px dotted rgb(from var(--color-neutral) r g b / 0.3);
+        }
+      }
+
+      &[data-filter="Company Holiday"] {
+        &.event-icon {
+          color: var(--color-error);
         }
 
         .event-block {

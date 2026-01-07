@@ -6,14 +6,11 @@ secondary_date_format:
   day: 'numeric'
 time_format:
   hour: '2-digit'
-  hour12: true
+  minute: '2-digit'
+  hour12: false
 icons_mode: all
 icons_container: event
 all_day: row
-start_hour: 7
-end_hour: 22
-days: 8
-week_start: 'sunday'
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -38,37 +35,39 @@ entities:
       - planned_outages
 css: |
   ha-card { 
-    --grid-bg: var(--card-background-color, #FFF);
-    --grid-border-color: var(--divider-color, #dde3ea);
-    --grid-primary-text-color: var(--primary-text-color, #1f1f1f);
-    --grid-secondary-text-color: var(--secondary-text-color, #444746);
-    --grid-event-text-color: var(--card-background-color, #fff);
-    --grid-accent-color: var(--primary-color, #0b57d0);
-    --grid-accent-text-color: var(--card-background-color, #fff);
-    --planned-outages-color: var(--error-color, #F3511E);
-    --probable-outages-color: var(--primary-color, #4285F4);
-    --emergency-shutdowns-color: var(--error-color, #D40101);
-    --schedule-applies-color: var(--success-color, #34B779);
-    --waiting-for-schedule-color: var(--warning-color, #F6BE28);
+    --grid-bg: #FFF;
+    --grid-border-color: #dde3ea;
+    --grid-primary-text-color: #1f1f1f;
+    --grid-secondary-text-color: #444746;
+    --grid-event-text-color: #fff;
+    --grid-accent-color: #0b57d0;
+    --grid-accent-text-color: #fff;
+    --planned-outages-color: #F3511E;
+    --probable-outages-color: #4285F4;
+    --emergency-shutdowns-color: #D40101;
+    --schedule-applies-color: #34B779;
+    --waiting-for-schedule-color: #F6BE28;
   }
 
   ha-card.theme-dark {
-    --grid-bg: var(--card-background-color, #202124);
-    --grid-border-color: var(--divider-color, #3c4043);
-    --grid-primary-text-color: var(--primary-text-color, #e3e3e3);
-    --grid-secondary-text-color: var(--secondary-text-color, #c4c7c5);
-    --grid-event-text-color: var(--card-background-color, #131314);
-    --grid-accent-color: var(--primary-color, #a8c7fa);
-    --grid-accent-text-color: var(--card-background-color, #062e6f);
-    --planned-outages-color: var(--error-color, #E3683E);
-    --probable-outages-color: var(--primary-color, #678AE1);
-    --emergency-shutdowns-color: var(--error-color, #D95234);
-    --schedule-applies-color: var(--success-color, #56B080);
-    --waiting-for-schedule-color: var(--warning-color, #E6BA50);
+    --grid-bg: #202124;
+    --grid-border-color: #3c4043;
+    --grid-primary-text-color: #e3e3e3;
+    --grid-secondary-text-color: #c4c7c5;
+    --grid-event-text-color: #131314;
+    --grid-accent-color: #a8c7fa;
+    --grid-accent-text-color: #062e6f;
+    --planned-outages-color: #E3683E;
+    --probable-outages-color: #678AE1;
+    --emergency-shutdowns-color: #D95234;
+    --schedule-applies-color: #56B080;
+    --waiting-for-schedule-color: #E6BA50;
   }
 
   ha-card {
     background-color: var(--grid-bg);
+    box-shadow: none !important;
+    border: none !important;
     padding: 15px;
     font-family: 'Google Sans', Roboto, Arial, sans-serif;
   }
@@ -177,11 +176,11 @@ css: |
   /* Current Time Line */
 
   .current-time-line {
-    background-color: var(--warning-color);
+    background-color: #ea4335;
     height: 2px;
   }
   .current-time-circle {
-    background-color: var(--warning-color);
+    background-color: #ea4335;
     width: 8px;
     height: 8px;
     left: -4px;

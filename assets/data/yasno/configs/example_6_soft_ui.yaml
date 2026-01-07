@@ -1,9 +1,18 @@
 type: custom:calendar-week-grid-card
 language: en
-time_format: 'HH:mm'
+primary_date_format:
+  weekday: 'short'
+secondary_date_format:
+  day: 'numeric'
+  month: 'short'
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
+  hour12: false
 icons_container: event
 icons_mode: all
 blank_icon: mdi:circle-outline
+all_day: row
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -16,16 +25,18 @@ entities:
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:alert-circle
-  - name: waiting_for_schedule
-    entity: calendar.planned_outages
-    filter: Waiting for Schedule
-    icon: mdi:clock-outline
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:circle-outline
+  - name: waiting_for_schedule
+    entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    icon: mdi:clock-outline
+    hide:
+      - planned_outages
 css: |
-  :host {
+  ha-card {
     --text-color: #444;
     --text-primary: var(--text-color);
     --text-secondary: var(--text-color);

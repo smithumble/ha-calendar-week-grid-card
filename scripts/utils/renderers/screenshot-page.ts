@@ -110,18 +110,18 @@ export function generateScreenshotPageHTML(): string {
 
           #card-container-light, #card-container-dark {
             width: 100%;
-            max-width: 400px;
+            max-width: 440px;
           }
         </style>
       </head>
       <body>
-        <div class="theme-container theme-light">
-          <div class="theme-label">Light</div>
-          <div id="card-container-light"></div>
-        </div>
         <div class="theme-container theme-dark">
           <div class="theme-label">Dark</div>
           <div id="card-container-dark"></div>
+        </div>
+        <div class="theme-container theme-light">
+          <div class="theme-label">Light</div>
+          <div id="card-container-light"></div>
         </div>
       </body>
     </html>

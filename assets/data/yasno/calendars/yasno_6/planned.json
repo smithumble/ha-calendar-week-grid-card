@@ -1,0 +1,15 @@
+{
+  "6.1": {
+    "today": {
+      "slots": [],
+      "date": "2025-12-29T00:00:00+02:00",
+      "status": "EmergencyShutdowns"
+    },
+    "tomorrow": {
+      "slots": [],
+      "date": "2025-12-30T00:00:00+02:00",
+      "status": "EmergencyShutdowns"
+    },
+    "updatedOn": "2025-12-29T10:52:52+00:00"
+  }
+}

@@ -19,8 +19,10 @@ import type {
   CardConfig,
   CalendarEvent,
   Event,
+  RawEvent,
   DayInfo,
   EntityConfig,
+  EventCriteria,
 } from './types';
 
 @customElement('calendar-week-grid-card')
@@ -28,7 +30,6 @@ export class CalendarWeekGridCard extends LitElement {
   @property({ attribute: false }) public hass?: HomeAssistant;
   @state() private config?: CardConfig;
   @state() private events: Event[] = [];
-  @state() private cellHeight: number = 24;
 
   private lastFetched: number = 0;
 
@@ -50,10 +51,36 @@ export class CalendarWeekGridCard extends LitElement {
   protected updated(changedProps: PropertyValues): void {
     if (changedProps.has('hass')) {
       this.fetchEventsIfNeeded();
+      this.updateThemeClass();
     }
-    requestAnimationFrame(() => {
-      this.updateHeightFromCss();
-    });
+    if (changedProps.has('config')) {
+      this.updateThemeClass();
+    }
+  }
+
+  private updateThemeClass(): void {
+    const themeConfig = this.config?.theme || 'auto';
+    let isDark = false;
+
+    if (themeConfig === 'dark') {
+      isDark = true;
+    } else if (themeConfig === 'light') {
+      isDark = false;
+    } else {
+      const themes = this.hass?.themes as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      isDark = themes?.darkMode || false;
+    }
+
+    this.classList.toggle('theme-dark', !!isDark);
+    this.classList.toggle('theme-light', !isDark);
+
+    const haCard = this.shadowRoot?.querySelector('ha-card');
+    if (!haCard) {
+      return;
+    }
+
+    haCard.classList.toggle('theme-dark', !!isDark);
+    haCard.classList.toggle('theme-light', !isDark);
   }
 
   protected render(): TemplateResult {
@@ -87,11 +114,21 @@ export class CalendarWeekGridCard extends LitElement {
       (_, i) => startHour + i,
     );
 
+    const gridEvents = this.events;
+    const allDayEvents = this.events.filter(
+      (e) => e.isAllDay || e.type === 'blank',
+    );
+    const showAllDayRow =
+      this.config?.all_day === 'row' || this.config?.all_day === 'both';
+
+    const daysCount = days.length;
     return html`
       <div
         class="grid-container"
+        style="grid-template-columns: auto repeat(${daysCount}, minmax(0, 1fr));"
         data-icons-container="${this.config?.icons_container || 'cell'}"
         data-icons-mode="${this.config?.icons_mode || 'top'}"
+        data-all-day="${this.config?.all_day || 'grid'}"
       >
         <!-- Header Row -->
         <div></div>
@@ -99,14 +136,22 @@ export class CalendarWeekGridCard extends LitElement {
           (day) => html`
             <div class="day-header-wrapper">
               <div class="day-header ${day.isToday ? 'today' : ''}">
-                ${day.label}
+                <div class="day-header-primary">${day.label}</div>
+                ${day.secondaryLabel
+                  ? html`<div class="day-header-secondary">
+                      ${day.secondaryLabel}
+                    </div>`
+                  : ''}
               </div>
             </div>
           `,
         )}
 
+        <!-- All Day Row -->
+        ${showAllDayRow ? this.renderRow(allDayEvents, days) : ''}
+
         <!-- Grid Rows -->
-        ${hours.map((hour) => this.renderRow(hour, days))}
+        ${hours.map((hour) => this.renderRow(gridEvents, days, hour))}
       </div>
     `;
   }
@@ -126,71 +171,91 @@ export class CalendarWeekGridCard extends LitElement {
     return unsafeCSS(generateCssFromDeprecatedStyleConfig(this.config));
   }
 
-  private updateHeightFromCss(): void {
-    const cell = this.shadowRoot?.querySelector('.cell');
-    if (cell) {
-      const heightStr = window.getComputedStyle(cell).height;
-      const height = parseFloat(heightStr);
-      if (height && Math.abs(height - this.cellHeight) > 0.1) {
-        this.cellHeight = height;
-      }
-    }
-  }
-
   // ============================================================================
   // Render
   // ============================================================================
 
-  private renderRow(hour: number, days: DayInfo[]): TemplateResult {
-    const timeLabel = this.formatTime(hour);
+  private renderRow(
+    events: Event[],
+    days: DayInfo[],
+    hour?: number,
+  ): TemplateResult {
+    const isAllDay = hour == undefined;
 
-    // Determine if this is the current hour (for all days)
-    const now = new Date();
-    const isNow = now.getHours() === hour;
+    let isNow: boolean;
+    let timeLabel: string;
+
+    if (isAllDay) {
+      timeLabel = this.config?.all_day_label || '';
+      isNow = false;
+    } else {
+      timeLabel = this.formatTime(hour);
+      isNow = new Date().getHours() === hour;
+    }
 
     return html`
-      <div class="time-label-wrapper">
+      <div class="time-label-wrapper ${isAllDay ? 'all-day' : ''}">
         <div class="time-label ${isNow ? 'now' : ''}">${timeLabel}</div>
       </div>
-      ${days.map((day) => this.renderCell(day, hour))}
+      ${days.map((day) => this.renderCell(events, day, hour))}
     `;
   }
 
-  private renderCell(day: DayInfo, hour: number): TemplateResult {
+  private renderCell(
+    events: Event[],
+    day: DayInfo,
+    hour?: number,
+  ): TemplateResult {
     const cellDate = new Date(day.date);
-    const cellStartTime = cellDate.setHours(hour);
-    const cellEndTime = cellDate.setHours(hour + 1);
 
-    // Filter events that are within the cell time range
-    const cellEvents = this.filterEvents(
-      this.events,
-      cellStartTime,
-      cellEndTime,
-    );
+    const isAllDay = hour == undefined;
+
+    let cellStartTime: number;
+    let cellEndTime: number;
+
+    if (isAllDay) {
+      cellStartTime = cellDate.getTime();
+      cellEndTime = cellDate.getTime() + 1000 * 60 * 60 * 24; // 1 day
+    } else {
+      cellStartTime = cellDate.setHours(hour);
+      cellEndTime = cellDate.setHours(hour + 1);
+    }
+
+    let cellEvents = [...events];
 
     // Reverse the list to render the events in the correct order
     cellEvents.reverse();
 
+    // Filter events that are within the cell time range
+    cellEvents = this.filterEvents(cellEvents, cellStartTime, cellEndTime);
+
+    // Filter hidden events
+    cellEvents = this.hideEvents(cellEvents);
+
+    // If not all day and all day is in a row, filter out all day events
+
+    cellEvents = isAllDay ? cellEvents : this.filterAllDayEvents(cellEvents);
+
+    // Sort events based on shift configuration
+    cellEvents = this.shiftEvents(cellEvents);
+
     // Determine if this is the current hour (for all days)
-    const now = new Date();
-    const isNow = now.getHours() === hour;
+    const isNow = new Date().getHours() === hour;
 
     // Build cell classes
-    const cellClasses = [];
-    if (day.isToday) {
-      cellClasses.push('today');
-    }
-    if (isNow) {
-      cellClasses.push('now');
-    }
+    const cellClassesList: string[] = [];
+    cellClassesList.push(day.isToday ? 'today' : '');
+    cellClassesList.push(isNow ? 'now' : '');
+    cellClassesList.push(isAllDay ? 'all-day' : '');
+    const cellClasses = cellClassesList.filter(Boolean).join(' ');
 
     return html`
-      <div class="cell-wrapper">
-        <div class="cell ${cellClasses.join(' ')}">
+      <div class="cell-wrapper ${cellClasses}">
+        <div class="cell ${cellClasses}">
           ${this.renderEvents(cellEvents, cellStartTime, cellEndTime)}
-          ${this.renderCellIcons(cellEvents)}
+          ${this.renderCellIcons(cellEvents, isAllDay)}
         </div>
-        ${this.renderCurrentTimeLine(day, hour)}
+        ${isAllDay ? '' : this.renderCurrentTimeLine(day, hour)}
       </div>
     `;
   }
@@ -222,10 +287,9 @@ export class CalendarWeekGridCard extends LitElement {
     const startRatio = (start - cellStartTime) / duration;
     const endRatio = (end - cellStartTime) / duration;
 
-    const topPx = Math.round(startRatio * this.cellHeight);
-    const bottomPx = Math.round(endRatio * this.cellHeight);
-
-    const heightPx = bottomPx - topPx;
+    const topPct = startRatio * 100;
+    const heightRatio = endRatio - startRatio;
+    const heightPct = heightRatio * 100;
 
     const blocks = this.generateEventSubBlocks(
       start,
@@ -234,8 +298,8 @@ export class CalendarWeekGridCard extends LitElement {
       cellEndTime,
     );
 
-    const innerHeightPx = this.cellHeight;
-    const innerTopPx = -topPx;
+    const innerHeightPct = heightRatio > 0 ? 100 / heightRatio : 100;
+    const innerTopPct = heightRatio > 0 ? -(startRatio / heightRatio) * 100 : 0;
 
     // Filter and merge blocks that should be rendered
     const mergedBlocks: Array<{ start: number; end: number }> = [];
@@ -243,7 +307,10 @@ export class CalendarWeekGridCard extends LitElement {
 
     for (const block of blocks) {
       // Find all events that overlap with this block time period
-      const events = this.filterEvents(cellEvents, block.start, block.end);
+      let events = this.filterEvents(cellEvents, block.start, block.end);
+
+      // Sort events based on shift configuration
+      events = this.shiftEvents(events);
 
       // The last one is the topmost event
       if (events.length > 0 && events[events.length - 1] === event) {
@@ -263,21 +330,25 @@ export class CalendarWeekGridCard extends LitElement {
 
     if (currentBlock) mergedBlocks.push(currentBlock);
 
-    const wrapperStyle = `top: ${topPx}px; height: ${heightPx}px;`;
-    const innerStyle = `top: ${innerTopPx}px; height: ${innerHeightPx}px;`;
+    const wrapperStyle = `top: ${topPct}%; height: ${heightPct}%;`;
+    const innerStyle = `top: ${innerTopPct}%; height: ${innerHeightPct}%;`;
+
+    const eventClassesList: string[] = [];
+    eventClassesList.push(event.isAllDay ? 'all-day' : '');
+    const eventClasses = eventClassesList.filter(Boolean).join(' ');
 
     return html`<div
-      class="event-wrapper"
+      class="event-wrapper ${eventClasses}"
       style="${wrapperStyle}"
       data-name="${event.name || ''}"
       data-type="${event.type || ''}"
       data-entity="${event.entity || ''}"
       data-filter="${event.filter || ''}"
     >
-      <div class="event-block" style="${innerStyle}">
+      <div class="event-block ${eventClasses}" style="${innerStyle}">
         ${this.renderEventSubBlocks(mergedBlocks, cellStartTime, duration)}
       </div>
-      <div class="event-icon-overlay" style="${innerStyle}">
+      <div class="event-icon-overlay ${eventClasses}" style="${innerStyle}">
         ${this.renderEventIcon(event)}
       </div>
     </div>`;
@@ -301,17 +372,18 @@ export class CalendarWeekGridCard extends LitElement {
     const startRatio = (block.start - cellStartTime) / duration;
     const endRatio = (block.end - cellStartTime) / duration;
 
-    const blockTopPx = Math.round(startRatio * this.cellHeight);
-    const blockBottomPx = Math.round(endRatio * this.cellHeight);
+    const blockTopPct = startRatio * 100;
+    const blockHeightPct = (endRatio - startRatio) * 100;
 
-    const blockHeightPx = blockBottomPx - blockTopPx;
-
-    const style = `top: ${blockTopPx}px; height: ${blockHeightPx}px;`;
+    const style = `top: ${blockTopPct}%; height: ${blockHeightPct}%;`;
 
     return html`<div class="event-sub-block" style="${style}"></div>`;
   }
 
-  private renderEventIcon(event: Event): TemplateResult {
+  private renderEventIcon(
+    event: Event,
+    isAllDay: boolean = false,
+  ): TemplateResult {
     if (!event) {
       return html``;
     }
@@ -321,6 +393,7 @@ export class CalendarWeekGridCard extends LitElement {
     if (event.type === 'blank') {
       // Configured
       icon = this.config?.blank_icon;
+      icon = isAllDay ? this.config?.all_day_icon || icon : icon;
 
       // Deprecated
       icon = icon || getDeprecatedBlankIcon(this.config);
@@ -341,8 +414,12 @@ export class CalendarWeekGridCard extends LitElement {
       icon = icon || 'mdi:check-circle';
     }
 
+    const eventClassesList: string[] = [];
+    eventClassesList.push(isAllDay ? 'all-day' : '');
+    const eventClasses = eventClassesList.filter(Boolean).join(' ');
+
     return html`<ha-icon
-      class="event-icon"
+      class="event-icon ${eventClasses}"
       data-name="${event.name || ''}"
       data-type="${event.type || ''}"
       data-entity="${event.entity || ''}"
@@ -351,9 +428,12 @@ export class CalendarWeekGridCard extends LitElement {
     ></ha-icon>`;
   }
 
-  private renderCellIcons(events: Event[]): TemplateResult {
+  private renderCellIcons(
+    events: Event[],
+    isAllDay: boolean = false,
+  ): TemplateResult {
     return html`<div class="cell-icons">
-      ${events.map((event) => this.renderEventIcon(event))}
+      ${events.map((event) => this.renderEventIcon(event, isAllDay))}
     </div>`;
   }
 
@@ -401,11 +481,20 @@ export class CalendarWeekGridCard extends LitElement {
 
     this.lastFetched = Date.now();
 
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    start.setDate(start.getDate() - 1);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 10);
+    const daysCount = this.config?.days ?? 7;
+    const today = this.toHaTime(new Date());
+    today.setHours(0, 0, 0, 0);
+
+    // Calculate the start date based on week_start config (same as in getDays)
+    const weekStart = this.config?.week_start || 'today';
+    const displayStartDate = this.getWeekStartDate(today, weekStart);
+
+    // Fetch events starting from a few days before the display start (buffer)
+    // and extending to cover all displayed days
+    const start = new Date(displayStartDate);
+    start.setDate(start.getDate() - daysCount - 1);
+    const end = new Date(displayStartDate);
+    end.setDate(end.getDate() + daysCount + 1);
 
     const startIso = start.toISOString();
     const endIso = end.toISOString();
@@ -421,6 +510,7 @@ export class CalendarWeekGridCard extends LitElement {
         ...e,
         start: this.normalizeDate(e.start),
         end: this.normalizeDate(e.end),
+        isAllDay: !!e.start.date,
       }));
 
       this.events.push({
@@ -440,7 +530,7 @@ export class CalendarWeekGridCard extends LitElement {
     item: EntityConfig,
     startIso: string,
     endIso: string,
-  ): Promise<Event[]> {
+  ): Promise<RawEvent[]> {
     if (!this.hass) return [];
     try {
       const events = await this.hass.callApi<CalendarEvent[]>(
@@ -454,7 +544,7 @@ export class CalendarWeekGridCard extends LitElement {
         .filter(
           (e) => !filterText || (e.summary && e.summary.includes(filterText)),
         )
-        .map((e) => ({ ...e, ...item }) as unknown as Event);
+        .map((e) => ({ ...e, ...item }) as unknown as RawEvent);
     } catch (e) {
       console.error(`CalendarWeekGridCard: Failed to fetch ${item.entity}`, e);
       return [];
@@ -470,45 +560,126 @@ export class CalendarWeekGridCard extends LitElement {
     const today = this.toHaTime(new Date());
     today.setHours(0, 0, 0, 0);
 
+    // Calculate the start date based on week_start config
+    const weekStart = this.config?.week_start || 'today';
+    const startDate = this.getWeekStartDate(today, weekStart);
+
     const lang = this.config?.language || this.hass?.language || 'en';
-    const dateFormat = new Intl.DateTimeFormat(lang, { weekday: 'short' });
 
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
+    // Primary date format (default: weekday:short)
+    const primaryFormat = this.config?.primary_date_format || {
+      weekday: 'short',
+    };
+    const primaryDateFormat = new Intl.DateTimeFormat(lang, primaryFormat);
 
-      const weekday = dateFormat.format(date);
-      const label = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+    // Secondary date format (optional)
+    const secondaryFormat = this.config?.secondary_date_format;
+    const secondaryDateFormat = secondaryFormat
+      ? new Intl.DateTimeFormat(lang, secondaryFormat)
+      : null;
+
+    const daysCount = this.config?.days ?? 7;
+    for (let i = 0; i < daysCount; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+
+      const primaryLabel = primaryDateFormat.format(date);
+      const label =
+        primaryLabel.charAt(0).toUpperCase() + primaryLabel.slice(1);
+
+      const secondaryLabel = secondaryDateFormat
+        ? secondaryDateFormat.format(date)
+        : undefined;
+
+      // Check if this date is today
+      const isToday = date.toDateString() === today.toDateString();
 
       days.push({
         date: date,
         label: label,
-        isToday: i === 0,
+        secondaryLabel: secondaryLabel,
+        isToday: isToday,
       });
     }
     return days;
   }
 
-  private formatTime(hour: number): string {
-    const format = this.config?.time_format || 'h A';
+  private getWeekStartDate(today: Date, weekStart: string): Date {
+    if (weekStart === 'today') {
+      return new Date(today);
+    }
 
-    // Custom pattern replacement
-    // H: 0-23, HH: 00-23
-    // h: 1-12, hh: 01-12
-    // m: 0-59, mm: 00-59
-    // a: am/pm, A: AM/PM
-    const tokens: Record<string, string> = {
-      HH: hour.toString().padStart(2, '0'),
-      H: hour.toString(),
-      hh: (hour % 12 || 12).toString().padStart(2, '0'),
-      h: (hour % 12 || 12).toString(),
-      mm: '00',
-      m: '0',
-      a: hour < 12 ? 'am' : 'pm',
-      A: hour < 12 ? 'AM' : 'PM',
+    // Map day names to day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+    const dayMap: Record<string, number> = {
+      sunday: 0,
+      monday: 1,
+      tuesday: 2,
+      wednesday: 3,
+      thursday: 4,
+      friday: 5,
+      saturday: 6,
     };
 
-    return format.replace(/HH|H|hh|h|mm|m|a|A/g, (match) => tokens[match]);
+    const targetDay = dayMap[weekStart.toLowerCase()];
+    if (targetDay === undefined) {
+      // Invalid week_start, default to today
+      return new Date(today);
+    }
+
+    const currentDay = today.getDay();
+    let daysToSubtract = (currentDay - targetDay + 7) % 7;
+
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - daysToSubtract);
+    return startDate;
+  }
+
+  private formatTime(hour: number): string {
+    const timeFormat = this.config?.time_format;
+    const showRange = this.config?.time_range || false;
+    const nextHour = (hour + 1) % 24;
+
+    const formatSingleHour = (h: number): string => {
+      // If it's a string, use old style pattern replacement
+      if (typeof timeFormat === 'string') {
+        const format = timeFormat || 'h A';
+
+        // Custom pattern replacement
+        // H: 0-23, HH: 00-23
+        // h: 1-12, hh: 01-12
+        // m: 0-59, mm: 00-59
+        // a: am/pm, A: AM/PM
+        const tokens: Record<string, string> = {
+          HH: h.toString().padStart(2, '0'),
+          H: h.toString(),
+          hh: (h % 12 || 12).toString().padStart(2, '0'),
+          h: (h % 12 || 12).toString(),
+          mm: '00',
+          m: '0',
+          a: h < 12 ? 'am' : 'pm',
+          A: h < 12 ? 'AM' : 'PM',
+        };
+
+        return format.replace(/HH|H|hh|h|mm|m|a|A/g, (match) => tokens[match]);
+      }
+
+      // If it's an object or undefined, use Intl.DateTimeFormat
+      const lang = this.config?.language || this.hass?.language || 'en';
+      const formatOptions = timeFormat || { hour: 'numeric' };
+
+      // Create a date object with the specified hour
+      const date = new Date();
+      date.setHours(h, 0, 0, 0);
+
+      const formatter = new Intl.DateTimeFormat(lang, formatOptions);
+      return formatter.format(date);
+    };
+
+    if (showRange) {
+      return `${formatSingleHour(hour)} - ${formatSingleHour(nextHour)}`;
+    }
+
+    return formatSingleHour(hour);
   }
 
   private filterEvents(
@@ -523,12 +694,240 @@ export class CalendarWeekGridCard extends LitElement {
     });
   }
 
-  private getIconPosition(): 'event' | 'cell' {
-    return this.config?.icons_container || 'cell';
+  private filterAllDayEvents(events: Event[]): Event[] {
+    if (this.config?.all_day === 'row') {
+      return events.filter((event) => !event.isAllDay);
+    }
+    return events;
   }
 
-  private getIconMode(): 'top' | 'all' {
-    return this.config?.icons_mode || 'top';
+  private matchesCriteria(event: Event, criteria: EventCriteria): boolean {
+    // Check if at least one field is specified
+    const hasAnyField =
+      criteria.name !== undefined ||
+      criteria.type !== undefined ||
+      criteria.entity !== undefined ||
+      criteria.filter !== undefined;
+    if (!hasAnyField) return false;
+
+    // Match only if all specified criteria fields match (AND logic)
+    if (criteria.name !== undefined && event.name !== criteria.name)
+      return false;
+    if (criteria.type !== undefined && event.type !== criteria.type)
+      return false;
+    if (criteria.entity !== undefined && event.entity !== criteria.entity)
+      return false;
+    if (criteria.filter !== undefined && event.filter !== criteria.filter)
+      return false;
+    return true;
+  }
+
+  private hideEvents(events: Event[]): Event[] {
+    if (!this.config) return events;
+
+    const entityHideMap = new Map<string, EventCriteria[]>();
+    const normalizedEntities = this.getNormalizedEntities();
+
+    for (const entityConfig of normalizedEntities) {
+      if (
+        entityConfig.name &&
+        entityConfig.hide &&
+        entityConfig.hide.length > 0
+      ) {
+        const criteria: EventCriteria[] = entityConfig.hide.map((hide) => {
+          if (typeof hide === 'string') {
+            return { name: hide };
+          }
+          return hide;
+        });
+        entityHideMap.set(entityConfig.name, criteria);
+      }
+    }
+
+    if (entityHideMap.size === 0) {
+      return events;
+    }
+
+    const eventsToRemove = new Set<Event>();
+
+    for (const event of events) {
+      const hideCriteria = event.name
+        ? entityHideMap.get(event.name)
+        : undefined;
+
+      if (hideCriteria && hideCriteria.length > 0) {
+        for (const targetEvent of events) {
+          if (targetEvent === event) continue;
+
+          for (const criteria of hideCriteria) {
+            if (this.matchesCriteria(targetEvent, criteria)) {
+              eventsToRemove.add(targetEvent);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (eventsToRemove.size === 0) return events;
+
+    return events.filter((e) => !eventsToRemove.has(e));
+  }
+
+  private shiftEvents(events: Event[]): Event[] {
+    if (!this.config) return events;
+
+    // Build maps of entity name -> shift criteria lists from config
+    const entityUnderMap = new Map<string, EventCriteria[]>();
+    const entityOverMap = new Map<string, EventCriteria[]>();
+    const normalizedEntities = this.getNormalizedEntities();
+
+    for (const entityConfig of normalizedEntities) {
+      if (entityConfig.name) {
+        // Process under
+        const underConfig = entityConfig.under;
+        if (underConfig && underConfig.length > 0) {
+          const criteria: EventCriteria[] = underConfig.map((shift) => {
+            if (typeof shift === 'string') {
+              // String is treated as name
+              return { name: shift };
+            }
+            return shift;
+          });
+          entityUnderMap.set(entityConfig.name, criteria);
+        }
+
+        // Process over
+        const overConfig = entityConfig.over;
+        if (overConfig && overConfig.length > 0) {
+          const criteria: EventCriteria[] = overConfig.map((shift) => {
+            if (typeof shift === 'string') {
+              // String is treated as name
+              return { name: shift };
+            }
+            return shift;
+          });
+          entityOverMap.set(entityConfig.name, criteria);
+        }
+      }
+    }
+
+    // If no entities have shift configuration, return events as-is
+    if (entityUnderMap.size === 0 && entityOverMap.size === 0) {
+      return events;
+    }
+
+    // Start with events in original order
+    const result = [...events];
+
+    // Process under: move matching events before the current event
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
+      const underCriteria = event.name
+        ? entityUnderMap.get(event.name)
+        : undefined;
+
+      if (underCriteria && underCriteria.length > 0) {
+        // Check if any events match the under criteria
+        let hasMatchingEvents = false;
+        for (const originalEvent of events) {
+          for (const criteria of underCriteria) {
+            if (this.matchesCriteria(originalEvent, criteria)) {
+              hasMatchingEvents = true;
+              break;
+            }
+          }
+          if (hasMatchingEvents) break;
+        }
+
+        if (hasMatchingEvents) {
+          // Find the current position of the event with under in result
+          const eventIndex = result.indexOf(event);
+          if (eventIndex < 0) continue;
+
+          // Find all events that match under criteria and come after this event
+          const eventsToMove: Array<{ event: Event; originalIndex: number }> =
+            [];
+          for (let j = i + 1; j < events.length; j++) {
+            const laterEvent = events[j];
+            for (const criteria of underCriteria) {
+              if (this.matchesCriteria(laterEvent, criteria)) {
+                eventsToMove.push({ event: laterEvent, originalIndex: j });
+                break;
+              }
+            }
+          }
+
+          // Move matching events to come before the event with under
+          for (const { event: eventToMove } of eventsToMove) {
+            const eventToMoveIndex = result.indexOf(eventToMove);
+            if (eventToMoveIndex >= 0 && eventToMoveIndex > eventIndex) {
+              // Remove from current position
+              result.splice(eventToMoveIndex, 1);
+              // Insert before the event with under
+              const newEventIndex = result.indexOf(event);
+              result.splice(newEventIndex, 0, eventToMove);
+            }
+          }
+        }
+      }
+    }
+
+    // Process over: move matching events after the current event
+    // Process in reverse order to maintain correct positioning
+    for (let i = events.length - 1; i >= 0; i--) {
+      const event = events[i];
+      const overCriteria = event.name
+        ? entityOverMap.get(event.name)
+        : undefined;
+
+      if (overCriteria && overCriteria.length > 0) {
+        // Check if any events match the over criteria
+        let hasMatchingEvents = false;
+        for (const originalEvent of events) {
+          for (const criteria of overCriteria) {
+            if (this.matchesCriteria(originalEvent, criteria)) {
+              hasMatchingEvents = true;
+              break;
+            }
+          }
+          if (hasMatchingEvents) break;
+        }
+
+        if (hasMatchingEvents) {
+          // Find the current position of the event with over in result
+          const eventIndex = result.indexOf(event);
+          if (eventIndex < 0) continue;
+
+          // Find all events that match over criteria and come before this event
+          const eventsToMove: Array<{ event: Event; originalIndex: number }> =
+            [];
+          for (let j = i - 1; j >= 0; j--) {
+            const earlierEvent = events[j];
+            for (const criteria of overCriteria) {
+              if (this.matchesCriteria(earlierEvent, criteria)) {
+                eventsToMove.push({ event: earlierEvent, originalIndex: j });
+                break;
+              }
+            }
+          }
+
+          // Move matching events to come after the event with over
+          for (const { event: eventToMove } of eventsToMove) {
+            const eventToMoveIndex = result.indexOf(eventToMove);
+            if (eventToMoveIndex >= 0 && eventToMoveIndex < eventIndex) {
+              // Remove from current position
+              result.splice(eventToMoveIndex, 1);
+              // Insert after the event with over
+              const newEventIndex = result.indexOf(event);
+              result.splice(newEventIndex + 1, 0, eventToMove);
+            }
+          }
+        }
+      }
+    }
+
+    return result;
   }
 
   private generateEventSubBlocks(

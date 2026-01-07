@@ -6,14 +6,11 @@ secondary_date_format:
   day: 'numeric'
 time_format:
   hour: '2-digit'
-  hour12: true
+  minute: '2-digit'
+  hour12: false
 icons_mode: all
 icons_container: event
 all_day: row
-start_hour: 7
-end_hour: 22
-days: 8
-week_start: 'sunday'
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
