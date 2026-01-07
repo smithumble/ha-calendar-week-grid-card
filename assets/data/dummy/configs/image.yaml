@@ -1,6 +1,8 @@
 type: custom:calendar-week-grid-card
 language: en
-time_format: HH:mm
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
 start_hour: 6
 end_hour: 24
 blank_icon: mdi:checkbox-blank-circle-outline

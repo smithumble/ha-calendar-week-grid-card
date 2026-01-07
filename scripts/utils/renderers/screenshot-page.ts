@@ -115,13 +115,13 @@ export function generateScreenshotPageHTML(): string {
         </style>
       </head>
       <body>
-        <div class="theme-container theme-light">
-          <div class="theme-label">Light</div>
-          <div id="card-container-light"></div>
-        </div>
         <div class="theme-container theme-dark">
           <div class="theme-label">Dark</div>
           <div id="card-container-dark"></div>
+        </div>
+        <div class="theme-container theme-light">
+          <div class="theme-label">Light</div>
+          <div id="card-container-light"></div>
         </div>
       </body>
     </html>

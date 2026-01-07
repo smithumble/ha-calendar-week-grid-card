@@ -5,7 +5,10 @@ primary_date_format:
 secondary_date_format:
   day: 'numeric'
   month: 'short'
-time_format: 'HH:mm'
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
+  hour12: false
 blank_icon: mdi:lightning-bolt
 all_day_icon: mdi:circle-outline
 all_day: row

@@ -54,27 +54,75 @@ type: module
 
 ## Configuration
 
-| Name              | Type   | Required | Description                                                                                                                                         |
-| ----------------- | ------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`            | string | **Yes**  | `custom:calendar-week-grid-card`                                                                                                                    |
-| `entities`        | list   | **Yes**  | List of calendar entities or objects.                                                                                                               |
-| `language`        | string | No       | Language code for days (e.g., `en`, `fr`).                                                                                                          |
-| `time_format`     | string | No       | Time format pattern (e.g., `h A`, `HH:mm`).                                                                                                         |
-| `start_hour`      | number | No       | First hour to display (0-23). Default: 0.                                                                                                           |
-| `end_hour`        | number | No       | Last hour to display (0-23). Default: 24.                                                                                                           |
-| `filter`          | string | No       | Global filter text for event summary.                                                                                                               |
-| `icons_container` | string | No       | Where to render icons: `cell` (in the cell) or `event` (in event blocks). Default: `cell`.                                                          |
-| `icons_mode`      | string | No       | Which events show icons: `top` (only main event) or `all` (all events). Default: `top`.                                                             |
-| `event_icon`      | string | No       | Default icon for events when entity doesn't have its own icon. Default: `mdi:check-circle`.                                                         |
-| `blank_icon`      | string | No       | Icon for cells with no events.                                                                                                                      |
-| `all_day`         | string | No       | Where to display all-day events: `grid` (in the grid), `row` (in a separate row), or `both` (in both the grid and a separate row). Default: `grid`. |
-| `css`             | string | No       | CSS styles for the card.                                                                                                                            |
+| Name                    | Type          | Required | Description                                                                                                                                         |
+| ----------------------- | ------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`                  | string        | **Yes**  | `custom:calendar-week-grid-card`                                                                                                                    |
+| `entities`              | list          | **Yes**  | List of calendar entities or objects.                                                                                                               |
+| `language`              | string        | No       | Language code for days (e.g., `en`, `fr`).                                                                                                          |
+| `primary_date_format`   | object        | No       | Primary date format options for day headers. Default: `{ weekday: 'short' }`. See [Date Format](#date-format).                                      |
+| `secondary_date_format` | object        | No       | Secondary date format options for day headers (displayed below primary). Optional. See [Date Format](#date-format).                                 |
+| `time_format`           | string/object | No       | Time format pattern (string) or options (object). Default: `h A` (string) or `{ hour: 'numeric' }` (object). See [Time Format](#time-format).       |
+| `time_range`            | boolean       | No       | Display time as a range (e.g., "09 - 10" instead of "09"). Default: `false`.                                                                        |
+| `start_hour`            | number        | No       | First hour to display (0-23). Default: 0.                                                                                                           |
+| `end_hour`              | number        | No       | Last hour to display (0-23). Default: 24.                                                                                                           |
+| `filter`                | string        | No       | Global filter text for event summary.                                                                                                               |
+| `icons_container`       | string        | No       | Where to render icons: `cell` (in the cell) or `event` (in event blocks). Default: `cell`.                                                          |
+| `icons_mode`            | string        | No       | Which events show icons: `top` (only main event) or `all` (all events). Default: `top`.                                                             |
+| `event_icon`            | string        | No       | Default icon for events when entity doesn't have its own icon. Default: `mdi:check-circle`.                                                         |
+| `blank_icon`            | string        | No       | Icon for cells with no events.                                                                                                                      |
+| `all_day`               | string        | No       | Where to display all-day events: `grid` (in the grid), `row` (in a separate row), or `both` (in both the grid and a separate row). Default: `grid`. |
+| `all_day_label`         | string        | No       | Label text for the all-day row in the time column. Default: empty string.                                                                           |
+| `css`                   | string        | No       | CSS styles for the card.                                                                                                                            |
+
+### Date Format
+
+The `primary_date_format` and `secondary_date_format` options use `Intl.DateTimeFormatOptions` to format day headers. The primary format is displayed as the main label, and the secondary format (if provided) is displayed below it in smaller text.
+
+#### Primary Date Format
+
+Default: `{ weekday: 'short' }` (e.g., "Mon", "Tue", "Wed")
+
+#### Secondary Date Format
+
+Optional. Displayed below the primary format.
+
+#### Available Options
+
+- `weekday`: `'narrow'` | `'short'` | `'long'` - Day of week (e.g., "M", "Mon", "Monday")
+- `day`: `'numeric'` | `'2-digit'` - Day of month (e.g., "15", "05")
+- `month`: `'numeric'` | `'2-digit'` | `'narrow'` | `'short'` | `'long'` - Month (e.g., "3", "03", "M", "Mar", "March")
+- `year`: `'numeric'` | `'2-digit'` - Year (e.g., "2024", "24")
+
+#### Examples
+
+```yaml
+# Primary: weekday, Secondary: day and month
+primary_date_format:
+  weekday: 'short'
+secondary_date_format:
+  day: 'numeric'
+  month: 'short'
+# Results: "Mon" (primary), "15 Jan" (secondary)
+
+# Primary: long weekday, Secondary: full date
+primary_date_format:
+  weekday: 'long'
+secondary_date_format:
+  day: 'numeric'
+  month: 'long'
+  year: 'numeric'
+# Results: "Monday" (primary), "15 January 2024" (secondary)
+```
 
 ### Time Format
 
-The `time_format` option supports custom patterns. Default is `h A`.
+The `time_format` option supports two formats:
 
-You can use custom tokens:
+#### String Format (Legacy - Backward Compatible)
+
+Custom pattern with tokens. Default: `h A`.
+
+Available tokens:
 
 - `H`: Hour (0-23)
 - `HH`: Hour (00-23)
@@ -85,7 +133,80 @@ You can use custom tokens:
 - `a`: am/pm
 - `A`: AM/PM
 
-Example: `time_format: "h:mm A"` results in `1:00 PM`.
+Examples:
+
+- `time_format: "h A"` → `9 AM`
+- `time_format: "HH:mm"` → `09:00`
+- `time_format: "hh:mm A"` → `09:00 AM`
+
+#### Object Format (Recommended)
+
+Uses `Intl.DateTimeFormatOptions` for locale-aware formatting. Default: `{ hour: 'numeric' }`
+
+Available options:
+
+- `hour`: `'numeric'` | `'2-digit'` - Hour format
+- `minute`: `'numeric'` | `'2-digit'` - Minute format
+- `second`: `'numeric'` | `'2-digit'` - Second format
+- `hour12`: `true` | `false` - 12-hour vs 24-hour format
+
+Examples:
+
+```yaml
+# 12-hour format with AM/PM
+time_format:
+  hour: 'numeric'
+  hour12: true
+# Results: "9 AM", "3 PM" (locale-aware)
+
+# 24-hour format with minutes
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
+# Results: "09:00", "15:00"
+
+# 12-hour format with minutes
+time_format:
+  hour: 'numeric'
+  minute: '2-digit'
+  hour12: true
+# Results: "9:00 AM", "3:00 PM"
+```
+
+#### Time Range
+
+When `time_range: true` is set, time labels are displayed as ranges showing the current hour and the next hour (e.g., "09 - 10" for the 9:00-10:00 time slot).
+
+**Note:** When using object format with `time_range`, if `hour12` is not explicitly set, it will default to 24-hour format (`hour12: false`) for consistency.
+
+Examples:
+
+```yaml
+# 24-hour range format (default for ranges)
+time_format:
+  hour: '2-digit'
+time_range: true
+# Results: "00 - 01", "09 - 10", "15 - 16"
+
+# Explicit 24-hour range format
+time_format:
+  hour: '2-digit'
+  hour12: false
+time_range: true
+# Results: "00 - 01", "09 - 10", "15 - 16"
+
+# 12-hour range format (must explicitly set hour12: true)
+time_format:
+  hour: 'numeric'
+  hour12: true
+time_range: true
+# Results: "12 AM - 1 AM", "9 AM - 10 AM", "3 PM - 4 PM"
+
+# String format with range
+time_format: 'HH'
+time_range: true
+# Results: "00 - 01", "09 - 10", "15 - 16"
+```
 
 ### Entity Configuration
 
@@ -163,7 +284,10 @@ Each item in `hide` can be:
 ```yaml
 type: custom:calendar-week-grid-card
 language: en
-time_format: 'HH:mm'
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
+  hour12: false
 entities:
   - entity: calendar.planned_outages
     filter: Outage
@@ -190,7 +314,10 @@ primary_date_format:
 secondary_date_format:
   day: 'numeric'
   month: 'short'
-time_format: 'HH:mm'
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
+  hour12: false
 blank_icon: mdi:checkbox-blank-circle-outline
 all_day_icon: ''
 all_day: row
@@ -308,7 +435,10 @@ primary_date_format:
 secondary_date_format:
   day: 'numeric'
   month: 'short'
-time_format: 'HH:mm'
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
+  hour12: false
 blank_icon: mdi:checkbox-blank-circle-outline
 all_day_icon: mdi:checkbox-blank-circle
 all_day: row
@@ -438,7 +568,10 @@ primary_date_format:
 secondary_date_format:
   day: 'numeric'
   month: 'short'
-time_format: HH:mm
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
+  hour12: false
 blank_icon: mdi:checkbox-blank-circle-outline
 all_day_icon: mdi:checkbox-blank-circle
 all_day: row
@@ -541,7 +674,10 @@ primary_date_format:
 secondary_date_format:
   day: 'numeric'
   month: 'short'
-time_format: 'HH:mm'
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
+  hour12: false
 blank_icon: mdi:lightning-bolt
 all_day_icon: mdi:circle-outline
 all_day: row
@@ -700,7 +836,10 @@ primary_date_format:
 secondary_date_format:
   day: 'numeric'
   month: 'short'
-time_format: 'HH:mm'
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
+  hour12: false
 icons_container: event
 icons_mode: all
 blank_icon: mdi:circle-outline
@@ -829,7 +968,10 @@ css: |
 ```yaml
 type: custom:calendar-week-grid-card
 language: en
-time_format: HH:mm
+time_format:
+  hour: '2-digit'
+  hour12: false
+time_range: true
 icons_container: event
 icons_mode: all
 all_day: row
@@ -878,6 +1020,10 @@ css: |
 
   .event-block, .time-label {
     background-color: var(--card-background-color);
+  }
+
+  .time-label {
+    padding: 0 18px;
   }
 
   .today, .now {

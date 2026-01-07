@@ -4,7 +4,10 @@ primary_date_format:
   weekday: 'short'
 secondary_date_format:
   day: 'numeric'
-time_format: HH:mm
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
+  hour12: false
 icons_mode: all
 icons_container: event
 all_day: row
@@ -17,7 +20,7 @@ entities:
     icon: mdi:flash-off
   - name: probable_outages
     entity: calendar.probable_outages
-    icon: mdi:alert-circle-outline
+    icon: mdi:flash-off
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -69,7 +72,7 @@ css: |
     border: none !important;
     border-radius: 16px;
     font-family: 'Google Sans', Roboto, Arial, sans-serif;
-    padding: 5px 20px 15px 10px;
+    padding: 15px;
   }
 
   /* Grid Styling */
@@ -92,19 +95,13 @@ css: |
   .cell-wrapper + .cell-wrapper,
   .time-label-wrapper::after {
     border-bottom: 1px solid var(--grid-border-color);
-    padding-right: 4px;
-    padding-bottom: 4px;
   }
 
   .time-label-wrapper + .cell-wrapper,
   .cell-wrapper + .cell-wrapper {
     border-left: 1px solid var(--grid-border-color);
-  }
-
-  .time-label {
-    position: absolute;
-    top: -14px;
-    right: 10px;
+    padding-right: 4px;
+    padding-bottom: 4px;
   }
 
   .cell-wrapper {
@@ -119,7 +116,7 @@ css: |
   }
 
   .day-header {
-    padding: 16px 0;
+    padding-bottom: 16px;
   }
 
   .day-header.today {
@@ -152,10 +149,11 @@ css: |
   }
 
   .time-label {
+    top: -14px;
     font-size: 10px;
     color: var(--secondary-text-color);
-    justify-content: flex-end; /* Right align time */
-    padding-right: 8px;
+    justify-content: flex-end;
+    padding-right: 20px;
     font-variant-numeric: tabular-nums;
   }
 

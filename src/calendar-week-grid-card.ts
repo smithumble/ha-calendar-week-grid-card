@@ -155,7 +155,7 @@ export class CalendarWeekGridCard extends LitElement {
     let timeLabel: string;
 
     if (isAllDay) {
-      timeLabel = 'All day';
+      timeLabel = this.config?.all_day_label || '';
       isNow = false;
     } else {
       timeLabel = this.formatTime(hour);
@@ -557,25 +557,51 @@ export class CalendarWeekGridCard extends LitElement {
   }
 
   private formatTime(hour: number): string {
-    const format = this.config?.time_format || 'h A';
+    const timeFormat = this.config?.time_format;
+    const showRange = this.config?.time_range || false;
+    const nextHour = (hour + 1) % 24;
 
-    // Custom pattern replacement
-    // H: 0-23, HH: 00-23
-    // h: 1-12, hh: 01-12
-    // m: 0-59, mm: 00-59
-    // a: am/pm, A: AM/PM
-    const tokens: Record<string, string> = {
-      HH: hour.toString().padStart(2, '0'),
-      H: hour.toString(),
-      hh: (hour % 12 || 12).toString().padStart(2, '0'),
-      h: (hour % 12 || 12).toString(),
-      mm: '00',
-      m: '0',
-      a: hour < 12 ? 'am' : 'pm',
-      A: hour < 12 ? 'AM' : 'PM',
+    const formatSingleHour = (h: number): string => {
+      // If it's a string, use old style pattern replacement
+      if (typeof timeFormat === 'string') {
+        const format = timeFormat || 'h A';
+
+        // Custom pattern replacement
+        // H: 0-23, HH: 00-23
+        // h: 1-12, hh: 01-12
+        // m: 0-59, mm: 00-59
+        // a: am/pm, A: AM/PM
+        const tokens: Record<string, string> = {
+          HH: h.toString().padStart(2, '0'),
+          H: h.toString(),
+          hh: (h % 12 || 12).toString().padStart(2, '0'),
+          h: (h % 12 || 12).toString(),
+          mm: '00',
+          m: '0',
+          a: h < 12 ? 'am' : 'pm',
+          A: h < 12 ? 'AM' : 'PM',
+        };
+
+        return format.replace(/HH|H|hh|h|mm|m|a|A/g, (match) => tokens[match]);
+      }
+
+      // If it's an object or undefined, use Intl.DateTimeFormat
+      const lang = this.config?.language || this.hass?.language || 'en';
+      const formatOptions = timeFormat || { hour: 'numeric' };
+
+      // Create a date object with the specified hour
+      const date = new Date();
+      date.setHours(h, 0, 0, 0);
+
+      const formatter = new Intl.DateTimeFormat(lang, formatOptions);
+      return formatter.format(date);
     };
 
-    return format.replace(/HH|H|hh|h|mm|m|a|A/g, (match) => tokens[match]);
+    if (showRange) {
+      return `${formatSingleHour(hour)} - ${formatSingleHour(nextHour)}`;
+    }
+
+    return formatSingleHour(hour);
   }
 
   private filterEvents(

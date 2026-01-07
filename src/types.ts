@@ -21,12 +21,14 @@ export interface CardConfig {
   language?: string;
   primary_date_format?: Intl.DateTimeFormatOptions;
   secondary_date_format?: Intl.DateTimeFormatOptions;
-  time_format?: string;
+  time_format?: string | Intl.DateTimeFormatOptions;
+  time_range?: boolean;
   start_hour?: number;
   end_hour?: number;
   filter?: string;
   all_day?: 'grid' | 'row' | 'both';
   all_day_icon?: string;
+  all_day_label?: string;
   icons_container?: 'event' | 'cell';
   icons_mode?: 'top' | 'all';
   event_icon?: string;
