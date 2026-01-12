@@ -26,7 +26,7 @@ entities:
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
-    icon: mdi:checkbox-blank-circle-outline
+    icon: mdi:flash-off
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -68,7 +68,6 @@ css: |
     background-color: var(--grid-bg);
     box-shadow: none !important;
     border: none !important;
-    padding: 15px;
     font-family: 'Google Sans', Roboto, Arial, sans-serif;
   }
 
@@ -76,7 +75,6 @@ css: |
 
   .grid-container {
     gap: 0px;
-    overflow: hidden;
   }
 
   .time-label-wrapper::after {
@@ -156,10 +154,9 @@ css: |
   .time-label {
     top: -14px;
     font-size: 10px;
+    line-height: 10px;
     color: var(--grid-secondary-text-color);
-    justify-content: flex-end;
     padding-right: 20px;
-    font-variant-numeric: tabular-nums;
   }
 
   .event-block {

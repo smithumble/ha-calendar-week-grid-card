@@ -102,7 +102,6 @@ export class CalendarWeekGridCard extends LitElement {
 
     if (!this.lastFetched) {
       this.fetchEvents();
-      return html`Loading...`;
     }
 
     const days = this.getDays();
@@ -183,19 +182,25 @@ export class CalendarWeekGridCard extends LitElement {
     const isAllDay = hour == undefined;
 
     let isNow: boolean;
-    let timeLabel: string;
+    let timeLabel: string | TemplateResult;
 
     if (isAllDay) {
-      timeLabel = this.config?.all_day_label || '';
+      timeLabel = this.renderAllDayLabel(this.config?.all_day_label || '');
       isNow = false;
     } else {
-      timeLabel = this.formatTime(hour);
+      timeLabel = this.renderTimeLabel(hour);
       isNow = new Date().getHours() === hour;
     }
 
+    // Build cell classes
+    const timeLabelClassesList: string[] = [];
+    timeLabelClassesList.push(isNow ? 'now' : '');
+    timeLabelClassesList.push(isAllDay ? 'all-day' : '');
+    const timeLabelClasses = timeLabelClassesList.filter(Boolean).join(' ');
+
     return html`
-      <div class="time-label-wrapper ${isAllDay ? 'all-day' : ''}">
-        <div class="time-label ${isNow ? 'now' : ''}">${timeLabel}</div>
+      <div class="time-label-wrapper ${timeLabelClasses}">
+        <div class="time-label ${timeLabelClasses}">${timeLabel}</div>
       </div>
       ${days.map((day) => this.renderCell(events, day, hour))}
     `;
@@ -634,52 +639,73 @@ export class CalendarWeekGridCard extends LitElement {
     return startDate;
   }
 
-  private formatTime(hour: number): string {
+  private formatHour(
+    h: number,
+    timeFormat: string | Intl.DateTimeFormatOptions | undefined,
+  ): string {
+    // If it's a string, use old style pattern replacement
+    if (typeof timeFormat === 'string') {
+      const format = timeFormat || 'h A';
+
+      // Custom pattern replacement
+      // H: 0-23, HH: 00-23
+      // h: 1-12, hh: 01-12
+      // m: 0-59, mm: 00-59
+      // a: am/pm, A: AM/PM
+      const tokens: Record<string, string> = {
+        HH: h.toString().padStart(2, '0'),
+        H: h.toString(),
+        hh: (h % 12 || 12).toString().padStart(2, '0'),
+        h: (h % 12 || 12).toString(),
+        mm: '00',
+        m: '0',
+        a: h < 12 ? 'am' : 'pm',
+        A: h < 12 ? 'AM' : 'PM',
+      };
+
+      return format.replace(/HH|H|hh|h|mm|m|a|A/g, (match) => tokens[match]);
+    }
+
+    // If it's an object or undefined, use Intl.DateTimeFormat
+    const lang = this.config?.language || this.hass?.language || 'en';
+    const formatOptions = timeFormat || { hour: 'numeric' };
+
+    // Create a date object with the specified hour
+    const date = new Date();
+    date.setHours(h, 0, 0, 0);
+
+    const formatter = new Intl.DateTimeFormat(lang, formatOptions);
+    return formatter.format(date);
+  }
+
+  private renderTimeLabel(hour: number): TemplateResult {
     const timeFormat = this.config?.time_format;
     const showRange = this.config?.time_range || false;
     const nextHour = (hour + 1) % 24;
 
-    const formatSingleHour = (h: number): string => {
-      // If it's a string, use old style pattern replacement
-      if (typeof timeFormat === 'string') {
-        const format = timeFormat || 'h A';
-
-        // Custom pattern replacement
-        // H: 0-23, HH: 00-23
-        // h: 1-12, hh: 01-12
-        // m: 0-59, mm: 00-59
-        // a: am/pm, A: AM/PM
-        const tokens: Record<string, string> = {
-          HH: h.toString().padStart(2, '0'),
-          H: h.toString(),
-          hh: (h % 12 || 12).toString().padStart(2, '0'),
-          h: (h % 12 || 12).toString(),
-          mm: '00',
-          m: '0',
-          a: h < 12 ? 'am' : 'pm',
-          A: h < 12 ? 'AM' : 'PM',
-        };
-
-        return format.replace(/HH|H|hh|h|mm|m|a|A/g, (match) => tokens[match]);
-      }
-
-      // If it's an object or undefined, use Intl.DateTimeFormat
-      const lang = this.config?.language || this.hass?.language || 'en';
-      const formatOptions = timeFormat || { hour: 'numeric' };
-
-      // Create a date object with the specified hour
-      const date = new Date();
-      date.setHours(h, 0, 0, 0);
-
-      const formatter = new Intl.DateTimeFormat(lang, formatOptions);
-      return formatter.format(date);
-    };
-
     if (showRange) {
-      return `${formatSingleHour(hour)} - ${formatSingleHour(nextHour)}`;
+      return html`
+        <span class="time-label-hour time-label-hour-start">
+          ${this.formatHour(hour, timeFormat)}
+        </span>
+        <span class="time-label-hour time-label-hour-separator">
+          &nbsp;-&nbsp;
+        </span>
+        <span class="time-label-hour time-label-hour-end">
+          ${this.formatHour(nextHour, timeFormat)}
+        </span>
+      `;
     }
 
-    return formatSingleHour(hour);
+    return html`
+      <span class="time-label-hour">
+        ${this.formatHour(hour, timeFormat)}
+      </span>
+    `;
+  }
+
+  private renderAllDayLabel(label: string): TemplateResult {
+    return html` <div class="time-label-all-day">${label}</div> `;
   }
 
   private filterEvents(

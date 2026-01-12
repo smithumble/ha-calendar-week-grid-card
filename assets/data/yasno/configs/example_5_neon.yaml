@@ -58,10 +58,6 @@ css: |
     --icon-size: 18px;
   }
 
-  ha-card {
-    padding: 12px;
-  }
-
   .cell {
     height: 28px;
     border-radius: 6px;
