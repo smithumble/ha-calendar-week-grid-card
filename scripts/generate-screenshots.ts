@@ -31,7 +31,7 @@ const CARD_SCRIPT_PATH = path.resolve(
   '../dist/calendar-week-grid-card.js',
 );
 const OUTPUT_DIR = path.resolve(__dirname, '../media/images');
-const VIEWPORT_WIDTH = 1600;
+const VIEWPORT_WIDTH = 1200;
 const VIEWPORT_HEIGHT = 800;
 const DEVICE_SCALE_FACTOR = 2;
 

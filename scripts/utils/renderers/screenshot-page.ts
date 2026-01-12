@@ -90,7 +90,7 @@ export function generateScreenshotPageHTML(): string {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 40px 175px;
+            padding: 80px;
             box-sizing: border-box;
             background-color: var(--primary-background-color, rgb(40, 40, 40));
             color: var(--primary-text-color);
