@@ -71,10 +71,10 @@ type: module
 | `event_icon`            | string        | No       | Default icon for events when entity doesn't have its own icon. Default: `mdi:check-circle`.                                                                  |
 | `blank_icon`            | string        | No       | Icon for cells with no events.                                                                                                                               |
 | `all_day`               | string        | No       | Where to display all-day events: `grid` (in the grid), `row` (in a separate row), or `both` (in both the grid and a separate row). Default: `grid`.          |
-| `all_day_icon`         | string        | No       | Icon for all-day events. If not specified, uses `blank_icon` for all-day cells.                                                                             |
+| `all_day_icon`          | string        | No       | Icon for all-day events. If not specified, uses `blank_icon` for all-day cells.                                                                              |
 | `all_day_label`         | string        | No       | Label text for the all-day row in the time column. Default: empty string.                                                                                    |
 | `week_start`            | string        | No       | Day of the week to start the calendar: `today`, `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, or `saturday`. Default: `today`.           |
-| `days`                  | number        | No       | Number of days to display. Default: `7`.                                                                                                                    |
+| `days`                  | number        | No       | Number of days to display. Default: `7`.                                                                                                                     |
 | `theme`                 | string        | No       | Theme mode: `dark`, `light`, or `auto` (default). `auto` automatically detects the theme from Home Assistant. `dark` and `light` force the respective theme. |
 | `css`                   | string        | No       | CSS styles for the card.                                                                                                                                     |
 
@@ -727,10 +727,6 @@ css: |
     --icon-size: 18px;
   }
 
-  ha-card {
-    padding: 12px;
-  }
-
   .cell {
     height: 28px;
     border-radius: 6px;
@@ -874,7 +870,6 @@ css: |
   ha-card {
     background: #FFFFFF;
     border-radius: 24px;
-    padding: 16px;
     box-shadow: 0 8px 16px rgba(0,0,0,0.1);
   }
 
@@ -997,14 +992,11 @@ css: |
     --color-highlight-icon: #1e1e2e;
     --color-highlight-light: #FDD631;
     --color-highlight-light-icon: var(--primary-text-color);
+    padding: 0;
   }
 
   ha-card.theme-dark {
     --color-highlight-light-icon: #FDD631;
-  }
-
-  ha-card {
-    padding: 0;
   }
 
   .grid-container {
@@ -1107,9 +1099,11 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
+time_range: true
 icons_mode: all
 icons_container: event
 all_day: row
+all_day_label: STATUS
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -1125,7 +1119,7 @@ entities:
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
-    icon: mdi:checkbox-blank-circle-outline
+    icon: mdi:flash-off
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -1165,7 +1159,6 @@ css: |
 
   ha-card {
     background-color: var(--grid-bg);
-    padding: 15px;
     font-family: 'Google Sans', Roboto, Arial, sans-serif;
   }
 
@@ -1173,7 +1166,6 @@ css: |
 
   .grid-container {
     gap: 0px;
-    overflow: hidden;
   }
 
   .time-label-wrapper::after {
@@ -1250,13 +1242,44 @@ css: |
     background-color: var(--grid-accent-color);
   }
 
+  .time-label-wrapper {
+    position: relative;
+    width: 45px;
+  }
+
   .time-label {
-    top: -14px;
+    position: absolute;
+    top: -5px;
     font-size: 10px;
+    line-height: 10px;
     color: var(--grid-secondary-text-color);
-    justify-content: flex-end;
     padding-right: 20px;
-    font-variant-numeric: tabular-nums;
+  }
+
+  .time-label-all-day {
+    font-size: 8px;
+  }
+
+  .time-label-hour-separator {
+    display: none;
+  }
+
+  .time-label-hour, 
+  .time-label-all-day {
+    position: absolute;
+  }
+
+  .time-label-hour-start, 
+  .time-label-all-day {
+    top: 0;
+  }
+
+  .time-label-hour-end {
+    bottom: -10px;
+  }
+
+  .time-label-wrapper:has(~ .time-label-wrapper) .time-label-hour-end {
+    visibility: hidden;
   }
 
   .event-block {
@@ -1349,7 +1372,7 @@ entities:
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
-    icon: mdi:checkbox-blank-circle-outline
+    icon: mdi:flash-off
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -1391,7 +1414,6 @@ css: |
     background-color: var(--grid-bg);
     box-shadow: none !important;
     border: none !important;
-    padding: 15px;
     font-family: 'Google Sans', Roboto, Arial, sans-serif;
   }
 
@@ -1399,7 +1421,6 @@ css: |
 
   .grid-container {
     gap: 0px;
-    overflow: hidden;
   }
 
   .time-label-wrapper::after {
@@ -1479,10 +1500,9 @@ css: |
   .time-label {
     top: -14px;
     font-size: 10px;
+    line-height: 10px;
     color: var(--grid-secondary-text-color);
-    justify-content: flex-end;
     padding-right: 20px;
-    font-variant-numeric: tabular-nums;
   }
 
   .event-block {
@@ -1575,7 +1595,7 @@ entities:
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
-    icon: mdi:checkbox-blank-circle-outline
+    icon: mdi:flash-off
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -1618,7 +1638,6 @@ css: |
     box-shadow: none !important;
     border: none !important;
     border-radius: 16px;
-    padding: 15px;
     font-family: 'Google Sans', Roboto, Arial, sans-serif;
   }
 
@@ -1626,7 +1645,6 @@ css: |
 
   .grid-container {
     gap: 0px;
-    overflow: hidden;
   }
 
   .time-label-wrapper::after {
@@ -1704,10 +1722,9 @@ css: |
   .time-label {
     top: -14px;
     font-size: 10px;
+    line-height: 10px;
     color: var(--grid-secondary-text-color);
-    justify-content: flex-end;
     padding-right: 20px;
-    font-variant-numeric: tabular-nums;
   }
 
   .event-sub-block {

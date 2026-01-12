@@ -12,6 +12,7 @@
 
 ha-card {
   padding: 8px 16px 16px 16px;
+  overflow-x: auto;
   color: var(--text-primary);
 }
 
@@ -19,7 +20,6 @@ ha-card {
   display: grid;
   grid-template-columns: auto repeat(7, 1fr); /* Default fallback, overridden by inline style */
   gap: 4px;
-  overflow-x: auto;
 }
 
 .cell-wrapper,

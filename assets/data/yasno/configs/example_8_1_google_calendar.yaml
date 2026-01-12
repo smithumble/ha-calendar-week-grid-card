@@ -8,9 +8,11 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
+time_range: true
 icons_mode: all
 icons_container: event
 all_day: row
+all_day_label: STATUS
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -26,7 +28,7 @@ entities:
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
-    icon: mdi:checkbox-blank-circle-outline
+    icon: mdi:flash-off
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -66,7 +68,6 @@ css: |
 
   ha-card {
     background-color: var(--grid-bg);
-    padding: 15px;
     font-family: 'Google Sans', Roboto, Arial, sans-serif;
   }
 
@@ -74,7 +75,6 @@ css: |
 
   .grid-container {
     gap: 0px;
-    overflow: hidden;
   }
 
   .time-label-wrapper::after {
@@ -151,13 +151,44 @@ css: |
     background-color: var(--grid-accent-color);
   }
 
+  .time-label-wrapper {
+    position: relative;
+    width: 45px;
+  }
+
   .time-label {
-    top: -14px;
+    position: absolute;
+    top: -5px;
     font-size: 10px;
+    line-height: 10px;
     color: var(--grid-secondary-text-color);
-    justify-content: flex-end;
     padding-right: 20px;
-    font-variant-numeric: tabular-nums;
+  }
+
+  .time-label-all-day {
+    font-size: 8px;
+  }
+
+  .time-label-hour-separator {
+    display: none;
+  }
+
+  .time-label-hour, 
+  .time-label-all-day {
+    position: absolute;
+  }
+
+  .time-label-hour-start, 
+  .time-label-all-day {
+    top: 0;
+  }
+
+  .time-label-hour-end {
+    bottom: -10px;
+  }
+
+  .time-label-wrapper:has(~ .time-label-wrapper) .time-label-hour-end {
+    visibility: hidden;
   }
 
   .event-block {

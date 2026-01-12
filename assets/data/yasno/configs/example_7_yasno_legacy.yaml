@@ -31,14 +31,11 @@ css: |
     --color-highlight-icon: #1e1e2e;
     --color-highlight-light: #FDD631;
     --color-highlight-light-icon: var(--primary-text-color);
+    padding: 0;
   }
 
   ha-card.theme-dark {
     --color-highlight-light-icon: #FDD631;
-  }
-
-  ha-card {
-    padding: 0;
   }
 
   .grid-container {
