@@ -2,12 +2,25 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import puppeteer, { Browser, Page } from 'puppeteer';
-import type { ConfigItem } from './utils/providers';
+import type { ConfigItem, MockCalendar } from './utils/providers';
 import { preloadAllProviderData } from './utils/providers';
 import {
   generateScreenshotPageHTML,
   getRenderPageData,
 } from './utils/renderers/screenshot-page';
+import type { ThemeCSS } from './utils/theme';
+
+declare global {
+  interface Window {
+    MOCK_DATE_STR: string;
+    CONFIG?: any;
+    CALENDARS: any[];
+    THEME_CSS: ThemeCSS;
+    ICON_MAP: Record<string, string>;
+    setupBrowserEnv?: () => void;
+    renderCards?: (config: any, calendars: MockCalendar[]) => void;
+  }
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -632,7 +632,7 @@ export class CalendarWeekGridCard extends LitElement {
     }
 
     const currentDay = today.getDay();
-    let daysToSubtract = (currentDay - targetDay + 7) % 7;
+    const daysToSubtract = (currentDay - targetDay + 7) % 7;
 
     const startDate = new Date(today);
     startDate.setDate(today.getDate() - daysToSubtract);
