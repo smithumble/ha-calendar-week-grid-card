@@ -1307,6 +1307,16 @@ css: |
     top: -3px;
   }
 
+  /* Default Event Styles */
+
+  .event-sub-block {
+    background-color: var(--grid-primary-text-color);
+  }
+
+  [data-type="blank"] .event-sub-block {
+    background-color: transparent;
+  }
+
   /* Specific Event Styles */
 
   [data-name="planned_outages"] .event-sub-block {
@@ -1572,6 +1582,16 @@ css: |
     top: -3px;
   }
 
+  /* Default Event Styles */
+
+  .event-sub-block:after {
+    background-color: var(--grid-primary-text-color);
+  }
+
+  [data-type="blank"] .event-sub-block:after {
+    background-color: transparent;
+  }
+
   /* Specific Event Styles */
 
   [data-name="planned_outages"] .event-sub-block:after {
@@ -1793,6 +1813,16 @@ css: |
     height: 8px;
     left: -4px;
     top: -3px;
+  }
+
+  /* Default Event Styles */
+
+  .event-sub-block {
+    background-color: var(--grid-primary-text-color);
+  }
+
+  [data-type="blank"] .event-sub-block {
+    background-color: transparent;
   }
 
   /* Specific Event Styles */
@@ -2027,6 +2057,16 @@ css: |
     height: 8px;
     left: -4px;
     top: -3px;
+  }
+
+  /* Default Event Styles */
+
+  .event-sub-block:after {
+    background-color: var(--grid-primary-text-color);
+  }
+
+  [data-type="blank"] .event-sub-block:after {
+    background-color: transparent;
   }
 
   /* Specific Event Styles */

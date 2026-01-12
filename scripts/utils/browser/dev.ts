@@ -51,7 +51,7 @@ function getFromURL(paramName: string): string | null {
 
 // Hardcoded default values
 const DEFAULT_PROVIDER = 'yasno';
-const DEFAULT_CONFIG = 'example_8_1_google_calendar';
+const DEFAULT_CONFIG = 'example_8_2_google_calendar_separated';
 const DEFAULT_DATA_SOURCE = 'yasno_1';
 
 function getValue(
