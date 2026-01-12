@@ -77,6 +77,7 @@ export function generateDevPageHTML(options: {
     <!DOCTYPE html>
     <html>
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
         <style>
           /* Root Variables */
           :root {
@@ -104,6 +105,7 @@ export function generateDevPageHTML(options: {
             min-height: 100vh;
             box-sizing: border-box;
             transition: padding-right 0.3s, flex-direction 0.3s, padding-top 0.3s;
+            background-color: var(--primary-background-color, rgb(40, 40, 40));
           }
 
           body.with-editor {
@@ -393,7 +395,7 @@ export function generateDevPageHTML(options: {
             color: var(--primary-text-color);
             position: relative;
             min-height: calc(100vh - 60px);
-            min-width: 0;
+            min-width: 350px;
             overflow: hidden;
           }
 
