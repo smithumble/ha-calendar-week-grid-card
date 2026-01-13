@@ -16,6 +16,11 @@ export interface EntityConfig {
   hide?: (string | EventCriteria)[];
 }
 
+export interface LayoutOptions {
+  grid_rows?: number;
+  grid_columns?: number;
+}
+
 export interface CardConfig {
   type: string;
   language?: string;
@@ -46,6 +51,7 @@ export interface CardConfig {
   theme?: 'dark' | 'light' | 'auto';
   entities: (string | EntityConfig)[];
   css?: string;
+  layout_options?: LayoutOptions;
 }
 
 export interface CalendarEvent {

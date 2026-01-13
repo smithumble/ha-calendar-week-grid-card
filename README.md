@@ -1189,15 +1189,11 @@ css: |
     padding-bottom: 4px;
   }
 
-  .cell-wrapper {
-    box-sizing: border-box;
-    height: 28px;
-  }
-
   .cell {
-    margin-top: -1px;
-    margin-left: -1px;
-    height: 100%;
+    position: relative;
+    top: -1px;
+    left: -1px;
+    height: 24px;
   }
 
   .day-header {
@@ -1452,15 +1448,11 @@ css: |
     border-left: 1px solid var(--grid-border-color);
   }
 
-  .cell-wrapper {
-    box-sizing: border-box;
-    height: 28px;
-  }
-
   .cell {
-    margin-top: -5px;
-    margin-left: -5px;
-    height: 100%;
+    position: relative;
+    top: -3px;
+    left: -3px;
+    height: 28px;
   }
 
   .day-header {
@@ -1729,15 +1721,11 @@ css: |
     padding-bottom: 4px;
   }
 
-  .cell-wrapper {
-    box-sizing: border-box;
-    height: 28px;
-  }
-
   .cell {
-    margin-top: -1px;
-    margin-left: -1px;
-    height: 100%;
+    position: relative;
+    top: -1px;
+    left: -1px;
+    height: 24px;
   }
 
   .day-header {
@@ -1961,15 +1949,11 @@ css: |
     border-left: 1px solid var(--grid-border-color);
   }
 
-  .cell-wrapper {
-    box-sizing: border-box;
-    height: 28px;
-  }
-
   .cell {
-    margin-top: -5px;
-    margin-left: -5px;
-    height: 100%;
+    position: relative;
+    top: -3px;
+    left: -3px;
+    height: 28px;
   }
 
   .day-header {

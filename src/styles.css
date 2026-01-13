@@ -1,5 +1,6 @@
 :host {
   display: block;
+  height: 100%;
   --grid-bg: var(--card-background-color, #1c1c1e);
   --normal-bg: transparent;
   --normal-color: var(--primary-text-color, #555);
@@ -11,15 +12,21 @@
 }
 
 ha-card {
+  display: flex;
+  flex-direction: column;
   padding: 8px 16px 16px 16px;
-  overflow-x: auto;
+  height: 100%;
+  box-sizing: border-box;
   color: var(--text-primary);
+  overflow: hidden;
 }
 
 .grid-container {
   display: grid;
   grid-template-columns: auto repeat(7, 1fr); /* Default fallback, overridden by inline style */
   gap: 4px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .cell-wrapper,
@@ -29,6 +36,7 @@ ha-card {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
 }
 
 .time-label {
@@ -42,6 +50,7 @@ ha-card {
   color: var(--text-secondary);
   white-space: nowrap;
   padding-right: 8px;
+  box-sizing: border-box;
 }
 
 .day-header {
@@ -58,6 +67,7 @@ ha-card {
   font-weight: bold;
   text-align: center;
   gap: 2px;
+  box-sizing: border-box;
 }
 
 .day-header-primary {
@@ -74,6 +84,10 @@ ha-card {
   opacity: 0.8;
 }
 
+.cell-wrapper {
+  height: 100%;
+}
+
 .cell {
   position: relative;
   display: flex;
@@ -81,6 +95,7 @@ ha-card {
   justify-content: center;
   width: 100%;
   height: 24px;
+  min-height: 14px;
   overflow: hidden;
   padding: 0;
   margin: 0;
@@ -88,6 +103,11 @@ ha-card {
   background-color: var(--normal-bg);
   color: var(--normal-color);
   pointer-events: none;
+  box-sizing: border-box;
+}
+
+.grid-container[data-layout-fit='true'] .cell {
+  height: 100%;
 }
 
 .cell-icons {
@@ -98,6 +118,7 @@ ha-card {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  height: 100%;
 }
 
 .event-wrapper {
@@ -106,6 +127,7 @@ ha-card {
   right: 0;
   overflow: hidden;
   pointer-events: none;
+  box-sizing: border-box;
 }
 
 .event-block {

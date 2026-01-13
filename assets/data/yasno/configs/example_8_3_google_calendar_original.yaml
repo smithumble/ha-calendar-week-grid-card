@@ -98,15 +98,11 @@ css: |
     padding-bottom: 4px;
   }
 
-  .cell-wrapper {
-    box-sizing: border-box;
-    height: 28px;
-  }
-
   .cell {
-    margin-top: -1px;
-    margin-left: -1px;
-    height: 100%;
+    position: relative;
+    top: -1px;
+    left: -1px;
+    height: 24px;
   }
 
   .day-header {

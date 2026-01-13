@@ -38,7 +38,6 @@ entities:
     icon: mdi:timer-sand
     hide:
       - planned_outages
-
 css: |
   ha-card { 
     --grid-bg: var(--card-background-color, #FFF);
@@ -100,15 +99,11 @@ css: |
     border-left: 1px solid var(--grid-border-color);
   }
 
-  .cell-wrapper {
-    box-sizing: border-box;
-    height: 28px;
-  }
-
   .cell {
-    margin-top: -5px;
-    margin-left: -5px;
-    height: 100%;
+    position: relative;
+    top: -3px;
+    left: -3px;
+    height: 28px;
   }
 
   .day-header {
