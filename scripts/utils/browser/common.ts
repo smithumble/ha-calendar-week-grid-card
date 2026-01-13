@@ -207,8 +207,26 @@ function renderCardToContainer(
   // Determine theme based on container ID
   const isDarkMode = containerId.includes('dark');
 
+  // Set dynamic grid rows and min-height based on card config
+  const gridRows = cardConfig?.layout_options?.grid_rows;
+  if (gridRows) {
+    const rowHeight = 60; // fixed height per row
+    container.style.setProperty(
+      'grid-template-rows',
+      `repeat(${gridRows}, ${rowHeight}px)`,
+    );
+  } else {
+    container.style.removeProperty('grid-template-rows');
+  }
+
   container.innerHTML = '';
   const card = createCard();
+
+  // Apply grid-row span if layout_options.grid_rows is set
+  if (gridRows) {
+    (card as HTMLElement).style.gridRow = `span ${gridRows}`;
+  }
+
   container.appendChild(card);
   setupCard(card, cardConfig, calendars, isDarkMode);
 }

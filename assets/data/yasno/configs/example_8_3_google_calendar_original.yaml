@@ -34,7 +34,7 @@ entities:
     hide:
       - planned_outages
 css: |
-  ha-card {
+  ha-card { 
     --grid-bg: #FFF;
     --grid-border-color: #dde3ea;
     --grid-primary-text-color: #1f1f1f;
@@ -68,7 +68,6 @@ css: |
     background-color: var(--grid-bg);
     box-shadow: none !important;
     border: none !important;
-    border-radius: 16px;
     font-family: 'Google Sans', Roboto, Arial, sans-serif;
   }
 
@@ -95,17 +94,15 @@ css: |
   .time-label-wrapper + .cell-wrapper,
   .cell-wrapper + .cell-wrapper {
     border-left: 1px solid var(--grid-border-color);
-  }
-
-  .cell-wrapper {
-    box-sizing: border-box;
-    height: 28px;
+    padding-right: 4px;
+    padding-bottom: 4px;
   }
 
   .cell {
-    margin-top: -5px;
-    margin-left: -5px;
-    height: 100%;
+    position: relative;
+    top: -1px;
+    left: -1px;
+    height: 24px;
   }
 
   .day-header {
@@ -158,15 +155,7 @@ css: |
     padding-right: 20px;
   }
 
-  .event-sub-block {
-    padding: 2px;
-  }
-
-  .event-sub-block:after {
-    content: '';
-    display: block;
-    width: 100%;
-    height: 100%;
+  .event-block {
     border-radius: 6px;
   }
 
@@ -175,10 +164,6 @@ css: |
   .event-icon {
     color: var(--grid-event-text-color);
     --icon-size: 14px;
-  }
-
-  .event-wrapper:has(.event-sub-block:not([style*="top: 0%;"][style*="height: 100%;"])) .event-icon-overlay {
-    display: none;
   }
 
   /* Current Time Line */
@@ -195,24 +180,34 @@ css: |
     top: -3px;
   }
 
+  /* Default Event Styles */
+
+  .event-sub-block {
+    background-color: var(--grid-primary-text-color);
+  }
+
+  [data-type="blank"] .event-sub-block {
+    background-color: transparent;
+  }
+
   /* Specific Event Styles */
 
-  [data-name="planned_outages"] .event-sub-block:after {
+  [data-name="planned_outages"] .event-sub-block {
     background-color: var(--planned-outages-color);
   }
 
-  [data-name="probable_outages"] .event-sub-block:after {
+  [data-name="probable_outages"] .event-sub-block {
     background-color: var(--probable-outages-color);
   }
 
-  [data-name="emergency_shutdowns"] .event-sub-block:after {
+  [data-name="emergency_shutdowns"] .event-sub-block {
     background-color: var(--emergency-shutdowns-color);
   }
 
-  [data-name="schedule_applies"] .event-sub-block:after {
+  [data-name="schedule_applies"] .event-sub-block {
     background-color: var(--schedule-applies-color); 
   }
 
-  [data-name="waiting_for_schedule"] .event-sub-block:after {
+  [data-name="waiting_for_schedule"] .event-sub-block {
     background-color: var(--waiting-for-schedule-color);
   }

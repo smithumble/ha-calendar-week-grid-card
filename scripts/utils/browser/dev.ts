@@ -51,7 +51,7 @@ function getFromURL(paramName: string): string | null {
 
 // Hardcoded default values
 const DEFAULT_PROVIDER = 'yasno';
-const DEFAULT_CONFIG = 'example_8_1_google_calendar';
+const DEFAULT_CONFIG = 'example_8_2_google_calendar_separated';
 const DEFAULT_DATA_SOURCE = 'yasno_1';
 
 function getValue(
@@ -200,6 +200,122 @@ function setupSelectListener(
   select.addEventListener('change', (e) => {
     const target = e.target as HTMLSelectElement;
     handler(target.value);
+  });
+}
+
+function isAnySelectorFocused(): boolean {
+  const selectors = ['provider-select', 'config-select', 'data-source-select'];
+  return selectors.some((id) => {
+    const select = document.getElementById(id) as HTMLSelectElement;
+    return select && document.activeElement === select;
+  });
+}
+
+let globalKeyboardNavSetup = false;
+
+function setupGlobalKeyboardNavigation(): void {
+  if (globalKeyboardNavSetup) return;
+  globalKeyboardNavSetup = true;
+
+  document.addEventListener('keydown', (e) => {
+    // Only handle arrow keys
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      return;
+    }
+
+    // If no selector is focused, focus config selector first
+    if (!isAnySelectorFocused()) {
+      // Don't auto-focus if user is typing in textarea or other input
+      const activeElement = document.activeElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === 'TEXTAREA' ||
+          activeElement.tagName === 'INPUT' ||
+          (activeElement instanceof HTMLElement &&
+            activeElement.isContentEditable))
+      ) {
+        return;
+      }
+
+      const configSelect = document.getElementById(
+        'config-select',
+      ) as HTMLSelectElement;
+      if (configSelect) {
+        e.preventDefault();
+        configSelect.focus();
+        // If it's an up/down arrow, also trigger the navigation
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          const options = Array.from(configSelect.options);
+          const currentIndex = configSelect.selectedIndex;
+          let newIndex: number;
+          if (e.key === 'ArrowDown') {
+            newIndex = currentIndex < options.length - 1 ? currentIndex + 1 : 0;
+          } else {
+            newIndex = currentIndex > 0 ? currentIndex - 1 : options.length - 1;
+          }
+          configSelect.selectedIndex = newIndex;
+          configSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    }
+  });
+}
+
+function setupSelectKeyboardNavigation(selectId: string): void {
+  const select = document.getElementById(selectId) as HTMLSelectElement;
+  if (!select || select.hasAttribute('data-keyboard-nav-attached')) return;
+
+  select.setAttribute('data-keyboard-nav-attached', 'true');
+  select.addEventListener('keydown', (e) => {
+    const selectorOrder = [
+      'provider-select',
+      'config-select',
+      'data-source-select',
+    ];
+    const currentSelectorIndex = selectorOrder.indexOf(selectId);
+
+    // Handle left/right arrows to switch between selectors
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      let targetIndex: number;
+      if (e.key === 'ArrowRight') {
+        targetIndex =
+          currentSelectorIndex < selectorOrder.length - 1
+            ? currentSelectorIndex + 1
+            : 0;
+      } else {
+        targetIndex =
+          currentSelectorIndex > 0
+            ? currentSelectorIndex - 1
+            : selectorOrder.length - 1;
+      }
+
+      const targetSelect = document.getElementById(
+        selectorOrder[targetIndex],
+      ) as HTMLSelectElement;
+      if (targetSelect) {
+        targetSelect.focus();
+      }
+      return;
+    }
+
+    // Handle up/down arrows to navigate within selector
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+
+    e.preventDefault();
+
+    const options = Array.from(select.options);
+    const currentIndex = select.selectedIndex;
+
+    let newIndex: number;
+    if (e.key === 'ArrowDown') {
+      newIndex = currentIndex < options.length - 1 ? currentIndex + 1 : 0;
+    } else {
+      newIndex = currentIndex > 0 ? currentIndex - 1 : options.length - 1;
+    }
+
+    select.selectedIndex = newIndex;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
   });
 }
 
@@ -365,6 +481,7 @@ function setupConfigSelectListener() {
       saveToStorage('selected-config', selectedName);
     }
   });
+  setupSelectKeyboardNavigation('config-select');
 }
 
 function setupDataSourceSelectListener() {
@@ -375,6 +492,7 @@ function setupDataSourceSelectListener() {
       updateCalendarsAndRender(selectedDataSource, currentProvider);
     }
   });
+  setupSelectKeyboardNavigation('data-source-select');
 }
 
 function updateSelectsForProvider(provider: string, shouldRender = false) {
@@ -435,6 +553,7 @@ function setupProviderSelector() {
       updateSelectsForProvider(selectedProvider, true);
     }
   });
+  setupSelectKeyboardNavigation('provider-select');
 }
 
 function areProviderDataReady(): boolean {
@@ -458,6 +577,9 @@ if (document.readyState === 'loading') {
 } else {
   setupConfigEditor();
 }
+
+// Setup global keyboard navigation early
+setupGlobalKeyboardNavigation();
 
 waitForProviderData();
 
@@ -536,5 +658,13 @@ function initializeCards() {
     await new Promise((resolve) => setTimeout(resolve, 200));
     await waitForProviderDataAsync();
     initializeCards();
+
+    // Focus config selector by default
+    const configSelect = document.getElementById(
+      'config-select',
+    ) as HTMLSelectElement;
+    if (configSelect) {
+      configSelect.focus();
+    }
   }
 })();

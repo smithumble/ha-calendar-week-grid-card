@@ -397,6 +397,7 @@ export function generateDevPageHTML(options: {
             min-height: calc(100vh - 60px);
             min-width: 350px;
             overflow: hidden;
+            padding: 20px;
           }
 
           body.with-editor .theme-container {
@@ -422,6 +423,10 @@ export function generateDevPageHTML(options: {
           #card-container-light, #card-container-dark {
             width: 100%;
             max-width: 450px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            align-content: center;
           }
 
           /* Responsive: Vertical layout for smaller screens */

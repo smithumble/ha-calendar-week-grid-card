@@ -121,6 +121,7 @@ export class CalendarWeekGridCard extends LitElement {
       this.config?.all_day === 'row' || this.config?.all_day === 'both';
 
     const daysCount = days.length;
+
     return html`
       <div
         class="grid-container"
@@ -128,6 +129,7 @@ export class CalendarWeekGridCard extends LitElement {
         data-icons-container="${this.config?.icons_container || 'cell'}"
         data-icons-mode="${this.config?.icons_mode || 'top'}"
         data-all-day="${this.config?.all_day || 'grid'}"
+        data-layout-fit="${!!this.config?.layout_options?.grid_rows}"
       >
         <!-- Header Row -->
         <div></div>
@@ -185,7 +187,7 @@ export class CalendarWeekGridCard extends LitElement {
     let timeLabel: string | TemplateResult;
 
     if (isAllDay) {
-      timeLabel = this.renderAllDayLabel(this.config?.all_day_label || '');
+      timeLabel = this.renderAllDayLabel(this.config?.all_day_label);
       isNow = false;
     } else {
       timeLabel = this.renderTimeLabel(hour);
@@ -704,8 +706,9 @@ export class CalendarWeekGridCard extends LitElement {
     `;
   }
 
-  private renderAllDayLabel(label: string): TemplateResult {
-    return html` <div class="time-label-all-day">${label}</div> `;
+  private renderAllDayLabel(label: string | undefined): TemplateResult {
+    const cleanLabel = label || html`&nbsp;`;
+    return html`<div class="time-label-all-day">${cleanLabel}</div>`;
   }
 
   private filterEvents(
