@@ -11,12 +11,15 @@
   --current-time-color: var(--primary-color, #ea4335);
 }
 
+* {
+  box-sizing: border-box;
+}
+
 ha-card {
   display: flex;
   flex-direction: column;
   padding: 8px 16px 16px 16px;
   height: 100%;
-  box-sizing: border-box;
   color: var(--text-primary);
   overflow: hidden;
 }
@@ -26,7 +29,6 @@ ha-card {
   grid-template-columns: auto repeat(7, 1fr); /* Default fallback, overridden by inline style */
   gap: 4px;
   height: 100%;
-  box-sizing: border-box;
 }
 
 .cell-wrapper,
@@ -36,7 +38,6 @@ ha-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
 }
 
 .time-label {
@@ -50,7 +51,6 @@ ha-card {
   color: var(--text-secondary);
   white-space: nowrap;
   padding-right: 8px;
-  box-sizing: border-box;
 }
 
 .day-header {
@@ -67,7 +67,6 @@ ha-card {
   font-weight: bold;
   text-align: center;
   gap: 2px;
-  box-sizing: border-box;
 }
 
 .day-header-primary {
@@ -103,7 +102,6 @@ ha-card {
   background-color: var(--normal-bg);
   color: var(--normal-color);
   pointer-events: none;
-  box-sizing: border-box;
 }
 
 .grid-container[data-layout-fit='true'] .cell {
@@ -117,7 +115,6 @@ ha-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
   height: 100%;
 }
 
@@ -127,7 +124,6 @@ ha-card {
   right: 0;
   overflow: hidden;
   pointer-events: none;
-  box-sizing: border-box;
 }
 
 .event-block {
@@ -138,22 +134,14 @@ ha-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
   border-radius: var(--event-border-radius);
 }
 
-.event-sub-blocks {
-  position: absolute;
-  left: 0;
-  right: 0;
-  box-sizing: border-box;
-}
-
+.event-sub-blocks,
 .event-sub-block {
   position: absolute;
   left: 0;
   right: 0;
-  box-sizing: border-box;
 }
 
 .event-icon-overlay {
@@ -163,7 +151,6 @@ ha-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
   pointer-events: none;
 }
 
