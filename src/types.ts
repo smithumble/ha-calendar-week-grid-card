@@ -1,3 +1,11 @@
+export interface CustomCard {
+  type: string;
+  name: string;
+  preview?: boolean;
+  description?: string;
+  documentationURL?: string;
+}
+
 export interface EventCriteria {
   name?: string;
   type?: string;
@@ -11,6 +19,7 @@ export interface EntityConfig {
   entity: string;
   filter?: string;
   icon?: string;
+  color?: string;
   under?: (string | EventCriteria)[];
   over?: (string | EventCriteria)[];
   hide?: (string | EventCriteria)[];
@@ -56,7 +65,7 @@ export interface CardConfig {
     | 'saturday';
   days?: number;
   theme?: 'dark' | 'light' | 'auto';
-  entities: (string | EntityConfig)[];
+  entities?: (string | EntityConfig)[];
   css?: string;
   grid_options?: GridOptions;
   layout_options?: LayoutOptions;

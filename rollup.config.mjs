@@ -8,13 +8,18 @@ import terser from '@rollup/plugin-terser';
 const dev = process.env.ROLLUP_WATCH;
 
 export default {
-  input: 'src/calendar-week-grid-card.ts',
+  input: 'src/card.ts',
   output: {
     dir: 'dist',
     format: 'es',
     inlineDynamicImports: true,
+    entryFileNames: 'calendar-week-grid-card.js',
   },
   context: 'window',
+  watch: {
+    include: 'src/**',
+    clearScreen: false,
+  },
   plugins: [
     nodeResolve({
       browser: true,
@@ -26,7 +31,9 @@ export default {
       inject: false,
     }),
     postcssLit(),
-    typescript(),
+    typescript({
+      tsconfig: 'tsconfig.json',
+    }),
     !dev && terser(),
   ].filter(Boolean),
 };

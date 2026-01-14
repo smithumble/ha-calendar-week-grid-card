@@ -1109,21 +1109,26 @@ entities:
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
+    color: var(--error-color)
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
+    color: var(--primary-color)
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
+    color: var(--error-color)
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
+    color: var(--success-color)
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    color: var(--warning-color)
     hide:
       - planned_outages
 css: |
@@ -1135,11 +1140,6 @@ css: |
     --grid-event-text-color: var(--card-background-color, #fff);
     --grid-accent-color: var(--primary-color, #0b57d0);
     --grid-accent-text-color: var(--card-background-color, #fff);
-    --planned-outages-color: var(--error-color, #F3511E);
-    --probable-outages-color: var(--primary-color, #4285F4);
-    --emergency-shutdowns-color: var(--error-color, #D40101);
-    --schedule-applies-color: var(--success-color, #34B779);
-    --waiting-for-schedule-color: var(--warning-color, #F6BE28);
   }
 
   ha-card.theme-dark {
@@ -1150,11 +1150,6 @@ css: |
     --grid-event-text-color: var(--card-background-color, #131314);
     --grid-accent-color: var(--primary-color, #a8c7fa);
     --grid-accent-text-color: var(--card-background-color, #062e6f);
-    --planned-outages-color: var(--error-color, #E3683E);
-    --probable-outages-color: var(--primary-color, #678AE1);
-    --emergency-shutdowns-color: var(--error-color, #D95234);
-    --schedule-applies-color: var(--success-color, #56B080);
-    --waiting-for-schedule-color: var(--warning-color, #E6BA50);
   }
 
   ha-card {
@@ -1240,16 +1235,17 @@ css: |
 
   .time-label-wrapper {
     position: relative;
-    width: 45px;
   }
 
   .time-label {
-    position: absolute;
-    top: -5px;
+    display: block;
+    position: relative;
     font-size: 10px;
     line-height: 10px;
     color: var(--grid-secondary-text-color);
-    padding-right: 20px;
+    padding-right: 0;
+    margin-right: 20px;
+    text-align: right;
   }
 
   .time-label-all-day {
@@ -1260,18 +1256,23 @@ css: |
     display: none;
   }
 
-  .time-label-hour, 
-  .time-label-all-day {
-    position: absolute;
+  .time-label-hour-start,
+  .time-label-all-day,
+  .time-label-hour-end {
+    display: block;
   }
 
-  .time-label-hour-start, 
+  .time-label-hour:not(.time-label-hour-end), 
   .time-label-all-day {
-    top: 0;
+    position: relative;
+    top: -5px;
+    right: 0;
   }
 
   .time-label-hour-end {
-    bottom: -10px;
+    position: absolute;
+    right: 0;
+    bottom: -5px;
   }
 
   .time-label-wrapper:has(~ .time-label-wrapper) .time-label-hour-end {
@@ -1306,33 +1307,11 @@ css: |
   /* Default Event Styles */
 
   .event-sub-block {
-    background-color: var(--grid-primary-text-color);
+    background-color: var(--event-color, var(--grid-primary-text-color));
   }
 
   [data-type="blank"] .event-sub-block {
     background-color: transparent;
-  }
-
-  /* Specific Event Styles */
-
-  [data-name="planned_outages"] .event-sub-block {
-    background-color: var(--planned-outages-color);
-  }
-
-  [data-name="probable_outages"] .event-sub-block {
-    background-color: var(--probable-outages-color);
-  }
-
-  [data-name="emergency_shutdowns"] .event-sub-block {
-    background-color: var(--emergency-shutdowns-color);
-  }
-
-  [data-name="schedule_applies"] .event-sub-block {
-    background-color: var(--schedule-applies-color); 
-  }
-
-  [data-name="waiting_for_schedule"] .event-sub-block {
-    background-color: var(--waiting-for-schedule-color);
   }
 ```
 
@@ -1370,21 +1349,26 @@ entities:
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
+    color: var(--error-color)
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
+    color: var(--primary-color)
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
+    color: var(--error-color)
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
+    color: var(--success-color)
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    color: var(--warning-color)
     hide:
       - planned_outages
 css: |
@@ -1499,16 +1483,17 @@ css: |
 
   .time-label-wrapper {
     position: relative;
-    width: 45px;
   }
 
   .time-label {
-    position: absolute;
-    top: -5px;
+    display: block;
+    position: relative;
     font-size: 10px;
     line-height: 10px;
     color: var(--grid-secondary-text-color);
-    padding-right: 20px;
+    padding-right: 0;
+    margin-right: 20px;
+    text-align: right;
   }
 
   .time-label-all-day {
@@ -1519,18 +1504,23 @@ css: |
     display: none;
   }
 
-  .time-label-hour, 
-  .time-label-all-day {
-    position: absolute;
+  .time-label-hour-start,
+  .time-label-all-day,
+  .time-label-hour-end {
+    display: block;
   }
 
-  .time-label-hour-start, 
+  .time-label-hour:not(.time-label-hour-end), 
   .time-label-all-day {
-    top: 0;
+    position: relative;
+    top: -5px;
+    right: 0;
   }
 
   .time-label-hour-end {
-    bottom: -10px;
+    position: absolute;
+    right: 0;
+    bottom: -5px;
   }
 
   .time-label-wrapper:has(~ .time-label-wrapper) .time-label-hour-end {
@@ -1577,33 +1567,11 @@ css: |
   /* Default Event Styles */
 
   .event-sub-block:after {
-    background-color: var(--grid-primary-text-color);
+    background-color: var(--event-color, var(--grid-primary-text-color));
   }
 
   [data-type="blank"] .event-sub-block:after {
     background-color: transparent;
-  }
-
-  /* Specific Event Styles */
-
-  [data-name="planned_outages"] .event-sub-block:after {
-    background-color: var(--planned-outages-color);
-  }
-
-  [data-name="probable_outages"] .event-sub-block:after {
-    background-color: var(--probable-outages-color);
-  }
-
-  [data-name="emergency_shutdowns"] .event-sub-block:after {
-    background-color: var(--emergency-shutdowns-color);
-  }
-
-  [data-name="schedule_applies"] .event-sub-block:after {
-    background-color: var(--schedule-applies-color); 
-  }
-
-  [data-name="waiting_for_schedule"] .event-sub-block:after {
-    background-color: var(--waiting-for-schedule-color);
   }
 ```
 

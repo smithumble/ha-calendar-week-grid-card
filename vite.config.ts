@@ -8,6 +8,7 @@ const __dirname = dirname(__filename);
 
 export default defineConfig({
   root: 'dist',
+  clearScreen: false,
   optimizeDeps: {
     include: ['lit', 'custom-card-helpers'],
   },

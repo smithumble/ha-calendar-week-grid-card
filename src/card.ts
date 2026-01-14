@@ -14,7 +14,9 @@ import {
   getDeprecatedFilledIcon,
   getDeprecatedBlankIcon,
 } from './deprecated';
+import { CalendarWeekGridCardEditor } from './editor/editor';
 import styles from './styles.css';
+import GoogleCalendarSeparated from './themes/google_calendar_separated.css';
 import type {
   CardConfig,
   CalendarEvent,
@@ -23,8 +25,21 @@ import type {
   DayInfo,
   EntityConfig,
   EventCriteria,
+  CustomCard,
 } from './types';
 
+//-----------------------------------------------------------------------------
+// GLOBAL TYPE DECLARATIONS
+//-----------------------------------------------------------------------------
+declare global {
+  interface Window {
+    customCards: CustomCard[];
+  }
+}
+
+//-----------------------------------------------------------------------------
+// MAIN COMPONENT CLASS
+//-----------------------------------------------------------------------------
 @customElement('calendar-week-grid-card')
 export class CalendarWeekGridCard extends LitElement {
   @property({ attribute: false }) public hass?: HomeAssistant;
@@ -37,10 +52,89 @@ export class CalendarWeekGridCard extends LitElement {
   // Public API
   // ============================================================================
 
+  /**
+   * Static method that returns a new instance of the editor
+   * This is how Home Assistant discovers and loads the editor
+   */
+  static getConfigElement() {
+    return document.createElement('calendar-week-grid-card-editor');
+  }
+
+  /**
+   * Generate a stub configuration for the card editor
+   */
+  static getStubConfig(hass: HomeAssistant): CardConfig {
+    const states = hass.states;
+
+    // Find a calendar entity
+    const calendarEntities = Object.keys(states).filter((key) =>
+      key.startsWith('calendar.'),
+    );
+
+    // Generate a random color in hex format that works with both light and dark text
+    // Uses medium brightness to ensure good contrast with both text colors
+    const generateRandomColor = (): string => {
+      // Generate RGB values in a range that ensures medium brightness
+      // Range 80-180 for each component gives us colors that work with both light and dark text
+      const r = Math.floor(Math.random() * 100) + 80;
+      const g = Math.floor(Math.random() * 100) + 80;
+      const b = Math.floor(Math.random() * 100) + 80;
+
+      // Convert to hex
+      const toHex = (n: number) => n.toString(16).padStart(2, '0');
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    };
+
+    // Predefined color values (CSS variables)
+    const predefinedColors = [
+      'var(--primary-color)',
+      'var(--success-color)',
+      'var(--error-color)',
+      'var(--warning-color)',
+      'var(--info-color)',
+    ];
+
+    // Generate a list of entities for the card editor with colors
+    const configEntities = calendarEntities.map((entity, index) => {
+      const entityConfig: { entity: string; color?: string } = {
+        entity: entity,
+      };
+
+      // Use predefined colors first, then generate random colors
+      if (index < predefinedColors.length) {
+        entityConfig.color = predefinedColors[index];
+      } else {
+        entityConfig.color = generateRandomColor();
+      }
+
+      return entityConfig;
+    });
+
+    // Generate a stub configuration for the card editor
+    return {
+      type: 'custom:calendar-week-grid-card',
+      entities: configEntities,
+      primary_date_format: {
+        weekday: 'short',
+      },
+      secondary_date_format: {
+        day: 'numeric',
+      },
+      time_format: {
+        hour: 'numeric',
+        hour12: true,
+      },
+      time_range: true,
+      icons_mode: 'all',
+      icons_container: 'event',
+      all_day: 'row',
+      days: 7,
+      week_start: 'sunday',
+      css: GoogleCalendarSeparated.cssText,
+    };
+  }
+
   public setConfig(config: CardConfig): void {
-    if (!config.entities) {
-      throw new Error('Please define entities');
-    }
     this.config = config;
   }
 
@@ -357,9 +451,15 @@ export class CalendarWeekGridCard extends LitElement {
     eventClassesList.push(event.isAllDay ? 'all-day' : '');
     const eventClasses = eventClassesList.filter(Boolean).join(' ');
 
+    // Build style with color CSS variable if color is set
+    let eventWrapperStyle = wrapperStyle;
+    if (event.color) {
+      eventWrapperStyle += ` --event-color: ${event.color};`;
+    }
+
     return html`<div
       class="event-wrapper ${eventClasses}"
-      style="${wrapperStyle}"
+      style="${eventWrapperStyle}"
       data-name="${event.name || ''}"
       data-type="${event.type || ''}"
       data-entity="${event.entity || ''}"
@@ -1061,3 +1161,24 @@ export class CalendarWeekGridCard extends LitElement {
     }
   }
 }
+
+//-----------------------------------------------------------------------------
+// REGISTRATION
+//-----------------------------------------------------------------------------
+
+// Register the editor
+customElements.define(
+  'calendar-week-grid-card-editor',
+  CalendarWeekGridCardEditor,
+);
+
+// Register with HACS
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: 'calendar-week-grid-card',
+  name: 'Calendar Week Grid Card',
+  preview: true,
+  description:
+    'A custom Home Assistant card that displays calendar events in a week grid format.',
+  documentationURL: 'https://github.com/smithumble/ha-calendar-week-grid-card',
+});
