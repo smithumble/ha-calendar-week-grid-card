@@ -16,9 +16,16 @@ export interface EntityConfig {
   hide?: (string | EventCriteria)[];
 }
 
+// Legacy layout options (deprecated, use grid_options instead)
 export interface LayoutOptions {
   grid_rows?: number;
   grid_columns?: number;
+}
+
+// New HA standard grid options
+export interface GridOptions {
+  rows?: number | 'auto';
+  columns?: number | 'auto';
 }
 
 export interface CardConfig {
@@ -51,6 +58,7 @@ export interface CardConfig {
   theme?: 'dark' | 'light' | 'auto';
   entities: (string | EntityConfig)[];
   css?: string;
+  grid_options?: GridOptions;
   layout_options?: LayoutOptions;
 }
 

@@ -129,7 +129,7 @@ export class CalendarWeekGridCard extends LitElement {
         data-icons-container="${this.config?.icons_container || 'cell'}"
         data-icons-mode="${this.config?.icons_mode || 'top'}"
         data-all-day="${this.config?.all_day || 'grid'}"
-        data-layout-fit="${!!this.config?.layout_options?.grid_rows}"
+        data-layout-fit="${!!this.getGridRows()}"
       >
         <!-- Header Row -->
         <div></div>
@@ -160,6 +160,19 @@ export class CalendarWeekGridCard extends LitElement {
   // ============================================================================
   // Style Helpers
   // ============================================================================
+
+  private getGridRows(): number | undefined {
+    if (!this.config) return undefined;
+
+    // Check new HA standard first
+    const gridOptionsRows = this.config.grid_options?.rows;
+    if (gridOptionsRows !== undefined && gridOptionsRows !== 'auto') {
+      return typeof gridOptionsRows === 'number' ? gridOptionsRows : undefined;
+    }
+
+    // Fallback to legacy layout_options for backward compatibility
+    return this.config.layout_options?.grid_rows;
+  }
 
   private getDynamicStyles(): CSSResultGroup {
     if (!this.config) return unsafeCSS('');

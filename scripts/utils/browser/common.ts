@@ -208,7 +208,16 @@ function renderCardToContainer(
   const isDarkMode = containerId.includes('dark');
 
   // Set dynamic grid rows and min-height based on card config
-  const gridRows = cardConfig?.layout_options?.grid_rows;
+  // Check new HA standard (grid_options) first, then legacy (layout_options)
+  const gridOptionsRows = cardConfig?.grid_options?.rows;
+  const layoutOptionsRows = cardConfig?.layout_options?.grid_rows;
+  const gridRows =
+    gridOptionsRows !== undefined && gridOptionsRows !== 'auto'
+      ? typeof gridOptionsRows === 'number'
+        ? gridOptionsRows
+        : undefined
+      : layoutOptionsRows;
+
   if (gridRows) {
     const rowHeight = 60; // fixed height per row
     container.style.setProperty(
@@ -222,7 +231,7 @@ function renderCardToContainer(
   container.innerHTML = '';
   const card = createCard();
 
-  // Apply grid-row span if layout_options.grid_rows is set
+  // Apply grid-row span if grid rows are set
   if (gridRows) {
     (card as HTMLElement).style.gridRow = `span ${gridRows}`;
   }
