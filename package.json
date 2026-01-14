@@ -11,6 +11,7 @@
     "lint": "eslint src scripts",
     "lint:fix": "eslint src scripts --fix",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "generate-dev-page": "tsx scripts/generate-dev-page.ts",
     "generate-screenshots": "tsx scripts/generate-screenshots.ts",
     "generate-screenshots:force": "tsx scripts/generate-screenshots.ts --force",
