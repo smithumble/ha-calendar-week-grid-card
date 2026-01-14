@@ -1,0 +1,224 @@
+/* ============================================================================
+Editor Styles
+============================================================================ */
+
+ha-textfield,
+ha-select,
+ha-formfield,
+ha-entity-picker,
+ha-icon-picker {
+  display: block;
+  margin: 8px 0;
+}
+
+.card-config {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.helper-text {
+  color: var(--secondary-text-color);
+  font-size: 10px;
+  line-height: 1.1;
+  margin-top: -4px;
+  margin-bottom: 8px;
+}
+
+h3 {
+  margin: 24px 0 6px 0;
+  font-size: 14px;
+}
+
+h3:first-of-type {
+  margin-top: 8px;
+}
+
+h4 {
+  margin: 24px 0 6px 0;
+}
+
+h5 {
+  margin: 2px 0 0 0;
+}
+
+.panel-content {
+  padding: 8px 0 12px 0;
+}
+
+ha-expansion-panel {
+  margin: 8px 0;
+  border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+  border-radius: var(--ha-card-border-radius, var(--ha-border-radius-lg));
+}
+
+ha-expansion-panel .panel-content {
+  padding: 8px 0 0 0;
+}
+
+ha-button {
+  margin: 8px 0;
+}
+
+ha-formfield {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.editor-section {
+  margin: 16px 0;
+}
+
+.button-section {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+
+.format-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.criteria-array-section {
+  margin: 16px 0;
+  background-color: var(--card-background-color, rgba(0, 0, 0, 0.02));
+  border-radius: 4px;
+}
+
+.criteria-item {
+  margin: 12px 0;
+  padding: 12px;
+  background-color: var(--card-background-color, rgba(0, 0, 0, 0.05));
+  border-radius: var(--ha-card-border-radius, var(--ha-border-radius-lg));
+  border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.1));
+}
+
+.criteria-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.criteria-item-header ha-select {
+  flex: 1;
+  margin: 0;
+}
+
+.criteria-item-header ha-button {
+  margin: 0;
+  min-width: auto;
+}
+
+.criteria-object-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.expansion-panel-header {
+  width: 100%;
+}
+
+.entity-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  padding: 8px;
+}
+
+.entity-header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.entity-header-primary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.entity-header-name {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.2;
+  color: var(--primary-text-color);
+}
+
+.entity-header-entity {
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--secondary-text-color);
+  opacity: 0.8;
+}
+
+.entity-header-secondary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.entity-header-id {
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--secondary-text-color);
+  opacity: 0.7;
+}
+
+.entity-header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.entity-header-buttons ha-icon-button {
+  --mdc-icon-button-size: 28px;
+  --mdc-icon-size: 16px;
+  margin: 0;
+  padding: 0;
+  color: var(--primary-text-color);
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.entity-header-buttons ha-icon-button ha-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.entity-header-buttons ha-icon-button:hover {
+  opacity: 1;
+}
+
+.entity-header-buttons ha-icon-button[disabled] {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
