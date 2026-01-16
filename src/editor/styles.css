@@ -137,8 +137,11 @@ ha-formfield {
   gap: 8px;
   width: 100%;
   min-width: 0;
+  max-width: 100%;
   flex: 1;
   padding: 8px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .entity-header-content {
@@ -147,12 +150,16 @@ ha-formfield {
   gap: 2px;
   flex: 1;
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .entity-header-primary {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .entity-header-name {
@@ -160,6 +167,9 @@ ha-formfield {
   font-size: 14px;
   line-height: 1.2;
   color: var(--primary-text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .entity-header-entity {
@@ -167,6 +177,9 @@ ha-formfield {
   line-height: 1.2;
   color: var(--secondary-text-color);
   opacity: 0.8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .entity-header-secondary {
