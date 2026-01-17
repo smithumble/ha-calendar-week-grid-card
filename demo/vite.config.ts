@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
-  root: resolve(__dirname, 'dist'),
+  root: resolve(__dirname, '../dist'),
   clearScreen: false,
   base: './',
   // Enable serving static assets from the root directory
@@ -36,7 +36,7 @@ export default defineConfig({
           if (req.url?.startsWith('/demo/assets')) {
             const filePath = resolve(
               __dirname,
-              'assets',
+              '../assets',
               req.url.replace('/demo/assets', ''),
             );
             if (existsSync(filePath) && statSync(filePath).isFile()) {
@@ -53,7 +53,7 @@ export default defineConfig({
       configureServer(server) {
         // Vite will automatically reload when files in the root directory change
         // This plugin ensures we watch the dist directory properly
-        server.watcher.add(resolve(__dirname, 'dist'));
+        server.watcher.add(resolve(__dirname, '../dist'));
       },
     },
   ],

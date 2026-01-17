@@ -12,7 +12,7 @@ const OUTPUT_DIR = path.resolve(__dirname, '../media/images');
 const VIEWPORT_WIDTH = 1350;
 const VIEWPORT_HEIGHT = 800;
 const DEVICE_SCALE_FACTOR = 2;
-const DEFAULT_SERVER_PORT = 5001; // Match vite.demo.config.ts port
+const DEFAULT_SERVER_PORT = 5001; // Match demo/vite.config.ts port
 
 interface ScreenshotConfig {
   provider: string;
@@ -164,11 +164,11 @@ function validateConfigs(
 }
 
 /**
- * Create Vite server using the existing vite.demo.config.ts
+ * Create Vite server using the existing demo/vite.config.ts
  */
 async function createDemoServer(): Promise<{ vite: any; port: number }> {
   const vite = await createViteServer({
-    configFile: path.resolve(__dirname, '../vite.demo.config.ts'),
+    configFile: path.resolve(__dirname, '../demo/vite.config.ts'),
     server: {
       port: DEFAULT_SERVER_PORT,
       strictPort: false, // Allow finding an available port if default is in use
