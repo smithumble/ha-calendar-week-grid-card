@@ -6,14 +6,14 @@
 import type { HomeAssistant } from 'custom-card-helpers';
 import type { HassEntities } from 'home-assistant-js-websocket';
 import type { CardConfig } from '../../src/types';
-import type { MockCalendar } from './browser';
+import type { Calendar } from './data';
 
 /**
  * Creates a mock Home Assistant object for the visual editor
  */
 export function createMockHassForEditor(
   config: CardConfig,
-  calendars: MockCalendar[],
+  calendars: Calendar[],
   darkMode: boolean = false,
 ): HomeAssistant {
   // Create states object with calendar entities
@@ -29,7 +29,7 @@ export function createMockHassForEditor(
         friendly_name: calendar.entity_id
           .replace('calendar.', '')
           .replace(/_/g, ' ')
-          .replace(/\b\w/g, (l) => l.toUpperCase()),
+          .replace(/\b\w/g, (letter: string) => letter.toUpperCase()),
       },
       context: {
         id: '',

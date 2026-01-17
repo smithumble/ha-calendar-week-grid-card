@@ -43,12 +43,12 @@ export default {
       load(id) {
         // Generate asset manifest virtual module
         if (id === 'virtual:asset-manifest') {
-          const projectRoot = resolve(__dirname, '..');
+          const demoRoot = __dirname;
           const manifest = [];
 
           // Scan everything in assets directory recursively
           try {
-            const assetsPath = resolve(projectRoot, 'assets');
+            const assetsPath = resolve(__dirname, 'assets');
             if (existsSync(assetsPath)) {
               // Find all files in assets directory
               const allFiles = glob.sync(resolve(assetsPath, '**/*'), {
@@ -57,7 +57,8 @@ export default {
               });
 
               for (const file of allFiles) {
-                const relativePath = relative(projectRoot, file);
+                // Generate path relative to demo folder
+                const relativePath = relative(demoRoot, file);
                 manifest.push(relativePath);
               }
             }
@@ -95,7 +96,7 @@ export default {
       writeBundle() {
         // Copy assets to dist/demo/assets, excluding icons folder
         try {
-          const sourcePath = resolve(__dirname, '../assets');
+          const sourcePath = resolve(__dirname, 'assets');
           const destPath = resolve(__dirname, '../dist/demo/assets');
           const excludeList = ['icons'];
 

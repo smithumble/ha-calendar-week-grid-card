@@ -35,7 +35,7 @@ export default defineConfig({
           if (req.url?.startsWith('/demo/assets')) {
             const filePath = resolve(
               __dirname,
-              '../assets',
+              'assets',
               req.url.replace('/demo/assets', ''),
             );
             if (existsSync(filePath) && statSync(filePath).isFile()) {
@@ -50,9 +50,8 @@ export default defineConfig({
     {
       name: 'reload-on-change',
       configureServer(server) {
-        // Vite will automatically reload when files in the root directory change
-        // This plugin ensures we watch the dist directory properly
         server.watcher.add(resolve(__dirname, '../dist'));
+        server.watcher.add(resolve(__dirname, 'assets'));
       },
     },
   ],

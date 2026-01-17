@@ -1,11 +1,6 @@
 import yaml from 'js-yaml';
 import type { CardConfig } from '../src/types';
-import {
-  setupBrowserEnv,
-  renderCards,
-  MockCalendar,
-  type MockCard,
-} from './utils/browser';
+import { setupBrowserEnv, renderCards, type MockCard } from './utils/browser';
 import {
   ProviderData,
   loadCalendarsForDataSource,
@@ -13,6 +8,7 @@ import {
   getAvailableConfigNames,
   getProviderMetadata,
 } from './utils/data';
+import type { Calendar } from './utils/data';
 import {
   createMockHassForEditor,
   mockHaEditorComponents,
@@ -35,7 +31,7 @@ const STORAGE_PREFIX = 'calendar-week-grid-card-';
 let currentProvider: string = DEFAULT_PROVIDER;
 let currentConfig: CardConfig | null = null;
 let originalConfig: CardConfig | null = null;
-let currentCalendars: MockCalendar[] = [];
+let currentCalendars: Calendar[] = [];
 let providerDataMap: Record<string, ProviderData> = {};
 let visualEditor: MockCard | null = null;
 let editorMode: 'yaml' | 'visual' = 'visual';
