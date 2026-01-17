@@ -7,6 +7,7 @@ import {
   loadConfigByName,
   getAvailableConfigNames,
   getProviderMetadata,
+  getVisibleProviders,
 } from './utils/data';
 import type { Calendar } from './utils/data';
 import {
@@ -683,14 +684,23 @@ async function updateSelectsForProvider(
   setupDataSourceSelectListener();
 }
 
-function populateProviderSelect() {
+function populateProviderSelect(selectedProvider?: string | null) {
   const providerSelect = document.getElementById(
     'provider-select',
   ) as HTMLSelectElement;
   if (!providerSelect) return;
 
   const allProviders = Object.keys(providerDataMap);
-  providerSelect.innerHTML = allProviders
+  const visibleProviders = getVisibleProviders(allProviders);
+
+  // Include selected provider even if it's hidden
+  const providersToShow = new Set(visibleProviders);
+  if (selectedProvider && allProviders.includes(selectedProvider)) {
+    providersToShow.add(selectedProvider);
+  }
+
+  providerSelect.innerHTML = Array.from(providersToShow)
+    .sort()
     .map((p) => `<option value="${p}">${formatSelectorLabel(p)}</option>`)
     .join('');
 }
@@ -704,27 +714,28 @@ async function setupProviderSelector() {
   const allProviders = Object.keys(providerDataMap);
   if (allProviders.length === 0) return;
 
-  populateProviderSelect();
-
+  const visibleProviders = getVisibleProviders(allProviders);
   const defaultProvider = allProviders.includes(DEFAULT_PROVIDER)
     ? DEFAULT_PROVIDER
-    : allProviders[0];
-  const currentProviderValue = getValue(
-    'selected-provider',
-    'provider',
-    defaultProvider,
-  );
+    : visibleProviders[0] || allProviders[0];
 
+  // Check URL param first (highest priority)
+  const urlProvider = getFromURL('provider');
+  const currentProviderValue =
+    urlProvider || getValue('selected-provider', 'provider', defaultProvider);
+
+  // Populate select with visible providers + selected provider (if hidden)
+  populateProviderSelect(currentProviderValue);
+
+  // Allow provider from URL/storage even if it's hidden from dropdown
   if (currentProviderValue && allProviders.includes(currentProviderValue)) {
     providerSelect.value = currentProviderValue;
     currentProvider = currentProviderValue;
+    if (urlProvider) {
+      saveToStorage('selected-provider', urlProvider);
+    }
     updateURLParams({ provider: currentProvider });
     await updateSelectsForProvider(currentProvider, false);
-  }
-
-  const urlProvider = getFromURL('provider');
-  if (urlProvider) {
-    saveToStorage('selected-provider', urlProvider);
   }
 
   setupSelectListener('provider-select', async (selectedProvider) => {
@@ -732,6 +743,8 @@ async function setupProviderSelector() {
       currentProvider = selectedProvider;
       saveToStorage('selected-provider', selectedProvider);
       updateURLParams({ provider: selectedProvider });
+      // Repopulate to remove hidden provider if switching away from it
+      populateProviderSelect(selectedProvider);
       await updateSelectsForProvider(selectedProvider, true);
     }
   });
@@ -740,9 +753,10 @@ async function setupProviderSelector() {
 
 async function initializeCards() {
   const allProviders = Object.keys(providerDataMap);
+  const visibleProviders = getVisibleProviders(allProviders);
   const defaultProvider = allProviders.includes(DEFAULT_PROVIDER)
     ? DEFAULT_PROVIDER
-    : allProviders[0];
+    : visibleProviders[0] || allProviders[0];
   const provider = currentProvider || defaultProvider;
   if (!provider) return;
 
