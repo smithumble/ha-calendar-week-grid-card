@@ -1,0 +1,11 @@
+type: custom:calendar-week-grid-card
+language: en
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
+  hour12: false
+entities:
+  - entity: calendar.planned_outages
+    filter: Outage
+    icon: mdi:check-circle-outline
+  - calendar.probable_outages

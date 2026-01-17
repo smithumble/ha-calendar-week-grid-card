@@ -58,7 +58,7 @@ export default defineConfig({
         // Watch assets
         const assetsPath = resolve(__dirname, 'assets');
         server.watcher.add(assetsPath);
-        
+
         // Reload on any change in dist or assets
         const handleFileEvent = (event: string, file: string) => {
           if (file.startsWith(distPath) || file.startsWith(assetsPath)) {
@@ -68,7 +68,7 @@ export default defineConfig({
             });
           }
         };
-        
+
         server.watcher.on('change', (file) => handleFileEvent('change', file));
         server.watcher.on('add', (file) => handleFileEvent('add', file));
         server.watcher.on('unlink', (file) => handleFileEvent('unlink', file));

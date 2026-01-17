@@ -1,0 +1,101 @@
+type: custom:calendar-week-grid-card
+language: en
+primary_date_format:
+  weekday: 'short'
+secondary_date_format:
+  day: 'numeric'
+  month: 'short'
+time_format:
+  hour: '2-digit'
+  minute: '2-digit'
+  hour12: false
+blank_icon: mdi:checkbox-blank-circle-outline
+all_day_icon: ''
+all_day: row
+entities:
+  - name: planned_outages
+    entity: calendar.planned_outages
+    filter: Outage
+    icon: mdi:flash-off
+  - name: probable_outages
+    entity: calendar.probable_outages
+    icon: mdi:alert-circle-outline
+  - name: emergency_shutdowns
+    entity: calendar.planned_outages
+    filter: Emergency Shutdowns
+    icon: mdi:transmission-tower-off
+  - name: schedule_applies
+    entity: calendar.planned_outages
+    filter: Schedule Applies
+    icon: mdi:checkbox-marked-circle
+  - name: waiting_for_schedule
+    entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    icon: mdi:timer-sand
+    hide:
+      - planned_outages
+css: |
+  .event-block {
+    border-radius: 4px;
+    border: 1px dotted rgb(from var(--primary-text-color) r g b / 0.3);
+  }
+
+  [data-type="blank"] {
+    &.event-icon {
+      opacity: 0.3;
+    }
+  }
+
+  [data-name="planned_outages"] {
+    .event-block {
+      border: 1px solid var(--primary-text-color);
+    }
+
+    .event-sub-block {
+      background-color: rgb(from var(--primary-text-color) r g b / 0.3);
+    }
+  }
+
+  [data-name="emergency_shutdowns"] {
+    .event-block {
+      border: 1px double var(--primary-text-color);
+    }
+
+    .event-sub-block {
+      background-color: rgb(from var(--primary-text-color) r g b / 0.2);
+    }
+  }
+
+  [data-name="waiting_for_schedule"]  {
+    .event-block {
+      border: 1px dotted var(--primary-text-color);
+    }
+
+    .event-sub-block {
+      background-color: rgb(from var(--primary-text-color) r g b / 0.1);
+    }
+  }
+
+  [data-name="schedule_applies"] {
+    .event-block {
+      border: 1px dotted var(--primary-text-color);
+    }
+
+    .event-sub-block {
+      background-color: rgb(from var(--primary-text-color) r g b / 0.1);
+    }
+  }
+
+  [data-name="probable_outages"] {
+    &.event-icon {
+      color: var(--primary-text-color);
+    }
+
+    .event-block {
+      border: 1px dashed var(--primary-text-color);
+    }
+
+    .event-sub-block {
+      background-color: rgb(from var(--primary-text-color) r g b / 0.1);
+    }
+  }

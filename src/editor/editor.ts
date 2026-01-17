@@ -9,8 +9,9 @@ import { property, state } from 'lit/decorators.js';
 import type { HomeAssistant } from 'custom-card-helpers';
 import type { CardConfig, EntityConfig } from '../types';
 import styles from './styles.css';
-import GoogleCalendarSeparated from '../themes/google_calendar_separated.css';
-import GoogleCalendar from '../themes/google_calendar.css';
+import ThemeGoogleCalendarSeparated from '../themes/google_calendar_separated.css';
+import ThemeGoogleCalendar from '../themes/google_calendar.css';
+import ThemeClassic from '../themes/classic.css';
 
 // Material Design icon paths
 const mdiCalendar = 'mdi:calendar';
@@ -30,19 +31,49 @@ interface ThemeInfo {
 
 export const themes: ThemeInfo[] = [
   {
+    id: 'classic',
+    name: 'Classic',
+    css: ThemeClassic.cssText,
+    override: {
+      icons_mode: 'top',
+      icons_container: 'cell',
+      time_range: false,
+      blank_icon: 'mdi:checkbox-blank-circle-outline',
+      all_day_icon: 'mdi:checkbox-blank-circle',
+      secondary_date_format: {
+        day: 'numeric',
+        month: 'short',
+      },
+    },
+  },
+  {
     id: 'google_calendar_separated',
     name: 'Google Calendar Separated',
-    css: GoogleCalendarSeparated.cssText,
+    css: ThemeGoogleCalendarSeparated.cssText,
     override: {
+      icons_mode: 'all',
+      icons_container: 'event',
       time_range: true,
+      blank_icon: undefined,
+      all_day_icon: undefined,
+      secondary_date_format: {
+        day: 'numeric',
+      },
     },
   },
   {
     id: 'google_calendar',
     name: 'Google Calendar',
-    css: GoogleCalendar.cssText,
+    css: ThemeGoogleCalendar.cssText,
     override: {
+      icons_mode: 'all',
+      icons_container: 'event',
       time_range: true,
+      blank_icon: undefined,
+      all_day_icon: undefined,
+      secondary_date_format: {
+        day: 'numeric',
+      },
     },
   },
 ];

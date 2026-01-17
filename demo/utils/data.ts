@@ -20,6 +20,11 @@ export interface ProviderData {
   dataSources: string[];
 }
 
+interface YasnoCalendarData {
+  planned: PlannedData;
+  probable: ProbableData;
+}
+
 // Search manifest for files matching a pattern
 function findAssetsInManifest(pattern: RegExp): string[] {
   return ASSET_MANIFEST.filter((path) => pattern.test(path));
@@ -49,10 +54,13 @@ function getConfigPaths(configDir: string): Record<string, string> {
   return result;
 }
 
-const yasnoCalendarPaths = getYasnoCalendarPaths();
-const yasnoConfigPaths = getConfigPaths('yasno');
-const yasnoDeprecatedConfigPaths = getConfigPaths('yasno_deprecated');
-const dummyConfigPaths = getConfigPaths('dummy');
+const YASNO_CALENDAR_PATHS = getYasnoCalendarPaths();
+
+const DUMMY_CONFIG_PATHS = getConfigPaths('dummy');
+const YASNO_IMAGE_CONFIG_PATHS = getConfigPaths('yasno_image');
+const YASNO_V1_CONFIG_PATHS = getConfigPaths('yasno_v1');
+const YASNO_V2_CONFIG_PATHS = getConfigPaths('yasno_v2');
+const YASNO_V3_CONFIG_PATHS = getConfigPaths('yasno_v3');
 
 // Load YAML file at runtime via HTTP
 async function loadYamlFile(url: string): Promise<string> {
@@ -71,7 +79,7 @@ async function loadYamlFile(url: string): Promise<string> {
 // Extract data sources from scanned paths
 function extractYasnoDataSources(): string[] {
   const dataSources = new Set<string>();
-  for (const path of Object.keys(yasnoCalendarPaths)) {
+  for (const path of Object.keys(YASNO_CALENDAR_PATHS)) {
     const match = path.match(/yasno_(\d+)\/(planned|probable)\.json$/);
     if (match) {
       dataSources.add(`yasno_${match[1]}`);
@@ -97,11 +105,12 @@ async function loadYasnoCalendarFile(
 }
 
 // These will be populated lazily at runtime
-const YASNO_CALENDARS: Record<string, { planned: unknown; probable: unknown }> =
-  {};
-const YASNO_CONFIGS: Record<string, string> = {};
-const YASNO_DEPRECATED_CONFIGS: Record<string, string> = {};
+const YASNO_CALENDARS: Record<string, YasnoCalendarData> = {};
 const DUMMY_CONFIGS: Record<string, string> = {};
+const YASNO_IMAGE_CONFIGS: Record<string, string> = {};
+const YASNO_V1_CONFIGS: Record<string, string> = {};
+const YASNO_V2_CONFIGS: Record<string, string> = {};
+const YASNO_V3_CONFIGS: Record<string, string> = {};
 
 // Track what's been loaded
 const loadedCalendars: Set<string> = new Set();
@@ -120,14 +129,20 @@ const DATA_SOURCE_MONDAY_INDEX: Record<string, number> = {
 export function getAvailableConfigNames(provider: string): string[] {
   let pathMap: Record<string, string>;
   switch (provider) {
-    case 'yasno':
-      pathMap = yasnoConfigPaths;
-      break;
-    case 'yasno_deprecated':
-      pathMap = yasnoDeprecatedConfigPaths;
-      break;
     case 'dummy':
-      pathMap = dummyConfigPaths;
+      pathMap = DUMMY_CONFIG_PATHS;
+      break;
+    case 'yasno_image':
+      pathMap = YASNO_IMAGE_CONFIG_PATHS;
+      break;
+    case 'yasno_v1':
+      pathMap = YASNO_V1_CONFIG_PATHS;
+      break;
+    case 'yasno_v2':
+      pathMap = YASNO_V2_CONFIG_PATHS;
+      break;
+    case 'yasno_v3':
+      pathMap = YASNO_V3_CONFIG_PATHS;
       break;
     default:
       return [];
@@ -152,10 +167,10 @@ async function loadYasnoCalendar(dataSource: string): Promise<void> {
   }
 
   try {
-    const plannedPath = Object.keys(yasnoCalendarPaths).find((p) =>
+    const plannedPath = Object.keys(YASNO_CALENDAR_PATHS).find((p) =>
       p.includes(`${dataSource}/planned.json`),
     );
-    const probablePath = Object.keys(yasnoCalendarPaths).find((p) =>
+    const probablePath = Object.keys(YASNO_CALENDAR_PATHS).find((p) =>
       p.includes(`${dataSource}/probable.json`),
     );
 
@@ -164,8 +179,8 @@ async function loadYasnoCalendar(dataSource: string): Promise<void> {
     }
 
     const [planned, probable] = await Promise.all([
-      loadYasnoCalendarFile(plannedPath),
-      loadYasnoCalendarFile(probablePath),
+      loadYasnoCalendarFile(plannedPath) as Promise<PlannedData>,
+      loadYasnoCalendarFile(probablePath) as Promise<ProbableData>,
     ]);
 
     YASNO_CALENDARS[dataSource] = { planned, probable };
@@ -185,17 +200,25 @@ async function loadSingleConfig(
   let configCache: Record<string, string>;
 
   switch (provider) {
-    case 'yasno':
-      pathMap = yasnoConfigPaths;
-      configCache = YASNO_CONFIGS;
-      break;
-    case 'yasno_deprecated':
-      pathMap = yasnoDeprecatedConfigPaths;
-      configCache = YASNO_DEPRECATED_CONFIGS;
-      break;
     case 'dummy':
-      pathMap = dummyConfigPaths;
+      pathMap = DUMMY_CONFIG_PATHS;
       configCache = DUMMY_CONFIGS;
+      break;
+    case 'yasno_image':
+      pathMap = YASNO_IMAGE_CONFIG_PATHS;
+      configCache = YASNO_IMAGE_CONFIGS;
+      break;
+    case 'yasno_v1':
+      pathMap = YASNO_V1_CONFIG_PATHS;
+      configCache = YASNO_V1_CONFIGS;
+      break;
+    case 'yasno_v2':
+      pathMap = YASNO_V2_CONFIG_PATHS;
+      configCache = YASNO_V2_CONFIGS;
+      break;
+    case 'yasno_v3':
+      pathMap = YASNO_V3_CONFIG_PATHS;
+      configCache = YASNO_V3_CONFIGS;
       break;
     default:
       return null;
@@ -250,13 +273,24 @@ export async function loadCalendarsForDataSource(
   dataSource: string,
   provider: string,
 ): Promise<Calendar[]> {
-  if (provider === 'yasno' || provider === 'yasno_deprecated') {
-    await loadYasnoCalendar(dataSource);
-    return getYasnoCalendars(dataSource);
-  } else if (provider === 'dummy') {
-    return getDummyCalendars();
+  switch (provider) {
+    case 'dummy':
+      return getDummyCalendars();
+    case 'yasno_image':
+      await loadYasnoCalendar(dataSource);
+      return getYasnoCalendars(dataSource);
+    case 'yasno_v1':
+      await loadYasnoCalendar(dataSource);
+      return getYasnoCalendars(dataSource);
+    case 'yasno_v2':
+      await loadYasnoCalendar(dataSource);
+      return getYasnoCalendars(dataSource);
+    case 'yasno_v3':
+      await loadYasnoCalendar(dataSource);
+      return getYasnoCalendars(dataSource);
+    default:
+      return [];
   }
-  return [];
 }
 
 // Load a single config by name
@@ -285,14 +319,20 @@ export function getProviderMetadata(): Record<
   const yasnoDataSources = extractYasnoDataSources();
 
   return {
-    yasno: {
-      dataSources: yasnoDataSources,
-    },
-    yasno_deprecated: {
-      dataSources: yasnoDataSources,
-    },
     dummy: {
       dataSources: ['data_1'],
+    },
+    yasno_image: {
+      dataSources: yasnoDataSources,
+    },
+    yasno_v1: {
+      dataSources: yasnoDataSources,
+    },
+    yasno_v2: {
+      dataSources: yasnoDataSources,
+    },
+    yasno_v3: {
+      dataSources: yasnoDataSources,
     },
   };
 }

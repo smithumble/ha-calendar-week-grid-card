@@ -283,7 +283,7 @@ Each item in `hide` can be:
 
 ![Calendar Week Grid Card Example 1: Basic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_1_basic.png)
 
-<!-- CONFIG:yasno/example_1_basic -->
+<!-- CONFIG:yasno_v3/example_1_basic -->
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -305,7 +305,7 @@ entities:
 
 ![Calendar Week Grid Card Example 2: Simple](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_2_simple.png)
 
-<!-- CONFIG:yasno/example_2_simple -->
+<!-- CONFIG:yasno_v3/example_2_simple -->
 
 <details>
 <summary>Configuration</summary>
@@ -422,7 +422,7 @@ css: |
 
 ![Calendar Week Grid Card Example 3: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_3_simple_colored.png)
 
-<!-- CONFIG:yasno/example_3_simple_colored -->
+<!-- CONFIG:yasno_v3/example_3_simple_colored -->
 
 <details>
 <summary>Configuration</summary>
@@ -555,7 +555,7 @@ css: |
 
 ![Calendar Week Grid Card Example 4: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_4_classic.png)
 
-<!-- CONFIG:yasno/example_4_classic -->
+<!-- CONFIG:yasno_v3/example_4_classic -->
 
 <details>
 <summary>Configuration</summary>
@@ -580,21 +580,26 @@ entities:
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
+    color: var(--error-color)
   - name: probable_outages
     entity: calendar.probable_outages
-    icon: mdi:alert-circle-outline
+    icon: mdi:flash-off
+    color: var(--primary-color)
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
+    color: var(--error-color)
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
-    icon: mdi:checkbox-blank-circle
+    icon: mdi:flash-off
+    color: var(--success-color)
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    color: var(--warning-color)
     hide:
       - planned_outages
 css: |
@@ -608,48 +613,18 @@ css: |
     }
   }
 
-  [data-name="planned_outages"] {
-    &.event-icon {
-      color: #FF0000;
-    }
+  /* Default Event Styles */
 
-    .event-sub-block {
-      background-color: rgb(from #FF0000 r g b / 0.2);
-    }
+  .event-icon {
+    color: var(--event-color, var(--primary-text-color));
   }
 
-  [data-name="emergency_shutdowns"] {
-    &.event-icon {
-      color: #FF0000;
-    }
-
-    .event-sub-block {
-      background-color: rgb(from #FF0000 r g b / 0.2);
-    }
+  .event-sub-block {
+    background-color: rgb(from var(--event-color, var(--primary-text-color)) r g b / 0.2);;
   }
 
-  [data-name="waiting_for_schedule"] {
-    &.event-icon {
-      opacity: 0.6;
-      color: #FF9800;
-    }
-  }
-
-  [data-name="schedule_applies"] {
-    &.event-icon {
-      color: #FF0000;
-      opacity: 0.4;
-    }
-  }
-
-  [data-name="probable_outages"] {
-    &.event-icon {
-      color: #29B6F6;
-    }
-
-    .event-sub-block {
-      background-color: rgb(from #29B6F6 r g b / 0.2);
-    }
+  [data-type="blank"] .event-sub-block{
+    background-color: transparent;
   }
 ```
 
@@ -661,7 +636,7 @@ css: |
 
 ![Calendar Week Grid Card Example 5: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_5_neon.png)
 
-<!-- CONFIG:yasno/example_5_neon -->
+<!-- CONFIG:yasno_v3/example_5_neon -->
 
 <details>
 <summary>Configuration</summary>
@@ -817,7 +792,7 @@ css: |
 
 ![Calendar Week Grid Card Example 6: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_6_soft_ui.png)
 
-<!-- CONFIG:yasno/example_6_soft_ui -->
+<!-- CONFIG:yasno_v3/example_6_soft_ui -->
 
 <details>
 <summary>Configuration</summary>
@@ -953,7 +928,7 @@ css: |
 
 ![Calendar Week Grid Card Example 7: Yasno Legacy](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_7_yasno_legacy.png)
 
-<!-- CONFIG:yasno/example_7_yasno_legacy -->
+<!-- CONFIG:yasno_v3/example_7_yasno_legacy -->
 
 <details>
 <summary>Configuration</summary>
@@ -1083,7 +1058,7 @@ css: |
 
 ![Calendar Week Grid Card Example 8 (1): Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_1_google_calendar.png)
 
-<!-- CONFIG:yasno/example_8_1_google_calendar -->
+<!-- CONFIG:yasno_v3/example_8_1_google_calendar -->
 
 <details>
 <summary>Configuration</summary>
@@ -1323,7 +1298,7 @@ css: |
 
 ![Calendar Week Grid Card Example 8 (2): Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_2_google_calendar_separated.png)
 
-<!-- CONFIG:yasno/example_8_2_google_calendar_separated -->
+<!-- CONFIG:yasno_v3/example_8_2_google_calendar_separated -->
 
 <details>
 <summary>Configuration</summary>
@@ -1583,7 +1558,7 @@ css: |
 
 ![Calendar Week Grid Card Example 8 (3): Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_3_google_calendar_original.png)
 
-<!-- CONFIG:yasno/example_8_3_google_calendar_original -->
+<!-- CONFIG:yasno_v3/example_8_3_google_calendar_original -->
 
 <details>
 <summary>Configuration</summary>
@@ -1812,7 +1787,7 @@ css: |
 
 ![Calendar Week Grid Card Example 8 (4): Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_4_google_calendar_original_separated.png)
 
-<!-- CONFIG:yasno/example_8_4_google_calendar_original_separated -->
+<!-- CONFIG:yasno_v3/example_8_4_google_calendar_original_separated -->
 
 <details>
 <summary>Configuration</summary>
