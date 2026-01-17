@@ -49,6 +49,33 @@ export default defineConfig({
       },
     },
     {
+      name: 'serve-static-icons',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          const url = req.url?.split('?')[0];
+          if (!url) return next();
+
+          // Match /assets/icons/ or /demo/assets/icons/
+          const match = url.match(/^\/(?:demo\/)?assets\/icons\/(.+)$/);
+          if (!match) return next();
+
+          const iconName = match[1];
+          const nodeModulesIconPath = resolve(
+            __dirname,
+            '../node_modules/@mdi/svg/svg',
+            iconName,
+          );
+
+          if (existsSync(nodeModulesIconPath)) {
+            res.setHeader('Content-Type', 'image/svg+xml');
+            res.end(readFileSync(nodeModulesIconPath));
+          } else {
+            next();
+          }
+        });
+      },
+    },
+    {
       name: 'reload-on-change',
       configureServer(server) {
         // Watch dist
