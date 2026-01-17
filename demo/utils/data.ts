@@ -311,6 +311,16 @@ export async function loadConfigByName(
   }
 }
 
+// Providers that should be hidden from the dropdown but still accessible via query params
+const HIDDEN_PROVIDERS: string[] = ['yasno_image'];
+
+// Get list of providers that should be visible in the dropdown
+export function getVisibleProviders(allProviders: string[]): string[] {
+  return allProviders.filter(
+    (provider) => !HIDDEN_PROVIDERS.includes(provider),
+  );
+}
+
 // Get provider data structure without loading all files
 export function getProviderMetadata(): Record<
   string,
