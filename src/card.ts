@@ -538,8 +538,14 @@ export class CalendarWeekGridCard extends LitElement {
     eventClassesList.push(isAllDay ? 'all-day' : '');
     const eventClasses = eventClassesList.filter(Boolean).join(' ');
 
+    let iconStyle = '';
+    if (event.color) {
+      iconStyle = `--event-color: ${event.color};`;
+    }
+
     return html`<ha-icon
       class="event-icon ${eventClasses}"
+      style="${iconStyle}"
       data-name="${event.name || ''}"
       data-type="${event.type || ''}"
       data-entity="${event.entity || ''}"

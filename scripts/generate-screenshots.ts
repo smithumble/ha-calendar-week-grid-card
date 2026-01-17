@@ -18,6 +18,7 @@ interface ScreenshotConfig {
   provider: string;
   configName: string;
   dataSource: string;
+  fileName: string;
 }
 
 interface ParsedArgs {
@@ -32,64 +33,76 @@ interface ParsedArgs {
 const SCREENSHOT_CONFIGS: ScreenshotConfig[] = [
   // Yasno provider configs
   {
-    provider: 'yasno',
+    provider: 'yasno_v3',
+    dataSource: 'yasno_1',
     configName: 'example_1_basic',
-    dataSource: 'yasno_1',
+    fileName: 'example_1_basic',
   },
   {
-    provider: 'yasno',
+    provider: 'yasno_v3',
+    dataSource: 'yasno_1',
     configName: 'example_2_simple',
-    dataSource: 'yasno_1',
+    fileName: 'example_2_simple',
   },
   {
-    provider: 'yasno',
+    provider: 'yasno_v3',
+    dataSource: 'yasno_1',
     configName: 'example_3_simple_colored',
-    dataSource: 'yasno_1',
+    fileName: 'example_3_simple_colored',
   },
   {
-    provider: 'yasno',
+    provider: 'yasno_v3',
+    dataSource: 'yasno_1',
     configName: 'example_4_classic',
-    dataSource: 'yasno_1',
+    fileName: 'example_4_classic',
   },
   {
-    provider: 'yasno',
+    provider: 'yasno_v3',
+    dataSource: 'yasno_1',
     configName: 'example_5_neon',
-    dataSource: 'yasno_1',
+    fileName: 'example_5_neon',
   },
   {
-    provider: 'yasno',
+    provider: 'yasno_v3',
+    dataSource: 'yasno_1',
     configName: 'example_6_soft_ui',
-    dataSource: 'yasno_1',
+    fileName: 'example_6_soft_ui',
   },
   {
-    provider: 'yasno',
+    provider: 'yasno_v3',
+    dataSource: 'yasno_1',
     configName: 'example_7_yasno_legacy',
-    dataSource: 'yasno_1',
+    fileName: 'example_7_yasno_legacy',
   },
   {
-    provider: 'yasno',
+    provider: 'yasno_v3',
+    dataSource: 'yasno_1',
     configName: 'example_8_1_google_calendar',
-    dataSource: 'yasno_1',
+    fileName: 'example_8_1_google_calendar',
   },
   {
-    provider: 'yasno',
+    provider: 'yasno_v3',
+    dataSource: 'yasno_1',
     configName: 'example_8_2_google_calendar_separated',
-    dataSource: 'yasno_1',
+    fileName: 'example_8_2_google_calendar_separated',
   },
   {
-    provider: 'yasno',
+    provider: 'yasno_v3',
+    dataSource: 'yasno_1',
     configName: 'example_8_3_google_calendar_original',
-    dataSource: 'yasno_1',
+    fileName: 'example_8_3_google_calendar_original',
   },
   {
-    provider: 'yasno',
+    provider: 'yasno_v3',
+    dataSource: 'yasno_1',
     configName: 'example_8_4_google_calendar_original_separated',
-    dataSource: 'yasno_1',
+    fileName: 'example_8_4_google_calendar_original_separated',
   },
   {
-    provider: 'yasno',
-    configName: 'image',
+    provider: 'yasno_image',
     dataSource: 'yasno_1',
+    configName: 'image',
+    fileName: 'image',
   },
 ];
 
@@ -323,18 +336,7 @@ async function renderScreenshot(
  * Generate a safe filename from screenshot config
  */
 function getScreenshotFilename(screenshotConfig: ScreenshotConfig): string {
-  const { provider, configName } = screenshotConfig;
-
-  // Replace slashes with underscores for valid filename
-  const name = configName.replace(/\//g, '_');
-
-  // If provider is yasno, return not prefixed config name for backward compatibility
-  if (provider === 'yasno') {
-    return `${name}.png`;
-  }
-
-  // Otherwise, return provider prefixed config name
-  return `${provider}_${name}.png`;
+  return `${screenshotConfig.fileName}.png`;
 }
 
 /**
