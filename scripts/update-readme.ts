@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const README_PATH = path.resolve(__dirname, '../README.md');
-const DATA_DIR = path.resolve(__dirname, '../assets/data');
+const DATA_DIR = path.resolve(__dirname, '../demo/assets/data');
 
 function updateReadme(): void {
   let readmeContent = fs.readFileSync(README_PATH, 'utf8');

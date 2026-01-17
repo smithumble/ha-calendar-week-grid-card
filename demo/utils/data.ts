@@ -27,9 +27,8 @@ function findAssetsInManifest(pattern: RegExp): string[] {
 
 // Get calendar JSON file paths from manifest
 function getYasnoCalendarPaths(): Record<string, string> {
-  const paths = findAssetsInManifest(
-    /assets\/data\/yasno\/calendars\/.*\.json$/,
-  );
+  const pattern = new RegExp(`assets/data/yasno/calendars/.*\\.json$`);
+  const paths = findAssetsInManifest(pattern);
   const result: Record<string, string> = {};
   for (const path of paths) {
     result[path] = path;

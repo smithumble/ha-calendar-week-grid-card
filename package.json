@@ -8,7 +8,7 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w & vite",
-    "demo": "npm run build && vite --config demo/vite.config.ts",
+    "demo": "npm run build && npm run demo:build && vite --config demo/vite.config.ts",
     "demo:dev": "npm run build && rollup -c -w & rollup -c demo/rollup.config.mjs -w & sleep 2 && vite --config demo/vite.config.ts",
     "demo:build": "npm run build && rollup -c demo/rollup.config.mjs",
     "lint": "eslint src scripts src demo",
