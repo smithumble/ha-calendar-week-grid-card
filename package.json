@@ -15,12 +15,12 @@
     "lint:fix": "eslint src scripts --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "generate-dev-page": "tsx scripts/generate-dev-page.ts",
     "generate-screenshots": "npm run build && rollup -c demo/rollup.config.mjs && tsx scripts/generate-screenshots.ts",
     "generate-screenshots:force": "npm run build && rollup -c demo/rollup.config.mjs && tsx scripts/generate-screenshots.ts --force",
-    "generate-and-update": "npm run generate-screenshots && npm run update-readme",
-    "generate-and-update:force": "npm run generate-screenshots:force && npm run update-readme",
-    "update-readme": "tsx scripts/update-readme.ts"
+    "update-readme": "tsx scripts/update-readme.ts",
+    "pre-commit": "npm run lint:fix && npm run format && npm run update-readme",
+    "pre-commit:generate": "npm run pre-commit && npm run generate-screenshots:force",
+    "clean": "rm -rf dist"
   },
   "keywords": [
     "home-assistant",
