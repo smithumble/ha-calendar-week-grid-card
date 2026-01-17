@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import puppeteer, { Browser, Page } from 'puppeteer';
-import { createServer as createViteServer } from 'vite';
+import { createServer as createViteServer, ViteDevServer } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -166,7 +166,10 @@ function validateConfigs(
 /**
  * Create Vite server using the existing demo/vite.config.ts
  */
-async function createDemoServer(): Promise<{ vite: any; port: number }> {
+async function createDemoServer(): Promise<{
+  vite: ViteDevServer;
+  port: number;
+}> {
   const vite = await createViteServer({
     configFile: path.resolve(__dirname, '../demo/vite.config.ts'),
     server: {

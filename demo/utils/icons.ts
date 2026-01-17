@@ -69,7 +69,7 @@ function createIconMapProxy(): Record<string, string> {
       // Check if icon is cached or being loaded
       return prop in iconCache || prop in loadingPromises;
     },
-    ownKeys(target) {
+    ownKeys() {
       // Return keys of cached icons
       return Object.keys(iconCache);
     },

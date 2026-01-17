@@ -1,46 +1,13 @@
 import type { CalendarEvent } from '../../../src/types';
-import type { MockCalendar } from '../browser';
+import type { Calendar } from '../data';
+import { MOCK_DATE_STR, toTimeZoneISOString, getDateString } from '../datetime';
 
-// Mock date: Monday, May 20, 2024
-const MOCK_DATE_STR = '2024-05-20T11:45:00';
-const MOCK_EVENTS_TIMEZONE = 'Europe/Kyiv';
-
-function toTimeZoneISOString(
-  date: Date,
-  timeZone: string = MOCK_EVENTS_TIMEZONE,
-): string {
-  const offset = date.getTimezoneOffset();
-  const offsetHours = Math.floor(Math.abs(offset) / 60);
-  const offsetMinutes = Math.abs(offset) % 60;
-  const sign = offset > 0 ? '-' : '+';
-  const offsetStr = `${sign}${offsetHours.toString().padStart(2, '0')}:${offsetMinutes.toString().padStart(2, '0')}`;
-
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const seconds = date.getSeconds().toString().padStart(2, '0');
-
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetStr}`;
-}
-
-function getDateString(
-  date: Date,
-  timeZone: string = MOCK_EVENTS_TIMEZONE,
-): string {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-export function getDummyCalendars(): MockCalendar[] {
+export function getDummyCalendars(): Calendar[] {
   const baseDate = new Date(MOCK_DATE_STR);
   baseDate.setHours(0, 0, 0, 0);
 
   // Calendar 1: Work Schedule
-  const workCalendar: MockCalendar = {
+  const workCalendar: Calendar = {
     entity_id: 'calendar.work_schedule',
     events: (() => {
       const events: CalendarEvent[] = [];
@@ -158,7 +125,7 @@ export function getDummyCalendars(): MockCalendar[] {
   };
 
   // Calendar 2: Personal Events
-  const personalCalendar: MockCalendar = {
+  const personalCalendar: Calendar = {
     entity_id: 'calendar.personal',
     events: [
       // Monday - Gym session

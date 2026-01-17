@@ -1,19 +1,15 @@
-import type { CalendarEvent } from '../../src/types';
+import type { CardConfig } from '../../src/types';
+import { Calendar } from './data';
 import { loadIcon } from './icons';
-
-export interface MockCalendar {
-  entity_id: string;
-  events: CalendarEvent[];
-}
 
 export interface MockCard extends HTMLElement {
   hass: unknown;
-  setConfig: (config: any) => void;
+  setConfig: (config: CardConfig) => void;
 }
 
 function createMockHass(
-  config: any,
-  calendars: MockCalendar[],
+  config: CardConfig,
+  calendars: Calendar[],
   darkMode: boolean = false,
 ) {
   return {
@@ -34,14 +30,14 @@ function createMockHass(
   };
 }
 
-function injectTheme(themeCSS: { light: string; dark: string }) {
+function injectTheme(haTheme: { light: string; dark: string }) {
   const style = document.createElement('style');
   style.textContent = `
     .theme-light {
-      ${themeCSS.light}
+      ${haTheme.light}
     }
     .theme-dark {
-      ${themeCSS.dark}
+      ${haTheme.dark}
     }
   `;
   document.head.appendChild(style);
@@ -170,13 +166,13 @@ function overrideDate(mockDateStr: string) {
 
 export function setupBrowserEnv(
   mockDateStr: string,
-  themeCSS: { light: string; dark: string },
-  iconMap: Record<string, string>,
+  haTheme: { light: string; dark: string },
+  haIcons: Record<string, string>,
 ) {
   mockHaCard();
-  mockHaIcon(iconMap);
+  mockHaIcon(haIcons);
   overrideDate(mockDateStr);
-  injectTheme(themeCSS);
+  injectTheme(haTheme);
 }
 
 function createCard(): MockCard {
@@ -185,14 +181,14 @@ function createCard(): MockCard {
 
 function setupCard(
   card: MockCard,
-  cardConfig: any,
-  calendars: MockCalendar[],
+  config: CardConfig,
+  calendars: Calendar[],
   darkMode: boolean = false,
 ): void {
   Promise.resolve().then(() => {
     try {
-      card.hass = createMockHass(cardConfig, calendars, darkMode);
-      card.setConfig(cardConfig);
+      card.hass = createMockHass(config, calendars, darkMode);
+      card.setConfig(config);
     } catch (error) {
       console.error('Error setting up card:', error);
     }
@@ -201,8 +197,8 @@ function setupCard(
 
 export function renderCardToContainer(
   containerId: string,
-  cardConfig: any,
-  calendars: MockCalendar[],
+  config: CardConfig,
+  calendars: Calendar[],
 ): void {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -211,8 +207,8 @@ export function renderCardToContainer(
   const isDarkMode = containerId.includes('dark');
 
   // Set dynamic grid rows and min-height based on card config
-  const gridOptionsRows = cardConfig?.grid_options?.rows;
-  const layoutOptionsRows = cardConfig?.layout_options?.grid_rows;
+  const gridOptionsRows = config?.grid_options?.rows;
+  const layoutOptionsRows = config?.layout_options?.grid_rows;
   const gridRows =
     gridOptionsRows !== undefined && gridOptionsRows !== 'auto'
       ? typeof gridOptionsRows === 'number'
@@ -238,10 +234,10 @@ export function renderCardToContainer(
   }
 
   container.appendChild(card);
-  setupCard(card, cardConfig, calendars, isDarkMode);
+  setupCard(card, config, calendars, isDarkMode);
 }
 
-export function renderCards(config: any, calendars: MockCalendar[]) {
+export function renderCards(config: CardConfig, calendars: Calendar[]) {
   const containerIds = ['card-container-light', 'card-container-dark'];
   containerIds.forEach((containerId) => {
     renderCardToContainer(containerId, config, calendars);
