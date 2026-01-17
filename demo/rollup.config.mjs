@@ -56,11 +56,16 @@ export default {
                 nodir: true,
               });
 
+              // Add all asset files to watch list so changes trigger rebuild
               for (const file of allFiles) {
+                this.addWatchFile(file);
                 // Generate path relative to demo folder
                 const relativePath = relative(demoRoot, file);
                 manifest.push(relativePath);
               }
+
+              // Also watch the assets directory itself for new files
+              this.addWatchFile(assetsPath);
             }
           } catch (error) {
             console.warn('Failed to scan assets directory:', error);
@@ -94,6 +99,11 @@ export default {
     {
       name: 'copy-assets',
       writeBundle() {
+        // Skip copying assets in watch mode (dev)
+        if (this.meta.watchMode) {
+          return;
+        }
+
         // Copy assets to dist/demo/assets, excluding icons folder
         try {
           const sourcePath = resolve(__dirname, 'assets');
@@ -135,6 +145,11 @@ export default {
     {
       name: 'copy-icons',
       writeBundle() {
+        // Skip copying icons in watch mode (dev)
+        if (this.meta.watchMode) {
+          return;
+        }
+
         // Copy SVG icon files as-is to assets/icons/
         try {
           const nodeModulesSvgSource = resolve(
