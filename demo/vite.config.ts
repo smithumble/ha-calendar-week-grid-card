@@ -1,4 +1,4 @@
-import { existsSync, statSync, readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
@@ -32,26 +32,46 @@ export default defineConfig({
       name: 'serve-static-assets',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
-          if (req.url?.startsWith('/demo/assets')) {
-            const filePath = resolve(
-              __dirname,
-              'assets',
-              req.url.replace('/demo/assets', ''),
-            );
-            if (existsSync(filePath) && statSync(filePath).isFile()) {
-              res.end(readFileSync(filePath));
-              return;
-            }
+          const url = req.url?.split('?')[0];
+          if (!url) return next();
+
+          // Match /assets/ or /demo/assets/
+          const match = url.match(/^\/(?:demo\/)?assets\/(.+)$/);
+          if (!match) return next();
+
+          const filePath = resolve(__dirname, 'assets', match[1]);
+          if (existsSync(filePath)) {
+            res.end(readFileSync(filePath));
+          } else {
+            next();
           }
-          next();
         });
       },
     },
     {
       name: 'reload-on-change',
       configureServer(server) {
-        server.watcher.add(resolve(__dirname, '../dist'));
-        server.watcher.add(resolve(__dirname, 'assets'));
+        // Watch dist
+        const distPath = resolve(__dirname, '../dist');
+        server.watcher.add(distPath);
+
+        // Watch assets
+        const assetsPath = resolve(__dirname, 'assets');
+        server.watcher.add(assetsPath);
+        
+        // Reload on any change in dist or assets
+        const handleFileEvent = (event: string, file: string) => {
+          if (file.startsWith(distPath) || file.startsWith(assetsPath)) {
+            console.log(`Reloading due to ${event} in:`, file);
+            server.ws.send({
+              type: 'full-reload',
+            });
+          }
+        };
+        
+        server.watcher.on('change', (file) => handleFileEvent('change', file));
+        server.watcher.on('add', (file) => handleFileEvent('add', file));
+        server.watcher.on('unlink', (file) => handleFileEvent('unlink', file));
       },
     },
   ],
