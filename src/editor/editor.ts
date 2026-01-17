@@ -1371,11 +1371,15 @@ export class CalendarWeekGridCardEditor extends LitElement {
                   <div class="helper-text">
                     Icon for events from this entity
                   </div>
-                  ${this.addTextField(`entities.${index}.color`, 'Color')}
-                  <div class="helper-text">
-                    Color for events from this entity (CSS color value, e.g.,
-                    #ff0000 or red)
-                  </div>
+                  ${this._hasEventColorVariable()
+                    ? html`
+                        ${this.addTextField(`entities.${index}.color`, 'Color')}
+                        <div class="helper-text">
+                          Color for events from this entity (CSS color value,
+                          e.g., #ff0000 or red)
+                        </div>
+                      `
+                    : ''}
                 </div>
 
                 <!-- Advanced Event Control -->
@@ -1572,6 +1576,14 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
     // If no theme matches, it's custom
     this._selectedTheme = 'custom';
+  }
+
+  /**
+   * Checks if the current CSS contains the --event-color variable
+   */
+  private _hasEventColorVariable(): boolean {
+    const currentCss = (this.getConfigValue('css', '') as string) || '';
+    return currentCss.includes('--event-color');
   }
 
   /**
