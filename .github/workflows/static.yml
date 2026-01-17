@@ -40,8 +40,8 @@ jobs:
         run: npm ci
       - name: Build project
         run: npm run build
-      - name: Generate dev page
-        run: npm run generate-dev-page
+      - name: Build demo
+        run: npm run demo:build
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
