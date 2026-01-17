@@ -1,4 +1,12 @@
 import type { CalendarEvent } from '../../../src/types';
+import { Calendar } from '../data';
+import {
+  MOCK_DATE_STR,
+  toTimeZoneISOString,
+  getDateString,
+  minutesToTime,
+  getDayDate,
+} from '../datetime';
 
 // Constants for data structure navigation
 const PLANNED_GROUP_KEY = '6.1';
@@ -18,10 +26,6 @@ const STATUS_SUMMARY_MAP: Record<string, string> = {
   EmergencyShutdowns: 'Emergency Shutdowns',
 };
 
-// Mock date: Monday, May 20, 2024
-const MOCK_DATE_STR = '2024-05-20T11:45:00';
-const MOCK_EVENTS_TIMEZONE = 'Europe/Kyiv';
-
 interface Slot {
   start: number;
   end: number;
@@ -40,7 +44,7 @@ interface PlannedGroup {
   updatedOn?: string;
 }
 
-interface PlannedData {
+export interface PlannedData {
   [groupKey: string]: PlannedGroup;
 }
 
@@ -56,64 +60,8 @@ interface ProbableRegion {
   dsos?: Record<string, ProbableDSOS>;
 }
 
-interface ProbableData {
+export interface ProbableData {
   [regionKey: string]: ProbableRegion;
-}
-
-export interface MockCalendar {
-  entity_id: string;
-  events: CalendarEvent[];
-}
-
-function toTimeZoneISOString(
-  date: Date,
-  timeZone: string = MOCK_EVENTS_TIMEZONE,
-): string {
-  const offset = date.getTimezoneOffset();
-  const offsetHours = Math.floor(Math.abs(offset) / 60);
-  const offsetMinutes = Math.abs(offset) % 60;
-  const sign = offset > 0 ? '-' : '+';
-  const offsetStr = `${sign}${offsetHours.toString().padStart(2, '0')}:${offsetMinutes.toString().padStart(2, '0')}`;
-
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const seconds = date.getSeconds().toString().padStart(2, '0');
-
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetStr}`;
-}
-
-function getDateString(
-  date: Date,
-  timeZone: string = MOCK_EVENTS_TIMEZONE,
-): string {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function minutesToTime(minutes: number, date: Date): Date {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (hours === 24) {
-    const tomorrow = new Date(date);
-    tomorrow.setDate(date.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    return tomorrow;
-  }
-  const result = new Date(date);
-  result.setHours(hours, mins, 0, 0);
-  return result;
-}
-
-function getDayDate(baseDate: Date, dayOffset: number): Date {
-  const dayDate = new Date(baseDate);
-  dayDate.setDate(baseDate.getDate() + dayOffset);
-  dayDate.setHours(0, 0, 0, 0);
-  return dayDate;
 }
 
 function createEventFromSlot(
@@ -272,7 +220,7 @@ export function parseYasnoData(
   plannedData: PlannedData,
   probableData: ProbableData,
   mondayIndex: number = 0,
-): MockCalendar[] {
+): Calendar[] {
   const baseDate = new Date(MOCK_DATE_STR);
   baseDate.setHours(0, 0, 0, 0);
 
@@ -304,7 +252,7 @@ export function parseYasnoData(
   const plannedEvents = [...mergedPlannedSlotEvents, ...allDayEvents];
   const probableEvents = [...mergedProbableEvents];
 
-  const calendars: MockCalendar[] = [];
+  const calendars: Calendar[] = [];
 
   if (plannedEvents.length > 0) {
     calendars.push({

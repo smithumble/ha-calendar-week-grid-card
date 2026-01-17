@@ -1,22 +1,14 @@
-import typescript from '@rollup/plugin-typescript';
-import commonjs from '@rollup/plugin-commonjs';
-import nodeResolve from '@rollup/plugin-node-resolve';
-import copy from 'rollup-plugin-copy';
-import {
-  mkdirSync,
-  cpSync,
-  rmSync,
-  existsSync,
-  readdirSync,
-  statSync,
-} from 'fs';
+import { mkdirSync, cpSync, rmSync, existsSync, readdirSync } from 'fs';
 import { resolve, dirname, relative } from 'path';
 import { fileURLToPath } from 'url';
+import commonjs from '@rollup/plugin-commonjs';
+import nodeResolve from '@rollup/plugin-node-resolve';
+import typescript from '@rollup/plugin-typescript';
 import glob from 'glob';
+import copy from 'rollup-plugin-copy';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const dev = process.env.ROLLUP_WATCH;
 
 export default {
   input: resolve(__dirname, '../demo/main.ts'),

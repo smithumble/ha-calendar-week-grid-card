@@ -1,15 +1,21 @@
 import yaml from 'js-yaml';
-import { parseYasnoData } from './parsers/yasno';
-import { getDummyCalendars } from './parsers/dummy';
 import { ASSET_MANIFEST } from 'virtual:asset-manifest';
+import type { CardConfig } from '../../src/types';
+import { getDummyCalendars } from './parsers/dummy';
+import { parseYasnoData, ProbableData, PlannedData } from './parsers/yasno';
 
 export interface ConfigItem {
   name: string;
-  config: any;
+  config: CardConfig;
+}
+
+export interface Calendar {
+  entity_id: string;
+  events: unknown[];
 }
 
 export interface ProviderData {
-  calendars: Record<string, any[]>;
+  calendars: Record<string, Calendar[]>;
   configs: ConfigItem[];
   dataSources: string[];
 }
@@ -76,7 +82,9 @@ function extractYasnoDataSources(): string[] {
 }
 
 // Load calendar JSON files at runtime via HTTP
-async function loadYasnoCalendarFile(url: string): Promise<any> {
+async function loadYasnoCalendarFile(
+  url: string,
+): Promise<PlannedData | ProbableData> {
   try {
     const response = await fetch(url);
     if (!response.ok) {
@@ -90,10 +98,11 @@ async function loadYasnoCalendarFile(url: string): Promise<any> {
 }
 
 // These will be populated lazily at runtime
-let YASNO_CALENDARS: Record<string, { planned: any; probable: any }> = {};
-let YASNO_CONFIGS: Record<string, string> = {};
-let YASNO_DEPRECATED_CONFIGS: Record<string, string> = {};
-let DUMMY_CONFIGS: Record<string, string> = {};
+const YASNO_CALENDARS: Record<string, { planned: unknown; probable: unknown }> =
+  {};
+const YASNO_CONFIGS: Record<string, string> = {};
+const YASNO_DEPRECATED_CONFIGS: Record<string, string> = {};
+const DUMMY_CONFIGS: Record<string, string> = {};
 
 // Track what's been loaded
 const loadedCalendars: Set<string> = new Set();
@@ -225,23 +234,23 @@ async function loadSingleConfig(
   }
 }
 
-function getYasnoCalendars(dataSource: string) {
+function getYasnoCalendars(dataSource: string): Calendar[] {
   const calendarData = YASNO_CALENDARS[dataSource];
   if (!calendarData) return [];
 
   const mondayIndex = DATA_SOURCE_MONDAY_INDEX[dataSource] ?? 0;
   return parseYasnoData(
-    calendarData.planned,
-    calendarData.probable,
+    calendarData.planned as PlannedData,
+    calendarData.probable as ProbableData,
     mondayIndex,
-  );
+  ) as Calendar[];
 }
 
 // Load calendars for a specific data source
 export async function loadCalendarsForDataSource(
   dataSource: string,
   provider: string,
-): Promise<any[]> {
+): Promise<Calendar[]> {
   if (provider === 'yasno' || provider === 'yasno_deprecated') {
     await loadYasnoCalendar(dataSource);
     return getYasnoCalendars(dataSource);
@@ -255,14 +264,14 @@ export async function loadCalendarsForDataSource(
 export async function loadConfigByName(
   provider: string,
   configName: string,
-): Promise<any | null> {
+): Promise<CardConfig | null> {
   const yamlContent = await loadSingleConfig(provider, configName);
   if (!yamlContent) {
     return null;
   }
 
   try {
-    return yaml.load(yamlContent) as any;
+    return yaml.load(yamlContent) as CardConfig;
   } catch (error) {
     console.warn(`Failed to parse config ${configName}:`, error);
     return null;

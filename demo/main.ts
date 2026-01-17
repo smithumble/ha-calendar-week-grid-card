@@ -1,5 +1,11 @@
 import yaml from 'js-yaml';
-import { setupBrowserEnv, renderCards, MockCalendar } from './utils/browser';
+import type { CardConfig } from '../src/types';
+import {
+  setupBrowserEnv,
+  renderCards,
+  MockCalendar,
+  type MockCard,
+} from './utils/browser';
 import {
   ProviderData,
   loadCalendarsForDataSource,
@@ -7,12 +13,12 @@ import {
   getAvailableConfigNames,
   getProviderMetadata,
 } from './utils/data';
-import { loadTheme } from './utils/theme';
-import { loadIcons } from './utils/icons';
 import {
   createMockHassForEditor,
   mockHaEditorComponents,
 } from './utils/editor';
+import { loadIcons } from './utils/icons';
+import { loadTheme } from './utils/theme';
 
 // Mock date: Monday, May 20, 2024
 const MOCK_DATE_STR = '2024-05-20T11:45:00';
@@ -27,11 +33,11 @@ const STORAGE_PREFIX = 'calendar-week-grid-card-';
 
 // Global state
 let currentProvider: string = DEFAULT_PROVIDER;
-let currentConfig: any = null;
-let originalConfig: any = null;
+let currentConfig: CardConfig | null = null;
+let originalConfig: CardConfig | null = null;
 let currentCalendars: MockCalendar[] = [];
 let providerDataMap: Record<string, ProviderData> = {};
-let visualEditor: HTMLElement | null = null;
+let visualEditor: MockCard | null = null;
 let editorMode: 'yaml' | 'visual' = 'visual';
 
 function saveToStorage(key: string, value: string): void {
@@ -100,7 +106,7 @@ function getProviderData(provider: string): ProviderData | null {
 async function getConfigByName(
   provider: string,
   configName: string,
-): Promise<any | null> {
+): Promise<CardConfig | null> {
   const providerData = getProviderData(provider);
   if (!providerData) return null;
 
@@ -383,8 +389,8 @@ function updateConfigEditor() {
       currentCalendars,
       false,
     );
-    (visualEditor as any).hass = mockHass;
-    (visualEditor as any).setConfig(currentConfig);
+    visualEditor.hass = mockHass;
+    visualEditor.setConfig(currentConfig);
   }
 }
 
@@ -416,7 +422,7 @@ function applyEditedConfig() {
   }
 
   try {
-    const parsedConfig = yaml.load(configText);
+    const parsedConfig = yaml.load(configText) as CardConfig;
     currentConfig = parsedConfig;
     renderCards(currentConfig, currentCalendars);
     updateVisualEditor();
@@ -434,7 +440,9 @@ function resetConfig() {
   if (originalConfig) {
     currentConfig = JSON.parse(JSON.stringify(originalConfig));
     updateConfigEditor();
-    renderCards(currentConfig, currentCalendars);
+    if (currentConfig) {
+      renderCards(currentConfig, currentCalendars);
+    }
     updateVisualEditor();
     hideConfigEditorError();
   }
@@ -495,7 +503,9 @@ function setupVisualEditor() {
 
   // Create editor instance if it doesn't exist
   if (!visualEditor) {
-    visualEditor = document.createElement('calendar-week-grid-card-editor');
+    visualEditor = document.createElement(
+      'calendar-week-grid-card-editor',
+    ) as MockCard;
     container.appendChild(visualEditor);
 
     // Add scrollbar
@@ -512,9 +522,11 @@ function setupVisualEditor() {
 
     // Listen for config changes
     visualEditor.addEventListener('config-changed', ((e: CustomEvent) => {
-      const newConfig = e.detail.config;
+      const newConfig = e.detail.config as CardConfig;
       currentConfig = newConfig;
-      renderCards(currentConfig, currentCalendars);
+      if (currentConfig) {
+        renderCards(currentConfig, currentCalendars);
+      }
       // Also update YAML editor if it's visible
       if (editorMode === 'yaml') {
         updateConfigEditor();
@@ -529,8 +541,8 @@ function setupVisualEditor() {
       currentCalendars,
       false,
     );
-    (visualEditor as any).hass = mockHass;
-    (visualEditor as any).setConfig(currentConfig);
+    visualEditor.hass = mockHass;
+    visualEditor.setConfig(currentConfig);
   }
 }
 
@@ -541,8 +553,8 @@ function updateVisualEditor() {
       currentCalendars,
       false,
     );
-    (visualEditor as any).hass = mockHass;
-    (visualEditor as any).setConfig(currentConfig);
+    visualEditor.hass = mockHass;
+    visualEditor.setConfig(currentConfig);
   }
 }
 
@@ -561,7 +573,7 @@ function switchEditorMode(mode: 'yaml' | 'visual') {
     updateConfigEditor();
     // Force reflow to ensure textarea resizes properly
     if (yamlEditor) {
-      yamlEditor.offsetHeight; // Trigger reflow
+      void yamlEditor.offsetHeight; // Trigger reflow
     }
   } else {
     yamlEditor?.style.setProperty('display', 'none');
@@ -645,7 +657,9 @@ function setupConfigEditor() {
 function setupConfigSelectListener() {
   setupSelectListener('config-select', async (selectedName) => {
     if (await selectConfig(selectedName, currentProvider)) {
-      renderCards(currentConfig, currentCalendars);
+      if (currentConfig) {
+        renderCards(currentConfig, currentCalendars);
+      }
       updateVisualEditor();
       saveToStorage('selected-config', selectedName);
       updateURLParams({ config: selectedName });
@@ -759,7 +773,9 @@ async function initializeCards() {
   }
 
   updateConfigEditor();
-  renderCards(currentConfig, currentCalendars);
+  if (currentConfig) {
+    renderCards(currentConfig, currentCalendars);
+  }
   updateVisualEditor();
 }
 
@@ -767,7 +783,8 @@ async function loadCardScript(): Promise<void> {
   try {
     // Dynamically import the card script
     // Reference from parent directory (dist/calendar-week-grid-card.js)
-    await import('../calendar-week-grid-card.js' as any);
+    // @ts-expect-error - Dynamic import path resolved at runtime
+    await import('../calendar-week-grid-card.js');
   } catch (error) {
     console.error('Failed to load card script:', error);
     // Don't throw - allow demo to continue even if card script fails
@@ -784,11 +801,11 @@ async function waitForCustomElement(maxAttempts = 100): Promise<boolean> {
 
 async function main() {
   // Load theme and icons
-  const theme = await loadTheme();
-  const icons = await loadIcons();
+  const haTheme = await loadTheme();
+  const haIcons = await loadIcons();
 
   // Setup browser environment
-  setupBrowserEnv(MOCK_DATE_STR, theme, icons);
+  setupBrowserEnv(MOCK_DATE_STR, haTheme, haIcons);
 
   // Load the card script
   await loadCardScript();

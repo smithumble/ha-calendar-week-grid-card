@@ -4,6 +4,7 @@
  */
 
 import type { HomeAssistant } from 'custom-card-helpers';
+import type { HassEntities } from 'home-assistant-js-websocket';
 import type { CardConfig } from '../../src/types';
 import type { MockCalendar } from './browser';
 
@@ -16,16 +17,24 @@ export function createMockHassForEditor(
   darkMode: boolean = false,
 ): HomeAssistant {
   // Create states object with calendar entities
-  const states: Record<string, any> = {};
+  const states: HassEntities = {};
   calendars.forEach((calendar) => {
+    const now = new Date().toISOString();
     states[calendar.entity_id] = {
       entity_id: calendar.entity_id,
       state: 'on',
+      last_changed: now,
+      last_updated: now,
       attributes: {
         friendly_name: calendar.entity_id
           .replace('calendar.', '')
           .replace(/_/g, ' ')
           .replace(/\b\w/g, (l) => l.toUpperCase()),
+      },
+      context: {
+        id: '',
+        user_id: null,
+        parent_id: null,
       },
     };
   });
@@ -112,7 +121,6 @@ export function mockHaEditorComponents(): void {
               ${label ? `<label>${label}</label>` : ''}
             `;
             this.shadowRoot.appendChild(this.input);
-            const name = this.getAttribute('name');
             const value = this._value || this.getAttribute('value') || '';
             this.input.value = value;
             this.input.addEventListener('input', () => {
@@ -761,7 +769,7 @@ export function mockHaEditorComponents(): void {
         static get observedAttributes() {
           return ['expanded'];
         }
-        attributeChangedCallback(name: string, _old: string, _new: string) {
+        attributeChangedCallback(name: string) {
           if (name === 'expanded' && !this._isUpdating) {
             const shouldBeExpanded = this.hasAttribute('expanded');
             if (this._expanded !== shouldBeExpanded) {
