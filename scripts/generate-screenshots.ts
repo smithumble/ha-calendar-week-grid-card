@@ -1,44 +1,23 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createServer as createViteServer } from 'vite';
 import puppeteer, { Browser, Page } from 'puppeteer';
-import type { ConfigItem, MockCalendar } from './utils/providers';
-import { preloadAllProviderData } from './utils/providers';
-import {
-  generateScreenshotPageHTML,
-  getRenderPageData,
-} from './utils/renderers/screenshot-page';
-import type { ThemeCSS } from './utils/theme';
-
-declare global {
-  interface Window {
-    MOCK_DATE_STR: string;
-    CONFIG?: any;
-    CALENDARS: any[];
-    THEME_CSS: ThemeCSS;
-    ICON_MAP: Record<string, string>;
-    setupBrowserEnv?: () => void;
-    renderCards?: (config: any, calendars: MockCalendar[]) => void;
-  }
-}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Constants
-const CARD_SCRIPT_PATH = path.resolve(
-  __dirname,
-  '../dist/calendar-week-grid-card.js',
-);
 const OUTPUT_DIR = path.resolve(__dirname, '../media/images');
-const VIEWPORT_WIDTH = 1200;
+const VIEWPORT_WIDTH = 1350;
 const VIEWPORT_HEIGHT = 800;
 const DEVICE_SCALE_FACTOR = 2;
+const DEFAULT_SERVER_PORT = 5001; // Match vite.demo.config.ts port
 
 interface ScreenshotConfig {
   provider: string;
-  config: ConfigItem;
-  dataSource?: string;
+  configName: string;
+  dataSource: string;
 }
 
 interface ParsedArgs {
@@ -48,6 +27,117 @@ interface ParsedArgs {
 }
 
 /**
+ * Hardcoded mapping of all screenshot configurations
+ */
+const SCREENSHOT_CONFIGS: ScreenshotConfig[] = [
+  // Yasno provider configs
+  {
+    provider: 'yasno',
+    configName: 'example_1_basic',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno',
+    configName: 'example_2_simple',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno',
+    configName: 'example_3_simple_colored',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno',
+    configName: 'example_4_classic',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno',
+    configName: 'example_5_neon',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno',
+    configName: 'example_6_soft_ui',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno',
+    configName: 'example_7_yasno_legacy',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno',
+    configName: 'example_8_1_google_calendar',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno',
+    configName: 'example_8_2_google_calendar_separated',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno',
+    configName: 'example_8_3_google_calendar_original',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno',
+    configName: 'example_8_4_google_calendar_original_separated',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno',
+    configName: 'image',
+    dataSource: 'yasno_1',
+  },
+
+  // Yasno deprecated provider configs
+  {
+    provider: 'yasno_deprecated',
+    configName: 'example_1_basic',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno_deprecated',
+    configName: 'example_2_simple',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno_deprecated',
+    configName: 'example_3_simple_colored',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno_deprecated',
+    configName: 'example_4_classic',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno_deprecated',
+    configName: 'example_5_neon',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno_deprecated',
+    configName: 'example_6_soft_ui',
+    dataSource: 'yasno_1',
+  },
+  {
+    provider: 'yasno_deprecated',
+    configName: 'image',
+    dataSource: 'yasno_1',
+  },
+
+  // Dummy provider configs
+  {
+    provider: 'dummy',
+    configName: 'image',
+    dataSource: 'dummy_1',
+  },
+];
+
+/**
  * Parse command line arguments
  */
 function parseArgs(): ParsedArgs {
@@ -55,8 +145,9 @@ function parseArgs(): ParsedArgs {
   const force = args.includes('--force') || args.includes('-f');
   const nonFlagArgs = args.filter((arg) => !arg.startsWith('-'));
 
-  const providerDataMap = preloadAllProviderData();
-  const allProviders = Object.keys(providerDataMap);
+  const allProviders = Array.from(
+    new Set(SCREENSHOT_CONFIGS.map((c) => c.provider)),
+  );
 
   const provider =
     nonFlagArgs[0] && allProviders.includes(nonFlagArgs[0])
@@ -68,27 +159,10 @@ function parseArgs(): ParsedArgs {
 }
 
 /**
- * Get all screenshot configurations from all providers
+ * Get all screenshot configurations
  */
 function getAllScreenshotConfigs(): ScreenshotConfig[] {
-  const providerDataMap = preloadAllProviderData();
-  const configs: ScreenshotConfig[] = [];
-
-  for (const provider of Object.keys(providerDataMap)) {
-    const providerData = providerDataMap[provider];
-    if (!providerData) continue;
-
-    for (const configItem of providerData.configs) {
-      const dataSource = providerData.dataSources[0];
-      configs.push({
-        provider,
-        config: configItem,
-        dataSource,
-      });
-    }
-  }
-
-  return configs;
+  return SCREENSHOT_CONFIGS;
 }
 
 /**
@@ -106,7 +180,7 @@ function filterConfigs(
   }
 
   if (name) {
-    filtered = filtered.filter((c) => c.config.name === name);
+    filtered = filtered.filter((c) => c.configName === name);
   }
 
   return filtered;
@@ -134,6 +208,38 @@ function validateConfigs(
 }
 
 /**
+ * Create Vite server using the existing vite.demo.config.ts
+ */
+async function createDemoServer(): Promise<{ vite: any; port: number }> {
+  const vite = await createViteServer({
+    configFile: path.resolve(__dirname, '../vite.demo.config.ts'),
+    server: {
+      port: DEFAULT_SERVER_PORT,
+      strictPort: false, // Allow finding an available port if default is in use
+    },
+  });
+
+  await vite.listen();
+
+  // Get the actual port from the HTTP server
+  const httpServer = vite.httpServer;
+  if (!httpServer) {
+    throw new Error('Vite HTTP server not available');
+  }
+
+  const address = httpServer.address();
+  const actualPort =
+    typeof address === 'object' && address !== null && 'port' in address
+      ? address.port
+      : DEFAULT_SERVER_PORT;
+
+  return {
+    vite,
+    port: actualPort,
+  };
+}
+
+/**
  * Setup page with initial viewport
  */
 async function setupPage(page: Page): Promise<void> {
@@ -146,63 +252,43 @@ async function setupPage(page: Page): Promise<void> {
 }
 
 /**
- * Initialize page content and inject required data
+ * Navigate to demo page with URL parameters
  */
-async function initializePage(
+async function navigateToDemoPage(
   page: Page,
-  renderData: ReturnType<typeof getRenderPageData>,
+  provider: string,
+  configName: string,
+  dataSource: string,
+  serverPort: number,
 ): Promise<void> {
-  await page.setContent(generateScreenshotPageHTML());
-
-  // Inject global variables
-  await page.evaluate(
-    (mockDateStr, config, calendars, theme, iconMap) => {
-      window.MOCK_DATE_STR = mockDateStr;
-      window.CONFIG = config;
-      window.CALENDARS = calendars;
-      window.THEME_CSS = theme;
-      window.ICON_MAP = iconMap;
-    },
-    renderData.mockDateStr,
-    renderData.config,
-    renderData.calendars,
-    renderData.theme,
-    renderData.iconMap,
-  );
-
-  // Inject helper script
-  await page.evaluate(renderData.commonCode);
-
-  // Setup the environment
-  await page.evaluate(() => {
-    window.setupBrowserEnv?.();
-  });
+  const url = `http://localhost:${serverPort}/demo/?provider=${encodeURIComponent(provider)}&config=${encodeURIComponent(configName)}&dataSource=${encodeURIComponent(dataSource)}`;
+  await page.goto(url, { waitUntil: 'networkidle0' });
 }
 
 /**
- * Load and inject the card script
+ * Wait for cards to be rendered
  */
-async function injectCardScript(page: Page): Promise<void> {
-  const cardCode = fs.readFileSync(CARD_SCRIPT_PATH, 'utf8');
-  await page.evaluate((code) => {
-    const script = document.createElement('script');
-    script.textContent = code;
-    script.type = 'module';
-    document.body.appendChild(script);
-  }, cardCode);
-
+async function waitForCards(page: Page): Promise<void> {
+  // Wait for custom element to be registered
   await page.waitForFunction(() =>
     customElements.get('calendar-week-grid-card'),
   );
-}
 
-/**
- * Render cards and wait for them to be ready
- */
-async function renderCards(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    window.renderCards?.(window.CONFIG, window.CALENDARS);
-  });
+  // Wait for cards to be rendered in both containers
+  await page.waitForFunction(
+    () => {
+      const darkContainer = document.querySelector('#card-container-dark');
+      const lightContainer = document.querySelector('#card-container-light');
+      return (
+        darkContainer?.querySelector('calendar-week-grid-card') &&
+        lightContainer?.querySelector('calendar-week-grid-card')
+      );
+    },
+    { timeout: 10000 },
+  );
+
+  // Wait a bit more for any animations or final rendering
+  await new Promise((resolve) => setTimeout(resolve, 500));
 }
 
 /**
@@ -212,24 +298,37 @@ async function captureScreenshot(
   page: Page,
   screenshotConfig: ScreenshotConfig,
 ): Promise<void> {
+  // Hide navbar and editor panel for cleaner screenshots
+  await page.evaluate(() => {
+    const navbar = document.querySelector('.navbar');
+    const editorPanel = document.querySelector('.config-editor-panel');
+    if (navbar) (navbar as HTMLElement).style.display = 'none';
+    if (editorPanel) (editorPanel as HTMLElement).style.display = 'none';
+  });
+
+  // Get the body to measure its actual height
   const body = await page.$('body');
   if (!body) {
     throw new Error('Body element not found');
   }
 
-  const boundingBox = await body.boundingBox();
-  if (!boundingBox) {
+  // Get the actual height of the body (which contains both side-by-side containers)
+  // Since containers are side-by-side, body height is the max of the two
+  const bodyBox = await body.boundingBox();
+  if (!bodyBox) {
     throw new Error('Could not get body bounding box');
   }
 
+  // Use the body height, which is the maximum of the two side-by-side containers
   await page.setViewport({
     width: VIEWPORT_WIDTH,
-    height: Math.ceil(boundingBox.height),
+    height: Math.ceil(bodyBox.height),
     deviceScaleFactor: DEVICE_SCALE_FACTOR,
   });
 
   const screenshotFilename = getScreenshotFilename(screenshotConfig);
   const imagePath = getScreenshotPath(screenshotConfig);
+
   await body.screenshot({ path: imagePath });
   console.log(`Generated ${screenshotFilename}`);
 }
@@ -240,17 +339,21 @@ async function captureScreenshot(
 async function renderScreenshot(
   browser: Browser,
   screenshotConfig: ScreenshotConfig,
+  serverPort: number,
 ): Promise<void> {
-  const { provider, config, dataSource } = screenshotConfig;
+  const { provider, configName, dataSource } = screenshotConfig;
   const page = await browser.newPage();
 
   try {
     await setupPage(page);
-
-    const renderData = getRenderPageData(config.config, provider, dataSource);
-    await initializePage(page, renderData);
-    await injectCardScript(page);
-    await renderCards(page);
+    await navigateToDemoPage(
+      page,
+      provider,
+      configName,
+      dataSource,
+      serverPort,
+    );
+    await waitForCards(page);
     await captureScreenshot(page, screenshotConfig);
   } finally {
     await page.close();
@@ -261,10 +364,10 @@ async function renderScreenshot(
  * Generate a safe filename from screenshot config
  */
 function getScreenshotFilename(screenshotConfig: ScreenshotConfig): string {
-  const { provider, config } = screenshotConfig;
+  const { provider, configName } = screenshotConfig;
 
   // Replace slashes with underscores for valid filename
-  const name = config.name.replace(/\//g, '_');
+  const name = configName.replace(/\//g, '_');
 
   // If provider is yasno, return not prefixed config name for backward compatibility
   if (provider === 'yasno') {
@@ -314,6 +417,7 @@ async function processScreenshots(
   browser: Browser,
   configs: ScreenshotConfig[],
   force: boolean,
+  serverPort: number,
 ): Promise<void> {
   for (const screenshotConfig of configs) {
     if (shouldSkipScreenshot(screenshotConfig, force)) {
@@ -322,7 +426,7 @@ async function processScreenshots(
       continue;
     }
 
-    await renderScreenshot(browser, screenshotConfig);
+    await renderScreenshot(browser, screenshotConfig, serverPort);
   }
 }
 
@@ -339,18 +443,24 @@ async function main(): Promise<void> {
   const configsToProcess = filterConfigs(configs, args.provider, args.name);
   validateConfigs(configsToProcess, args.provider, args.name);
 
+  // Start Vite server for demo page
+  console.log('Starting Vite server...');
+  const { vite, port } = await createDemoServer();
+  console.log(`Vite server running on http://localhost:${port}`);
+
   const browser = await puppeteer.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-gpu'],
   });
 
   try {
-    await processScreenshots(browser, configsToProcess, args.force);
+    await processScreenshots(browser, configsToProcess, args.force, port);
   } catch (error) {
     console.error('Error generating screenshots:', error);
     process.exit(1);
   } finally {
     await browser.close();
+    await vite.close();
     console.log('Done.');
   }
 }
