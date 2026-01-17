@@ -39,7 +39,7 @@ body {
   font-family: 'Roboto', sans-serif;
   display: flex;
   flex-direction: row;
-  width: 100%;
+  width: 100vw;
   max-width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
@@ -443,10 +443,10 @@ body.with-editor {
   background-color: var(--primary-background-color, rgb(40, 40, 40));
   color: var(--primary-text-color);
   position: relative;
-  min-height: calc(100vh - 60px);
+  min-height: 100vh;
   min-width: 350px;
   overflow: hidden;
-  padding: 20px;
+  padding: 80px;
 }
 
 body.with-editor .theme-container {
@@ -463,6 +463,7 @@ body.with-editor .theme-container {
   font-size: 24px;
   opacity: 0.5;
   font-weight: bold;
+  color: var(--primary-text-color);
 }
 
 body.with-editor .theme-label {
@@ -472,7 +473,7 @@ body.with-editor .theme-label {
 #card-container-light,
 #card-container-dark {
   width: 100%;
-  max-width: 450px;
+  max-width: 440px;
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
