@@ -59,7 +59,10 @@ export class CalendarWeekGridCardEditor extends LitElement {
     return unsafeCSS(styles);
   }
 
-  @property({ attribute: false }) hass?: HomeAssistant;
+  @property({ attribute: false }) hass?: HomeAssistant & {
+    entities: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    devices: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  };
   @state() private _config?: CardConfig;
   @state() private _timeFormatType: 'string' | 'object' = 'object';
   @state() private _expandedEntityIndex: number | null = null;
@@ -78,7 +81,11 @@ export class CalendarWeekGridCardEditor extends LitElement {
   private loadHaComponents(): void {
     // Hack to load ha-components needed for editor
     if (!customElements.get('ha-entity-picker')) {
-      (customElements.get('hui-entities-card') as any)?.getConfigElement();
+      (
+        customElements.get('hui-entities-card') as unknown as {
+          getConfigElement: () => HTMLElement;
+        }
+      )?.getConfigElement();
     }
   }
 
@@ -1023,8 +1030,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
       | Intl.DateTimeFormatOptions
       | undefined;
 
-    const isStringFormat =
-      typeof timeFormat === 'string' || timeFormat === undefined;
     const formatType = this._timeFormatType;
 
     return html`
@@ -1243,19 +1248,21 @@ export class CalendarWeekGridCardEditor extends LitElement {
     const state = this.hass?.states[entityId];
 
     // 1. Get the full friendly name
-    var fullString = state?.attributes?.friendly_name || '';
+    const fullString = state?.attributes?.friendly_name || '';
 
     // 2. Find the Device Name via the hass object registries
-    var entityReg = (this.hass as any).entities[entityId];
-    var deviceReg =
+    const entityReg = this.hass.entities[entityId];
+    const deviceReg =
       entityReg && entityReg.device_id
-        ? (this.hass as any).devices[entityReg.device_id]
+        ? this.hass.devices[entityReg.device_id]
         : null;
-    var deviceName = deviceReg ? deviceReg.name_by_user || deviceReg.name : '';
+    const deviceName = deviceReg
+      ? deviceReg.name_by_user || deviceReg.name
+      : '';
 
     // 3. Calculate the Calendar Name by removing the Device Name
     // We replace "DeviceName " (note the space) with empty string
-    var calendarName = fullString?.replace(deviceName, '').trim();
+    const calendarName = fullString?.replace(deviceName, '').trim();
 
     return { calendarName, deviceName };
   }
@@ -1484,9 +1491,8 @@ export class CalendarWeekGridCardEditor extends LitElement {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         // Find all expansion panels
-        const allPanels = this.shadowRoot?.querySelectorAll(
-          'ha-expansion-panel',
-        ) as NodeListOf<HTMLElement> | undefined;
+        const allPanels =
+          this.shadowRoot?.querySelectorAll('ha-expansion-panel');
 
         if (allPanels) {
           allPanels.forEach((panel) => {
@@ -1495,19 +1501,24 @@ export class CalendarWeekGridCardEditor extends LitElement {
             const headerSlot = panel.querySelector('[slot="header"]');
             const entityHeader = headerSlot?.querySelector('.entity-header');
 
-            if (entityHeader && panel instanceof HTMLElement) {
+            if (entityHeader) {
               // Only collapse panels that have .entity-header directly in their header
-              (panel as any).expanded = false;
+              if (panel instanceof HTMLElement && 'expanded' in panel) {
+                panel.expanded = false;
 
-              // Also collapse all nested expansion panels within this entity panel
-              const nestedPanels = panel.querySelectorAll(
-                '.panel-content ha-expansion-panel',
-              );
-              nestedPanels.forEach((nestedPanel) => {
-                if (nestedPanel instanceof HTMLElement) {
-                  (nestedPanel as any).expanded = false;
-                }
-              });
+                // Also collapse all nested expansion panels within this entity panel
+                const nestedPanels = panel.querySelectorAll(
+                  '.panel-content ha-expansion-panel',
+                );
+                nestedPanels.forEach((nestedPanel) => {
+                  if (
+                    nestedPanel instanceof HTMLElement &&
+                    'expanded' in nestedPanel
+                  ) {
+                    nestedPanel.expanded = false;
+                  }
+                });
+              }
             }
           });
         }
