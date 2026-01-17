@@ -91,50 +91,6 @@ const SCREENSHOT_CONFIGS: ScreenshotConfig[] = [
     configName: 'image',
     dataSource: 'yasno_1',
   },
-
-  // Yasno deprecated provider configs
-  {
-    provider: 'yasno_deprecated',
-    configName: 'example_1_basic',
-    dataSource: 'yasno_1',
-  },
-  {
-    provider: 'yasno_deprecated',
-    configName: 'example_2_simple',
-    dataSource: 'yasno_1',
-  },
-  {
-    provider: 'yasno_deprecated',
-    configName: 'example_3_simple_colored',
-    dataSource: 'yasno_1',
-  },
-  {
-    provider: 'yasno_deprecated',
-    configName: 'example_4_classic',
-    dataSource: 'yasno_1',
-  },
-  {
-    provider: 'yasno_deprecated',
-    configName: 'example_5_neon',
-    dataSource: 'yasno_1',
-  },
-  {
-    provider: 'yasno_deprecated',
-    configName: 'example_6_soft_ui',
-    dataSource: 'yasno_1',
-  },
-  {
-    provider: 'yasno_deprecated',
-    configName: 'image',
-    dataSource: 'yasno_1',
-  },
-
-  // Dummy provider configs
-  {
-    provider: 'dummy',
-    configName: 'image',
-    dataSource: 'dummy_1',
-  },
 ];
 
 /**
