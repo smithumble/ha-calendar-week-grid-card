@@ -4,6 +4,7 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import postcss from 'rollup-plugin-postcss';
 import postcssLit from 'rollup-plugin-postcss-lit';
 import terser from '@rollup/plugin-terser';
+import yaml from '@rollup/plugin-yaml';
 
 const dev = process.env.ROLLUP_WATCH;
 
@@ -21,6 +22,7 @@ export default {
     clearScreen: false,
   },
   plugins: [
+    yaml(),
     nodeResolve({
       browser: true,
       preferBuiltins: false,

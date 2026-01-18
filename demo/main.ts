@@ -699,10 +699,19 @@ function populateProviderSelect(selectedProvider?: string | null) {
     providersToShow.add(selectedProvider);
   }
 
-  providerSelect.innerHTML = Array.from(providersToShow)
-    .sort()
+  const sortedProviders = Array.from(providersToShow).sort();
+
+  providerSelect.innerHTML = sortedProviders
     .map((p) => `<option value="${p}">${formatSelectorLabel(p)}</option>`)
     .join('');
+
+  // Always set the value to selectedProvider if provided and valid
+  if (selectedProvider && sortedProviders.includes(selectedProvider)) {
+    providerSelect.value = selectedProvider;
+  } else if (sortedProviders.length > 0 && !providerSelect.value) {
+    // Fallback to first provider if no valid selection
+    providerSelect.value = sortedProviders[0];
+  }
 }
 
 async function setupProviderSelector() {
@@ -729,7 +738,10 @@ async function setupProviderSelector() {
 
   // Allow provider from URL/storage even if it's hidden from dropdown
   if (currentProviderValue && allProviders.includes(currentProviderValue)) {
-    providerSelect.value = currentProviderValue;
+    // populateProviderSelect already sets the value, but ensure it's set
+    if (providerSelect.value !== currentProviderValue) {
+      providerSelect.value = currentProviderValue;
+    }
     currentProvider = currentProviderValue;
     if (urlProvider) {
       saveToStorage('selected-provider', urlProvider);
@@ -740,11 +752,22 @@ async function setupProviderSelector() {
 
   setupSelectListener('provider-select', async (selectedProvider) => {
     if (allProviders.includes(selectedProvider)) {
+      const previousProvider = currentProvider;
       currentProvider = selectedProvider;
       saveToStorage('selected-provider', selectedProvider);
       updateURLParams({ provider: selectedProvider });
-      // Repopulate to remove hidden provider if switching away from it
-      populateProviderSelect(selectedProvider);
+
+      // Only repopulate if we're switching away from a hidden provider
+      // (to remove it from the dropdown) or if we're switching to a hidden provider
+      const wasHidden =
+        previousProvider && !visibleProviders.includes(previousProvider);
+      const isHidden = !visibleProviders.includes(selectedProvider);
+
+      if (wasHidden || isHidden) {
+        // Repopulate to add/remove hidden providers as needed
+        populateProviderSelect(selectedProvider);
+      }
+
       await updateSelectsForProvider(selectedProvider, true);
     }
   });

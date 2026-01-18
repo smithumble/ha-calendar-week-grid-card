@@ -7,11 +7,11 @@
 import { LitElement, TemplateResult, html, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import type { HomeAssistant } from 'custom-card-helpers';
-import type { CardConfig, EntityConfig } from '../types';
+import type { CardConfig, EntityConfig, EntityVariable } from '../types';
 import styles from './styles.css';
-import ThemeGoogleCalendarSeparated from '../themes/google_calendar_separated.css';
-import ThemeGoogleCalendar from '../themes/google_calendar.css';
-import ThemeClassic from '../themes/classic.css';
+import classicYamlConfig from '../configs/classic.yaml';
+import googleCalendarYamlConfig from '../configs/google_calendar.yaml';
+import googleCalendarSeparatedYamlConfig from '../configs/google_calendar_separated.yaml';
 
 // Material Design icon paths
 const mdiCalendar = 'mdi:calendar';
@@ -25,56 +25,24 @@ const mdiPalette = 'mdi:palette';
 interface ThemeInfo {
   id: string;
   name: string;
-  css: string;
-  override?: Partial<CardConfig>;
+  config: Partial<CardConfig>;
 }
 
 export const themes: ThemeInfo[] = [
   {
     id: 'classic',
     name: 'Classic',
-    css: ThemeClassic.cssText,
-    override: {
-      icons_mode: 'top',
-      icons_container: 'cell',
-      time_range: false,
-      blank_icon: 'mdi:checkbox-blank-circle-outline',
-      all_day_icon: 'mdi:checkbox-blank-circle',
-      secondary_date_format: {
-        day: 'numeric',
-        month: 'short',
-      },
-    },
+    config: classicYamlConfig,
   },
   {
     id: 'google_calendar_separated',
     name: 'Google Calendar Separated',
-    css: ThemeGoogleCalendarSeparated.cssText,
-    override: {
-      icons_mode: 'all',
-      icons_container: 'event',
-      time_range: true,
-      blank_icon: undefined,
-      all_day_icon: undefined,
-      secondary_date_format: {
-        day: 'numeric',
-      },
-    },
+    config: googleCalendarSeparatedYamlConfig,
   },
   {
     id: 'google_calendar',
     name: 'Google Calendar',
-    css: ThemeGoogleCalendar.cssText,
-    override: {
-      icons_mode: 'all',
-      icons_container: 'event',
-      time_range: true,
-      blank_icon: undefined,
-      all_day_icon: undefined,
-      secondary_date_format: {
-        day: 'numeric',
-      },
-    },
+    config: googleCalendarYamlConfig,
   },
 ];
 
@@ -341,18 +309,13 @@ export class CalendarWeekGridCardEditor extends LitElement {
         return;
       }
 
-      // Find the selected theme and apply its CSS and overrides
+      // Find the selected theme and apply its config
       const selectedTheme = themes.find((t) => t.id === themeId);
-      if (selectedTheme) {
-        // Apply CSS first
-        this.setConfigValue('css', selectedTheme.css);
-
-        // Apply config overrides if any
-        if (selectedTheme.override) {
-          Object.entries(selectedTheme.override).forEach(([key, value]) => {
-            this.setConfigValue(key, value);
-          });
-        }
+      if (selectedTheme && selectedTheme.config) {
+        // Apply all config from YAML file (including CSS)
+        Object.entries(selectedTheme.config).forEach(([key, value]) => {
+          this.setConfigValue(key, value);
+        });
       }
       // Don't save theme_selection to config, it's UI-only
       return;
@@ -1402,15 +1365,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
                   <div class="helper-text">
                     Icon for events from this entity
                   </div>
-                  ${this._hasEventColorVariable()
-                    ? html`
-                        ${this.addTextField(`entities.${index}.color`, 'Color')}
-                        <div class="helper-text">
-                          Color for events from this entity (CSS color value,
-                          e.g., #ff0000 or red)
-                        </div>
-                      `
-                    : ''}
+                  ${this._renderEntityVariables(index)}
                 </div>
 
                 <!-- Advanced Event Control -->
@@ -1598,7 +1553,8 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
     // Check each theme to see if current CSS matches
     for (const theme of themes) {
-      const normalizedTheme = normalizeCss(theme.css);
+      const themeCss = (theme.config.css as string) || '';
+      const normalizedTheme = normalizeCss(themeCss);
       if (normalizedCurrent === normalizedTheme) {
         this._selectedTheme = theme.id;
         return;
@@ -1611,10 +1567,55 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
   /**
    * Checks if the current CSS contains the --event-color variable
+   * or if entities_variables defines event-color
    */
   private _hasEventColorVariable(): boolean {
     const currentCss = (this.getConfigValue('css', '') as string) || '';
-    return currentCss.includes('--event-color');
+    if (currentCss.includes('--event-color')) {
+      return true;
+    }
+    const entitiesVariables = this.getConfigValue(
+      'entities_variables',
+      {},
+    ) as Record<string, EntityVariable>;
+    return 'event-color' in entitiesVariables;
+  }
+
+  /**
+   * Renders fields for entity variables defined in entities_variables config
+   */
+  private _renderEntityVariables(entityIndex: number): TemplateResult {
+    const entitiesVariables = this.getConfigValue(
+      'entities_variables',
+      {},
+    ) as Record<string, EntityVariable>;
+
+    if (!entitiesVariables || Object.keys(entitiesVariables).length === 0) {
+      // Backward compatibility: show color field if CSS uses --event-color
+      if (this._hasEventColorVariable()) {
+        return html`
+          ${this.addTextField(`entities.${entityIndex}.color`, 'Color')}
+          <div class="helper-text">
+            Color for events from this entity (CSS color value, e.g., #ff0000 or
+            red)
+          </div>
+        `;
+      }
+      return html``;
+    }
+
+    return html`
+      ${Object.entries(entitiesVariables).map(([varKey, varConfig]) => {
+        const varName = varConfig?.name || varKey;
+        const varDescription = varConfig?.description || '';
+        return html`
+          ${this.addTextField(`entities.${entityIndex}.${varKey}`, varName)}
+          ${varDescription
+            ? html`<div class="helper-text">${varDescription}</div>`
+            : ''}
+        `;
+      })}
+    `;
   }
 
   /**
@@ -1637,7 +1638,8 @@ export class CalendarWeekGridCardEditor extends LitElement {
     // Check if the new CSS matches any theme
     let matchedTheme: string | null = null;
     for (const theme of themes) {
-      const normalizedTheme = normalizeCss(theme.css);
+      const themeCss = (theme.config.css as string) || '';
+      const normalizedTheme = normalizeCss(themeCss);
       if (normalizedNew === normalizedTheme) {
         matchedTheme = theme.id;
         break;
