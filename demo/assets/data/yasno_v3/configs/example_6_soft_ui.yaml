@@ -11,7 +11,6 @@ time_format:
   hour12: false
 icons_container: event
 icons_mode: all
-blank_icon: mdi:circle-outline
 all_day: row
 entities_variables:
   color:
@@ -20,6 +19,12 @@ entities_variables:
   background:
     name: Background
     description: The background color of the event.
+blank_event:
+  icon: mdi:circle-outline
+  color: '#E0E0E0'
+  background: '#F5F5F5'
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -81,8 +86,4 @@ css: |
 
   .event-block {
     background-color: var(--background, #F5F5F5);
-  }
-
-  ha-icon[data-type="blank"] {
-    color: #E0E0E0;
   }

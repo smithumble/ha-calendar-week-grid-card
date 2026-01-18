@@ -366,7 +366,7 @@ export class CalendarWeekGridCard extends LitElement {
     return html`
       <div class="cell-wrapper ${cellClasses}">
         <div class="cell ${cellClasses}">
-          ${this.renderEvents(cellEvents, cellStartTime, cellEndTime)}
+          ${this.renderEvents(cellEvents, cellStartTime, cellEndTime, isAllDay)}
           ${this.renderCellIcons(cellEvents, isAllDay)}
         </div>
         ${isAllDay ? '' : this.renderCurrentTimeLine(day, hour)}
@@ -378,9 +378,16 @@ export class CalendarWeekGridCard extends LitElement {
     cellEvents: Event[],
     cellStartTime: number,
     cellEndTime: number,
+    isAllDay: boolean = false,
   ): TemplateResult[] {
     return cellEvents.map((event) => {
-      return this.renderEvent(event, cellStartTime, cellEndTime, cellEvents);
+      return this.renderEvent(
+        event,
+        cellStartTime,
+        cellEndTime,
+        cellEvents,
+        isAllDay,
+      );
     });
   }
 
@@ -389,6 +396,7 @@ export class CalendarWeekGridCard extends LitElement {
     cellStartTime: number,
     cellEndTime: number,
     cellEvents: Event[],
+    isAllDay: boolean = false,
   ): TemplateResult {
     const eventStartTime = event.start.getTime();
     const eventEndTime = event.end.getTime();
@@ -470,7 +478,7 @@ export class CalendarWeekGridCard extends LitElement {
         ${this.renderEventSubBlocks(mergedBlocks, cellStartTime, duration)}
       </div>
       <div class="event-icon-overlay ${eventClasses}" style="${innerStyle}">
-        ${this.renderEventIcon(event)}
+        ${this.renderEventIcon(event, isAllDay)}
       </div>
     </div>`;
   }
@@ -512,9 +520,17 @@ export class CalendarWeekGridCard extends LitElement {
     let icon;
 
     if (event.type === 'blank') {
-      // Configured
-      icon = this.config?.blank_icon;
-      icon = isAllDay ? this.config?.all_day_icon || icon : icon;
+      if (isAllDay) {
+        // Blank all day event icon
+        icon = this.config?.blank_all_day_event?.icon;
+        // Blank all day event icon (legacy)
+        icon = icon || this.config?.all_day_icon;
+      } else {
+        // Blank event icon
+        icon = this.config?.blank_event?.icon;
+        // Blank event icon (legacy)
+        icon = icon || this.config?.blank_icon;
+      }
 
       // Deprecated
       icon = icon || getDeprecatedBlankIcon(this.config);
@@ -524,8 +540,12 @@ export class CalendarWeekGridCard extends LitElement {
     }
 
     if (event.type !== 'blank') {
-      // Configured
-      icon = event?.icon || this.config?.event_icon;
+      // Event icon
+      icon = event?.icon;
+      // Default event icon
+      icon = icon || this.config?.event?.icon;
+      // Default event icon (legacy)
+      icon = icon || this.config?.event_icon;
 
       // Deprecated
       icon = icon || getDeprecatedEventIcon(event);
@@ -642,12 +662,15 @@ export class CalendarWeekGridCard extends LitElement {
         isAllDay: !!e.start.date,
       }));
 
+      // Add blank event with config properties
+      const blankEventConfig = this.config?.blank_event || {};
       this.events.push({
         start: new Date(start),
         end: new Date(end),
         entity: '',
         filter: '',
         type: 'blank',
+        ...blankEventConfig,
       });
     } catch (e) {
       console.error('CalendarWeekGridCard: Error fetching events:', e);
@@ -856,6 +879,8 @@ export class CalendarWeekGridCard extends LitElement {
    * Extracts CSS variable values from event based on entities_variables config
    * Converts hyphenated property names (e.g., "event-color") to CSS variable names (e.g., "event-color")
    * Also handles legacy "color" property for backward compatibility
+   * For blank events, also considers blank_event and blank_all_day_event configs
+   * For regular events, also considers root event config
    */
   private getEventVariables(event: Event): Record<string, string> {
     const variables: Record<string, string> = {};
@@ -865,14 +890,42 @@ export class CalendarWeekGridCard extends LitElement {
       return variables;
     }
 
+    // Build base config based on event type
+    let baseConfig: Record<string, unknown> = {};
+
+    if (event.type === 'blank') {
+      // For blank events, merge variables from blank_event and blank_all_day_event configs
+      // Start with blank_event config
+      baseConfig = { ...(this.config?.blank_event || {}) };
+
+      // Override with blank_all_day_event if it's an all-day event
+      if (event.isAllDay) {
+        baseConfig = {
+          ...baseConfig,
+          ...(this.config?.blank_all_day_event || {}),
+        };
+      }
+    } else {
+      // For regular events, start with root event config
+      baseConfig = { ...(this.config?.event || {}) };
+    }
+
     // Extract variables defined in entities_variables config
     for (const varKey of Object.keys(entitiesVariables)) {
       // Check if event has this property (supports both hyphenated and camelCase)
       const eventObj = event as Record<string, unknown>;
       const eventValue = eventObj[varKey] || eventObj[this.toCamelCase(varKey)];
-      if (eventValue != null) {
+
+      // Also check the base config
+      const baseValue =
+        baseConfig[varKey] || baseConfig[this.toCamelCase(varKey)];
+
+      // Priority: event property > base config
+      const finalValue = eventValue != null ? eventValue : baseValue;
+
+      if (finalValue != null) {
         // Always convert to string
-        variables[varKey] = String(eventValue);
+        variables[varKey] = String(finalValue);
       }
     }
 
@@ -1185,10 +1238,19 @@ export class CalendarWeekGridCard extends LitElement {
 
   private getNormalizedEntities(): EntityConfig[] {
     const rawEntities = this.config?.entities || [];
+    const defaultEventConfig = this.config?.event || {};
+
     return rawEntities
       .map((item) => {
-        if (typeof item === 'string') return { entity: item };
-        return item;
+        // Convert string to entity config
+        const entityConfig = typeof item === 'string' ? { entity: item } : item;
+
+        // Merge default event config with entity config
+        // Entity config takes precedence over defaults
+        return {
+          ...defaultEventConfig,
+          ...entityConfig,
+        };
       })
       .filter((item): item is EntityConfig => !!(item && item.entity));
   }

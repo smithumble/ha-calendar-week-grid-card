@@ -322,19 +322,28 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
-blank_icon: mdi:checkbox-blank-circle-outline
 all_day_icon: ''
 all_day: row
 entities_variables:
+  icon-opacity:
+    name: Icon Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
   opacity:
     name: Opacity
     description: The opacity of the event background (0.1 to 1.0).
+  border-opacity:
+    name: Border Opacity
+    description: The opacity of the event border (0.0 to 1.0).
   border-style:
     name: Border Style
     description: The border style of the event (solid, dashed, dotted, double).
-  border-radius:
-    name: Border Radius
-    description: The border radius of the event in pixels.
+blank_event:
+  icon: mdi:checkbox-blank-circle-outline
+  icon-opacity: 0.3
+  opacity: 0
+  border-opacity: 0.3
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -368,21 +377,13 @@ entities:
     hide:
       - planned_outages
 css: |
-  [data-type="blank"] {
-    &.event-icon {
-      opacity: 0.3;
-    }
-    .event-block {
-      opacity: 0.3;
-    }
-    .event-sub-block {
-      opacity: 0.1;
-    }
-  }
-
   .event-block {
     border-radius: 4px;
-    border: 1px var(--border-style, dotted) var(--primary-text-color);
+    border: 1px var(--border-style, dotted) rgb(from var(--primary-text-color) r g b / var(--border-opacity, 1.0));
+  }
+
+  .event-icon {
+    opacity: var(--icon-opacity, 1.0);
   }
 
   .event-sub-block {
@@ -415,10 +416,12 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
-blank_icon: mdi:checkbox-blank-circle-outline
 all_day_icon: mdi:checkbox-blank-circle
 all_day: row
 entities_variables:
+  icon-opacity:
+    name: Icon Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
   color:
     name: Event Color
     description: The color of the event.
@@ -428,9 +431,16 @@ entities_variables:
   border-style:
     name: Border Style
     description: The border style of the event (solid, dashed, dotted, double).
-  border-radius:
-    name: Border Radius
-    description: The border radius of the event in pixels.
+  border-opacity:
+    name: Border Opacity
+    description: The opacity of the event border (0.0 to 1.0).
+blank_event:
+  icon: mdi:checkbox-blank-circle-outline
+  icon-opacity: 0.3
+  opacity: 0
+  border-opacity: 0.3
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -469,25 +479,14 @@ entities:
     hide:
       - planned_outages
 css: |
-  [data-type="blank"] {
-    &.event-icon {
-      opacity: 0.3;
-    }
-    .event-block {
-      opacity: 0.3;
-    }
-    .event-sub-block {
-      opacity: 0.1;
-    }
-  }
-
   .event-block {
     border-radius: 4px;
-    border: 1px var(--border-style, dotted) var(--color, var(--primary-text-color));
+    border: 1px var(--border-style, dotted) rgb(from var(--color, var(--primary-text-color)) r g b / var(--border-opacity, 1.0));
   }
 
   .event-icon {
     color: var(--color, var(--primary-text-color));
+    opacity: var(--icon-opacity, 1.0);
   }
 
   .event-sub-block {
@@ -520,19 +519,23 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
-blank_icon: mdi:checkbox-blank-circle-outline
-all_day_icon: mdi:checkbox-blank-circle
 all_day: row
 entities_variables:
+  icon-opacity:
+    name: Icon Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
   color:
     name: Event Color
     description: The color of the event.
   opacity:
     name: Opacity
     description: The opacity of the event background (0.1 to 1.0).
-  border-radius:
-    name: Border Radius
-    description: The border radius of the event in pixels.
+blank_event:
+  icon: mdi:checkbox-blank-circle-outline
+  icon-opacity: 0.3
+  opacity: 0
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -566,32 +569,17 @@ entities:
     hide:
       - planned_outages
 css: |
-  [data-type="blank"] {
-    &.event-icon {
-      opacity: 0.3;
-    }
-    .event-block {
-      opacity: 0.3;
-    }
-    .event-sub-block {
-      opacity: 0.1;
-    }
-  }
-
   .event-block {
-    border-radius: var(--border-radius, 4px);
+    border-radius: 4px;
   }
 
   .event-icon {
     color: var(--color, var(--primary-text-color));
+    opacity: var(--icon-opacity, 1.0);
   }
 
   .event-sub-block {
     background-color: rgb(from var(--color, var(--primary-text-color)) r g b / var(--opacity, 0.2));
-  }
-
-  [data-type="blank"] .event-sub-block {
-    background-color: transparent;
   }
 ```
 
@@ -620,22 +608,27 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
-blank_icon: mdi:lightning-bolt
-all_day_icon: mdi:circle-outline
 all_day: row
 entities_variables:
+  icon-opacity:
+    name: Icon Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
   color:
     name: Event Color
     description: The color of the event.
   opacity:
     name: Opacity
     description: The opacity of the event background (0.1 to 1.0).
-  border-radius:
-    name: Border Radius
-    description: The border radius of the event in pixels.
   background:
     name: Background
     description: The background of the event (color or repeating-linear-gradient).
+blank_event:
+  icon: mdi:lightning-bolt
+  icon-opacity: 0.7
+  color: var(--neon-green)
+  opacity: 0.01
+blank_all_day_event:
+  icon: mdi:circle-outline
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -674,36 +667,22 @@ css: |
   ha-card {
     --neon-green: #00E676;
     --neon-green-shadow: rgba(0, 230, 118, 0.3);
-    --neon-green-bg: rgba(0, 230, 118, 0.01);
     --icon-size: 18px;
   }
 
   .cell {
     height: 28px;
-    border-radius: var(--border-radius, 6px);
+    border-radius: 6px;
   }
 
-  [data-type="blank"] {
-    .event-block {
-      background-color: var(--neon-green-bg);
-      border-radius: var(--border-radius, 6px);
-    }
-    &.event-icon {
-      color: var(--neon-green);
-      opacity: 0.7;
-      filter: drop-shadow(0 0 2px var(--neon-green-shadow));
-    }
+  .event-icon {
+    color: var(--color, var(--primary-text-color));
+    opacity: var(--icon-opacity, 1.0);
+    filter: drop-shadow(0 0 2px rgb(from var(--color, var(--primary-text-color)) r g b / 0.3));
   }
 
-  :not([data-type="blank"]) {
-    &.event-icon {
-      color: var(--color, var(--primary-text-color));
-      filter: drop-shadow(0 0 2px rgb(from var(--color, var(--primary-text-color)) r g b / 0.3));
-    }
-
-    &.event-wrapper .event-sub-block {
-      background: var(--background, rgb(from var(--color, var(--primary-text-color)) r g b / var(--opacity, 0.1)));
-    }
+  .event-wrapper .event-sub-block {
+    background: var(--background, rgb(from var(--color, var(--primary-text-color)) r g b / var(--opacity, 0.1)));
   }
 ```
 
@@ -734,7 +713,6 @@ time_format:
   hour12: false
 icons_container: event
 icons_mode: all
-blank_icon: mdi:circle-outline
 all_day: row
 entities_variables:
   color:
@@ -743,6 +721,12 @@ entities_variables:
   background:
     name: Background
     description: The background color of the event.
+blank_event:
+  icon: mdi:circle-outline
+  color: '#E0E0E0'
+  background: '#F5F5F5'
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -805,10 +789,6 @@ css: |
   .event-block {
     background-color: var(--background, #F5F5F5);
   }
-
-  ha-icon[data-type="blank"] {
-    color: #E0E0E0;
-  }
 ```
 
 </details>
@@ -844,10 +824,13 @@ entities_variables:
   opacity:
     name: Opacity
     description: The opacity of the event icon (0.0 to 1.0).
+blank_event:
+  opacity: 0.3
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
     filter: Outage
+    type: highlight
     icon: mdi:flash-off
     color: var(--color-highlight-icon)
     background: var(--color-highlight)
@@ -896,6 +879,10 @@ css: |
     padding: 0 18px;
   }
 
+  .time-label.now {
+    color: var(--primary-text-color);
+  }
+
   .today, .now {
     &.day-header, &.time-label, .event-sub-block {
       background-color: rgb(from var(--color-highlight-light) r g b / 0.4);
@@ -904,12 +891,6 @@ css: |
 
   .event-block, .day-header {
     border-radius: 0px;
-  }
-
-  [data-type="blank"] {
-    &.event-icon {
-      opacity: 0.3;
-    }
   }
 
   .event-icon {
@@ -929,7 +910,7 @@ css: |
   .grid-container > :nth-child(16n+14),
   .grid-container > :nth-child(16n+15),
   .grid-container > :nth-child(16n+16) {
-    .event-wrapper .event-block, &.time-label {
+    .event-wrapper:not([data-type="highlight"]) .event-block, &.time-label {
       filter: contrast(1.05) brightness(0.95); 
     }
   }
@@ -967,6 +948,8 @@ entities_variables:
   color:
     name: Event Color
     description: The color of the event.
+blank_event:
+  color: transparent
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -1172,10 +1155,6 @@ css: |
   .event-sub-block {
     background-color: var(--color, var(--grid-primary-text-color));
   }
-
-  [data-type="blank"] .event-sub-block {
-    background-color: transparent;
-  }
 ```
 
 </details>
@@ -1210,6 +1189,8 @@ entities_variables:
   color:
     name: Event Color
     description: The color of the event.
+blank_event:
+  color: transparent
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -1425,10 +1406,6 @@ css: |
   .event-sub-block:after {
     background-color: var(--color, var(--grid-primary-text-color));
   }
-
-  [data-type="blank"] .event-sub-block:after {
-    background-color: transparent;
-  }
 ```
 
 </details>
@@ -1462,6 +1439,8 @@ entities_variables:
   color:
     name: Event Color
     description: The color of the event.
+blank_event:
+  color: transparent
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -1631,10 +1610,6 @@ css: |
   .event-sub-block {
     background-color: var(--color, var(--grid-primary-text-color));
   }
-
-  [data-type="blank"] .event-sub-block {
-    background-color: transparent;
-  }
 ```
 
 </details>
@@ -1668,6 +1643,8 @@ entities_variables:
   color:
     name: Event Color
     description: The color of the event.
+blank_event:
+  color: transparent
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -1847,10 +1824,6 @@ css: |
 
   .event-sub-block:after {
     background-color: var(--color, var(--grid-primary-text-color));
-  }
-
-  [data-type="blank"] .event-sub-block:after {
-    background-color: transparent;
   }
 ```
 

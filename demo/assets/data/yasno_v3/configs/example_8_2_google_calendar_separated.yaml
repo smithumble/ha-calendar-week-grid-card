@@ -16,6 +16,8 @@ entities_variables:
   color:
     name: Event Color
     description: The color of the event.
+blank_event:
+  color: transparent
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -230,8 +232,4 @@ css: |
 
   .event-sub-block:after {
     background-color: var(--color, var(--grid-primary-text-color));
-  }
-
-  [data-type="blank"] .event-sub-block:after {
-    background-color: transparent;
   }

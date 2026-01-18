@@ -740,8 +740,34 @@ export class CalendarWeekGridCardEditor extends LitElement {
               false,
               'top',
             )}
-            ${this.addIconPickerField('event_icon', 'Event Icon')}
-            ${this.addIconPickerField('blank_icon', 'Blank Icon')}
+
+            <!-- Default Event Config -->
+            <h3>Default Event</h3>
+            <div class="helper-text">
+              Configure default properties for all events (can be overridden by
+              individual entity configs)
+            </div>
+            ${this.addIconPickerField('event.icon', 'Default Event Icon')}
+            ${this._renderEventConfigVariables('event')}
+
+            <!-- Blank Event Config -->
+            <h3>Blank Event</h3>
+            <div class="helper-text">
+              Configure blank event appearance and variables
+            </div>
+            ${this.addIconPickerField('blank_event.icon', 'Blank Event Icon')}
+            ${this._renderEventConfigVariables('blank_event')}
+
+            <!-- Blank All-Day Event Config -->
+            <h3>Blank All-Day Event</h3>
+            <div class="helper-text">
+              Configure blank all-day event appearance and variables
+            </div>
+            ${this.addIconPickerField(
+              'blank_all_day_event.icon',
+              'Blank All-Day Event Icon',
+            )}
+            ${this._renderEventConfigVariables('blank_all_day_event')}
 
             <!-- Filter -->
             <h3>Filter</h3>
@@ -1667,6 +1693,32 @@ export class CalendarWeekGridCardEditor extends LitElement {
         const varDescription = varConfig?.description || '';
         return html`
           ${this.addTextField(`entities.${entityIndex}.${varKey}`, varName)}
+          ${varDescription
+            ? html`<div class="helper-text">${varDescription}</div>`
+            : ''}
+        `;
+      })}
+    `;
+  }
+
+  /**
+   * Renders fields for event variables defined in entities_variables config
+   * Used for event, blank_event, and blank_all_day_event configs
+   */
+  private _renderEventConfigVariables(
+    configPath: 'event' | 'blank_event' | 'blank_all_day_event',
+  ): TemplateResult {
+    const entitiesVariables = this.getConfigValue(
+      'entities_variables',
+      {},
+    ) as Record<string, EntityVariable>;
+
+    return html`
+      ${Object.entries(entitiesVariables).map(([varKey, varConfig]) => {
+        const varName = varConfig?.name || varKey;
+        const varDescription = varConfig?.description || '';
+        return html`
+          ${this.addTextField(`${configPath}.${varKey}`, varName)}
           ${varDescription
             ? html`<div class="helper-text">${varDescription}</div>`
             : ''}

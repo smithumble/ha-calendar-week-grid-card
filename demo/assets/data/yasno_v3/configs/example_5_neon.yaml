@@ -9,22 +9,27 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
-blank_icon: mdi:lightning-bolt
-all_day_icon: mdi:circle-outline
 all_day: row
 entities_variables:
+  icon-opacity:
+    name: Icon Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
   color:
     name: Event Color
     description: The color of the event.
   opacity:
     name: Opacity
     description: The opacity of the event background (0.1 to 1.0).
-  border-radius:
-    name: Border Radius
-    description: The border radius of the event in pixels.
   background:
     name: Background
     description: The background of the event (color or repeating-linear-gradient).
+blank_event:
+  icon: mdi:lightning-bolt
+  icon-opacity: 0.7
+  color: var(--neon-green)
+  opacity: 0.01
+blank_all_day_event:
+  icon: mdi:circle-outline
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -63,34 +68,20 @@ css: |
   ha-card {
     --neon-green: #00E676;
     --neon-green-shadow: rgba(0, 230, 118, 0.3);
-    --neon-green-bg: rgba(0, 230, 118, 0.01);
     --icon-size: 18px;
   }
 
   .cell {
     height: 28px;
-    border-radius: var(--border-radius, 6px);
+    border-radius: 6px;
   }
 
-  [data-type="blank"] {
-    .event-block {
-      background-color: var(--neon-green-bg);
-      border-radius: var(--border-radius, 6px);
-    }
-    &.event-icon {
-      color: var(--neon-green);
-      opacity: 0.7;
-      filter: drop-shadow(0 0 2px var(--neon-green-shadow));
-    }
+  .event-icon {
+    color: var(--color, var(--primary-text-color));
+    opacity: var(--icon-opacity, 1.0);
+    filter: drop-shadow(0 0 2px rgb(from var(--color, var(--primary-text-color)) r g b / 0.3));
   }
 
-  :not([data-type="blank"]) {
-    &.event-icon {
-      color: var(--color, var(--primary-text-color));
-      filter: drop-shadow(0 0 2px rgb(from var(--color, var(--primary-text-color)) r g b / 0.3));
-    }
-
-    &.event-wrapper .event-sub-block {
-      background: var(--background, rgb(from var(--color, var(--primary-text-color)) r g b / var(--opacity, 0.1)));
-    }
+  .event-wrapper .event-sub-block {
+    background: var(--background, rgb(from var(--color, var(--primary-text-color)) r g b / var(--opacity, 0.1)));
   }

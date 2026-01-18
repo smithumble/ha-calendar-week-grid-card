@@ -46,6 +46,11 @@ export interface EntityVariable {
   description?: string;
 }
 
+export interface DefaultEventConfig {
+  icon?: string;
+  [key: string]: unknown;
+}
+
 export interface CardConfig {
   type: string;
   language?: string;
@@ -63,6 +68,9 @@ export interface CardConfig {
   icons_mode?: 'top' | 'all';
   event_icon?: string;
   blank_icon?: string;
+  event?: DefaultEventConfig;
+  blank_event?: DefaultEventConfig;
+  blank_all_day_event?: DefaultEventConfig;
   week_start?:
     | 'today'
     | 'sunday'

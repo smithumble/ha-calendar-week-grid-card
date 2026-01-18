@@ -9,10 +9,12 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
-blank_icon: mdi:checkbox-blank-circle-outline
 all_day_icon: mdi:checkbox-blank-circle
 all_day: row
 entities_variables:
+  icon-opacity:
+    name: Icon Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
   color:
     name: Event Color
     description: The color of the event.
@@ -22,9 +24,16 @@ entities_variables:
   border-style:
     name: Border Style
     description: The border style of the event (solid, dashed, dotted, double).
-  border-radius:
-    name: Border Radius
-    description: The border radius of the event in pixels.
+  border-opacity:
+    name: Border Opacity
+    description: The opacity of the event border (0.0 to 1.0).
+blank_event:
+  icon: mdi:checkbox-blank-circle-outline
+  icon-opacity: 0.3
+  opacity: 0
+  border-opacity: 0.3
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -63,25 +72,14 @@ entities:
     hide:
       - planned_outages
 css: |
-  [data-type="blank"] {
-    &.event-icon {
-      opacity: 0.3;
-    }
-    .event-block {
-      opacity: 0.3;
-    }
-    .event-sub-block {
-      opacity: 0.1;
-    }
-  }
-
   .event-block {
     border-radius: 4px;
-    border: 1px var(--border-style, dotted) var(--color, var(--primary-text-color));
+    border: 1px var(--border-style, dotted) rgb(from var(--color, var(--primary-text-color)) r g b / var(--border-opacity, 1.0));
   }
 
   .event-icon {
     color: var(--color, var(--primary-text-color));
+    opacity: var(--icon-opacity, 1.0);
   }
 
   .event-sub-block {

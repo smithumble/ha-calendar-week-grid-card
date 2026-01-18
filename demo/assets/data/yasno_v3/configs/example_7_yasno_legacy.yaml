@@ -17,10 +17,13 @@ entities_variables:
   opacity:
     name: Opacity
     description: The opacity of the event icon (0.0 to 1.0).
+blank_event:
+  opacity: 0.3
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
     filter: Outage
+    type: highlight
     icon: mdi:flash-off
     color: var(--color-highlight-icon)
     background: var(--color-highlight)
@@ -69,6 +72,10 @@ css: |
     padding: 0 18px;
   }
 
+  .time-label.now {
+    color: var(--primary-text-color);
+  }
+
   .today, .now {
     &.day-header, &.time-label, .event-sub-block {
       background-color: rgb(from var(--color-highlight-light) r g b / 0.4);
@@ -77,12 +84,6 @@ css: |
 
   .event-block, .day-header {
     border-radius: 0px;
-  }
-
-  [data-type="blank"] {
-    &.event-icon {
-      opacity: 0.3;
-    }
   }
 
   .event-icon {
@@ -102,7 +103,7 @@ css: |
   .grid-container > :nth-child(16n+14),
   .grid-container > :nth-child(16n+15),
   .grid-container > :nth-child(16n+16) {
-    .event-wrapper .event-block, &.time-label {
+    .event-wrapper:not([data-type="highlight"]) .event-block, &.time-label {
       filter: contrast(1.05) brightness(0.95); 
     }
   }
