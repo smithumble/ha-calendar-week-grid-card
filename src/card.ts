@@ -16,7 +16,7 @@ import {
 } from './deprecated';
 import { CalendarWeekGridCardEditor } from './editor/editor';
 import styles from './styles.css';
-import GoogleCalendarSeparated from './themes/google_calendar_separated.css';
+import googleCalendarSeparatedYamlConfig from './configs/google_calendar_separated.yaml';
 import type {
   CardConfig,
   CalendarEvent,
@@ -64,52 +64,48 @@ export class CalendarWeekGridCard extends LitElement {
    * Generate a stub configuration for the card editor
    */
   static getStubConfig(hass: HomeAssistant): CardConfig {
-    const states = hass.states;
-
-    // Find a calendar entity
-    const calendarEntities = Object.keys(states).filter((key) =>
-      key.startsWith('calendar.'),
+    const stubConfig = googleCalendarSeparatedYamlConfig;
+    const calendarEntities = this.findCalendarEntities(hass);
+    const configEntities = this.mapEntitiesToConfig(
+      calendarEntities,
+      stubConfig.event_examples,
     );
 
-    // Event examples for color cycling
-    const eventExamples = [
-      { color: 'var(--error-color)' },
-      { color: 'var(--primary-color)' },
-      { color: 'var(--success-color)' },
-      { color: 'var(--warning-color)' },
-      { color: 'var(--info-color)' },
-    ];
-
-    // Generate a list of entities for the card editor
-    // Cycle through event examples by index
-    const configEntities = calendarEntities.map((entity, index) => ({
-      entity: entity,
-      ...eventExamples[index % eventExamples.length],
-    }));
-
-    // Generate a stub configuration for the card editor
     return {
       type: 'custom:calendar-week-grid-card',
       entities: configEntities,
-      event_examples: eventExamples,
-      primary_date_format: {
-        weekday: 'short',
-      },
-      secondary_date_format: {
-        day: 'numeric',
-      },
-      time_format: {
-        hour: 'numeric',
-        hour12: true,
-      },
-      time_range: true,
-      icons_mode: 'all',
-      icons_container: 'event',
-      all_day: 'row',
-      days: 7,
-      week_start: 'sunday',
-      css: GoogleCalendarSeparated.cssText,
+      ...stubConfig,
     };
+  }
+
+  /**
+   * Find all calendar entities in Home Assistant
+   */
+  private static findCalendarEntities(hass: HomeAssistant): string[] {
+    return Object.keys(hass.states).filter((key) =>
+      key.startsWith('calendar.'),
+    );
+  }
+
+  /**
+   * Map calendar entities to configuration with cycling event examples
+   */
+  private static mapEntitiesToConfig(
+    entities: string[],
+    eventExamples?: unknown[],
+  ): EntityConfig[] {
+    const examples = eventExamples || [];
+    if (examples.length === 0) {
+      return entities.map((entity) => ({ entity }));
+    }
+
+    return entities.map((entity, index) => {
+      const example = examples[index % examples.length];
+      return {
+        entity,
+        ...(typeof example === 'object' && example !== null ? example : {}),
+      };
+    });
   }
 
   public setConfig(config: CardConfig): void {

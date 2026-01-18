@@ -321,9 +321,11 @@ export class CalendarWeekGridCardEditor extends LitElement {
           ? Object.keys(currentEventVariables)
           : [];
 
-        // Apply all config from YAML file (including CSS)
+        // Apply all config from YAML file (including CSS) except entities
         Object.entries(selectedTheme.config).forEach(([key, value]) => {
-          this.setConfigValue(key, value);
+          if (key !== 'entities') {
+            this.setConfigValue(key, value);
+          }
         });
 
         // Remove previous vars from entities that are not in the new theme
@@ -331,6 +333,9 @@ export class CalendarWeekGridCardEditor extends LitElement {
           selectedTheme.config,
           currentVariableKeys,
         );
+
+        // Apply event_examples properties to existing entities
+        this._applyEventExamplesToEntities();
       }
       // Don't save theme_selection to config, it's UI-only
       return;
@@ -1616,6 +1621,45 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
     // If no theme matches, it's custom
     this._selectedTheme = 'custom';
+  }
+
+  /**
+   * Apply properties from event_examples to existing entities (cycling by index)
+   */
+  private _applyEventExamplesToEntities(): void {
+    if (!this._config) {
+      return;
+    }
+
+    const entities = this._config.entities || [];
+    if (entities.length === 0) {
+      return;
+    }
+
+    // Get event_examples from config
+    const eventExamples = this.getConfigValue('event_examples', []) as Array<
+      Record<string, unknown>
+    >;
+
+    if (eventExamples.length === 0) {
+      return;
+    }
+
+    // Apply event_examples properties to each entity, cycling by index
+    const updatedEntities = entities.map((entity, index) => {
+      const example = eventExamples[index % eventExamples.length];
+
+      // Handle string entities
+      if (typeof entity === 'string') {
+        return { entity, ...example };
+      }
+
+      // Handle object entities - merge with example properties
+      return { ...entity, ...example };
+    });
+
+    // Update the config with updated entities
+    this.setConfigValue('entities', updatedEntities);
   }
 
   /**
