@@ -24,6 +24,17 @@ event_variables:
   border-style:
     name: Border Style
     description: The border style of the event (solid, dashed, dotted, double).
+event_examples:
+  - opacity: 0.3
+    border-style: solid
+  - opacity: 0.1
+    border-style: dashed
+  - opacity: 0.2
+    border-style: double
+  - opacity: 0.1
+    border-style: dotted
+  - opacity: 0.1
+    border-style: dotted
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
   icon-opacity: 0.3

@@ -27,6 +27,22 @@ event_variables:
   border-opacity:
     name: Border Opacity
     description: The opacity of the event border (0.0 to 1.0).
+event_examples:
+  - color: var(--error-color)
+    opacity: 0.1
+    border-style: solid
+  - color: var(--warning-color)
+    opacity: 0.1
+    border-style: dashed
+  - color: var(--error-color)
+    opacity: 0.2
+    border-style: double
+  - color: var(--success-color)
+    opacity: 0.1
+    border-style: dotted
+  - color: var(--info-color)
+    opacity: 0.1
+    border-style: dotted
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
   icon-opacity: 0.3

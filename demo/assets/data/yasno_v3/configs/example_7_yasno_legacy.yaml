@@ -17,6 +17,10 @@ event_variables:
   opacity:
     name: Opacity
     description: The opacity of the event icon (0.0 to 1.0).
+event_examples:
+  - color: var(--color-highlight-icon)
+    background: var(--color-highlight)
+  - color: var(--color-highlight-light-icon)
 blank_event:
   opacity: 0.3
 entities:

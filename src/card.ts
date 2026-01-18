@@ -71,49 +71,27 @@ export class CalendarWeekGridCard extends LitElement {
       key.startsWith('calendar.'),
     );
 
-    // Generate a random color in hex format that works with both light and dark text
-    // Uses medium brightness to ensure good contrast with both text colors
-    const generateRandomColor = (): string => {
-      // Generate RGB values in a range that ensures medium brightness
-      // Range 80-180 for each component gives us colors that work with both light and dark text
-      const r = Math.floor(Math.random() * 100) + 80;
-      const g = Math.floor(Math.random() * 100) + 80;
-      const b = Math.floor(Math.random() * 100) + 80;
-
-      // Convert to hex
-      const toHex = (n: number) => n.toString(16).padStart(2, '0');
-      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-    };
-
-    // Predefined color values (CSS variables)
-    const predefinedColors = [
-      'var(--primary-color)',
-      'var(--success-color)',
-      'var(--error-color)',
-      'var(--warning-color)',
-      'var(--info-color)',
+    // Event examples for color cycling
+    const eventExamples = [
+      { color: 'var(--error-color)' },
+      { color: 'var(--primary-color)' },
+      { color: 'var(--success-color)' },
+      { color: 'var(--warning-color)' },
+      { color: 'var(--info-color)' },
     ];
 
-    // Generate a list of entities for the card editor with colors
-    const configEntities = calendarEntities.map((entity, index) => {
-      const entityConfig: { entity: string; color?: string } = {
-        entity: entity,
-      };
-
-      // Use predefined colors first, then generate random colors
-      if (index < predefinedColors.length) {
-        entityConfig.color = predefinedColors[index];
-      } else {
-        entityConfig.color = generateRandomColor();
-      }
-
-      return entityConfig;
-    });
+    // Generate a list of entities for the card editor
+    // Cycle through event examples by index
+    const configEntities = calendarEntities.map((entity, index) => ({
+      entity: entity,
+      ...eventExamples[index % eventExamples.length],
+    }));
 
     // Generate a stub configuration for the card editor
     return {
       type: 'custom:calendar-week-grid-card',
       entities: configEntities,
+      event_examples: eventExamples,
       primary_date_format: {
         weekday: 'short',
       },

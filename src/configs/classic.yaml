@@ -18,6 +18,17 @@ event_variables:
   opacity:
     name: Opacity
     description: The opacity of the event background (0.1 to 1.0).
+event_examples:
+  - color: var(--primary-color)
+    opacity: 0.2
+  - color: var(--success-color)
+    opacity: 0.2
+  - color: var(--warning-color)
+    opacity: 0.2
+  - color: var(--info-color)
+    opacity: 0.2
+  - color: var(--error-color)
+    opacity: 0.2
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
   icon-opacity: 0.3

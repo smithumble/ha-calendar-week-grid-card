@@ -16,6 +16,12 @@ event_variables:
   color:
     name: Event Color
     description: The color of the event.
+event_examples:
+  - color: var(--primary-color)
+  - color: var(--success-color)
+  - color: var(--warning-color)
+  - color: var(--info-color)
+  - color: var(--error-color)
 blank_event:
   color: transparent
 entities:

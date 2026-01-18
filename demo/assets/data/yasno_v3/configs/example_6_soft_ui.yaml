@@ -19,6 +19,17 @@ event_variables:
   background:
     name: Background
     description: The background color of the event.
+event_examples:
+  - color: '#1B5E20'
+    background: '#B9F6CA'
+  - color: '#FFFFFF'
+    background: '#FF80AB'
+  - color: '#F57F17'
+    background: '#FFF176'
+  - color: '#006064'
+    background: '#80DEEA'
+  - color: '#FFFFFF'
+    background: '#FF8A80'
 blank_event:
   icon: mdi:circle-outline
   color: '#E0E0E0'

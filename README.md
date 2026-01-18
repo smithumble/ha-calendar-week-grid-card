@@ -337,6 +337,17 @@ event_variables:
   border-style:
     name: Border Style
     description: The border style of the event (solid, dashed, dotted, double).
+event_examples:
+  - opacity: 0.3
+    border-style: solid
+  - opacity: 0.1
+    border-style: dashed
+  - opacity: 0.2
+    border-style: double
+  - opacity: 0.1
+    border-style: dotted
+  - opacity: 0.1
+    border-style: dotted
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
   icon-opacity: 0.3
@@ -434,6 +445,22 @@ event_variables:
   border-opacity:
     name: Border Opacity
     description: The opacity of the event border (0.0 to 1.0).
+event_examples:
+  - color: var(--error-color)
+    opacity: 0.1
+    border-style: solid
+  - color: var(--warning-color)
+    opacity: 0.1
+    border-style: dashed
+  - color: var(--error-color)
+    opacity: 0.2
+    border-style: double
+  - color: var(--success-color)
+    opacity: 0.1
+    border-style: dotted
+  - color: var(--info-color)
+    opacity: 0.1
+    border-style: dotted
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
   icon-opacity: 0.3
@@ -530,6 +557,17 @@ event_variables:
   opacity:
     name: Opacity
     description: The opacity of the event background (0.1 to 1.0).
+event_examples:
+  - color: var(--primary-color)
+    opacity: 0.2
+  - color: var(--success-color)
+    opacity: 0.2
+  - color: var(--warning-color)
+    opacity: 0.2
+  - color: var(--info-color)
+    opacity: 0.2
+  - color: var(--error-color)
+    opacity: 0.2
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
   icon-opacity: 0.3
@@ -622,6 +660,15 @@ event_variables:
   background:
     name: Background
     description: The background of the event (color or repeating-linear-gradient).
+event_examples:
+  - color: '#FF5252'
+    background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
+  - color: '#FF9800'
+    background: 'repeating-linear-gradient(45deg, rgb(from #FF9800 r g b / 0.08), rgb(from #FF9800 r g b / 0.08) 10px, rgb(from #FF9800 r g b / 0.15) 10px, rgb(from #FF9800 r g b / 0.15) 20px)'
+  - color: '#FF8A80'
+    background: 'repeating-linear-gradient(45deg, rgb(from #FF8A80 r g b / 0.08), rgb(from #FF8A80 r g b / 0.08) 10px, rgb(from #FF8A80 r g b / 0.15) 10px, rgb(from #FF8A80 r g b / 0.15) 20px)'
+  - color: '#29B6F6'
+    background: 'repeating-linear-gradient(45deg, rgb(from #29B6F6 r g b / 0.08), rgb(from #29B6F6 r g b / 0.08) 10px, rgb(from #29B6F6 r g b / 0.15) 10px, rgb(from #29B6F6 r g b / 0.15) 20px)'
 blank_event:
   icon: mdi:lightning-bolt
   icon-opacity: 0.7
@@ -721,6 +768,17 @@ event_variables:
   background:
     name: Background
     description: The background color of the event.
+event_examples:
+  - color: '#1B5E20'
+    background: '#B9F6CA'
+  - color: '#FFFFFF'
+    background: '#FF80AB'
+  - color: '#F57F17'
+    background: '#FFF176'
+  - color: '#006064'
+    background: '#80DEEA'
+  - color: '#FFFFFF'
+    background: '#FF8A80'
 blank_event:
   icon: mdi:circle-outline
   color: '#E0E0E0'
@@ -824,6 +882,10 @@ event_variables:
   opacity:
     name: Opacity
     description: The opacity of the event icon (0.0 to 1.0).
+event_examples:
+  - color: var(--color-highlight-icon)
+    background: var(--color-highlight)
+  - color: var(--color-highlight-light-icon)
 blank_event:
   opacity: 0.3
 entities:
@@ -948,6 +1010,12 @@ event_variables:
   color:
     name: Event Color
     description: The color of the event.
+event_examples:
+  - color: var(--primary-color)
+  - color: var(--success-color)
+  - color: var(--warning-color)
+  - color: var(--info-color)
+  - color: var(--error-color)
 blank_event:
   color: transparent
 entities:
@@ -1189,6 +1257,12 @@ event_variables:
   color:
     name: Event Color
     description: The color of the event.
+event_examples:
+  - color: var(--primary-color)
+  - color: var(--success-color)
+  - color: var(--warning-color)
+  - color: var(--info-color)
+  - color: var(--error-color)
 blank_event:
   color: transparent
 entities:
@@ -1439,6 +1513,12 @@ event_variables:
   color:
     name: Event Color
     description: The color of the event.
+event_examples:
+  - color: '#4285F4'
+  - color: '#D40101'
+  - color: '#34B779'
+  - color: '#F6BE28'
+  - color: '#F3511E'
 blank_event:
   color: transparent
 entities:
@@ -1643,6 +1723,12 @@ event_variables:
   color:
     name: Event Color
     description: The color of the event.
+event_examples:
+  - color: '#4285F4'
+  - color: '#D40101'
+  - color: '#34B779'
+  - color: '#F6BE28'
+  - color: '#F3511E'
 blank_event:
   color: transparent
 entities:

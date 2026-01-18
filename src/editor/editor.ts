@@ -1477,8 +1477,20 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
   _addCalendarEntity(): void {
     const entities = [...(this._config?.entities || [])];
-    entities.push('');
-    const newIndex = entities.length - 1;
+    const newIndex = entities.length;
+
+    // Get event_examples from config and cycle through them by index
+    const eventExamples = this.getConfigValue('event_examples', []) as Array<
+      Record<string, unknown>
+    >;
+
+    // Create new entity with properties from event_examples (cycling by index)
+    const newEntity =
+      eventExamples.length > 0
+        ? { entity: '', ...eventExamples[newIndex % eventExamples.length] }
+        : '';
+
+    entities.push(newEntity);
     this.setConfigValue('entities', entities);
     // Auto-expand the newly added entity
     this._expandedEntityIndex = newIndex;
@@ -1649,22 +1661,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   /**
-   * Checks if the current CSS contains the --event-color variable
-   * or if event_variables defines event-color
-   */
-  private _hasEventColorVariable(): boolean {
-    const currentCss = (this.getConfigValue('css', '') as string) || '';
-    if (currentCss.includes('--event-color')) {
-      return true;
-    }
-    const eventVariables = this.getConfigValue('event_variables', {}) as Record<
-      string,
-      EventVariable
-    >;
-    return 'event-color' in eventVariables;
-  }
-
-  /**
    * Renders fields for entity variables defined in event_variables config
    */
   private _renderEventVariables(entityIndex: number): TemplateResult {
@@ -1672,20 +1668,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
       string,
       EventVariable
     >;
-
-    if (!eventVariables || Object.keys(eventVariables).length === 0) {
-      // Backward compatibility: show color field if CSS uses --event-color
-      if (this._hasEventColorVariable()) {
-        return html`
-          ${this.addTextField(`entities.${entityIndex}.color`, 'Color')}
-          <div class="helper-text">
-            Color for events from this entity (CSS color value, e.g., #ff0000 or
-            red)
-          </div>
-        `;
-      }
-      return html``;
-    }
 
     return html`
       ${Object.entries(eventVariables).map(([varKey, varConfig]) => {

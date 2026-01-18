@@ -71,6 +71,7 @@ export interface CardConfig {
   event?: DefaultEventConfig;
   blank_event?: DefaultEventConfig;
   blank_all_day_event?: DefaultEventConfig;
+  event_examples?: DefaultEventConfig[];
   week_start?:
     | 'today'
     | 'sunday'
