@@ -12,7 +12,10 @@ time_range: true
 icons_mode: all
 icons_container: event
 all_day: row
-all_day_label: STATUS
+entities_variables:
+  color:
+    name: Event Color
+    description: The color of the event.
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -49,11 +52,6 @@ css: |
     --grid-event-text-color: var(--card-background-color, #fff);
     --grid-accent-color: var(--primary-color, #0b57d0);
     --grid-accent-text-color: var(--card-background-color, #fff);
-    --planned-outages-color: var(--error-color, #F3511E);
-    --probable-outages-color: var(--primary-color, #4285F4);
-    --emergency-shutdowns-color: var(--error-color, #D40101);
-    --schedule-applies-color: var(--success-color, #34B779);
-    --waiting-for-schedule-color: var(--warning-color, #F6BE28);
   }
 
   ha-card.theme-dark {
@@ -64,11 +62,6 @@ css: |
     --grid-event-text-color: var(--card-background-color, #131314);
     --grid-accent-color: var(--primary-color, #a8c7fa);
     --grid-accent-text-color: var(--card-background-color, #062e6f);
-    --planned-outages-color: var(--error-color, #E3683E);
-    --probable-outages-color: var(--primary-color, #678AE1);
-    --emergency-shutdowns-color: var(--error-color, #D95234);
-    --schedule-applies-color: var(--success-color, #56B080);
-    --waiting-for-schedule-color: var(--warning-color, #E6BA50);
   }
 
   ha-card {
@@ -236,7 +229,7 @@ css: |
   /* Default Event Styles */
 
   .event-sub-block:after {
-    background-color: var(--event-color, var(--grid-primary-text-color));
+    background-color: var(--color, var(--grid-primary-text-color));
   }
 
   [data-type="blank"] .event-sub-block:after {

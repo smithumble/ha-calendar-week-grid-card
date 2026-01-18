@@ -12,7 +12,10 @@ time_range: true
 icons_mode: all
 icons_container: event
 all_day: row
-all_day_label: STATUS
+entities_variables:
+  color:
+    name: Event Color
+    description: The color of the event.
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -216,7 +219,7 @@ css: |
   /* Default Event Styles */
 
   .event-sub-block {
-    background-color: var(--event-color, var(--grid-primary-text-color));
+    background-color: var(--color, var(--grid-primary-text-color));
   }
 
   [data-type="blank"] .event-sub-block {

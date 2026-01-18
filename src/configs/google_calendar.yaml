@@ -1,5 +1,3 @@
-type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
   weekday: 'short'
 secondary_date_format:
@@ -8,6 +6,7 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
+time_range: true
 icons_mode: all
 icons_container: event
 all_day: row
@@ -15,58 +14,29 @@ entities_variables:
   color:
     name: Event Color
     description: The color of the event.
-entities:
-  - name: planned_outages
-    entity: calendar.planned_outages
-    filter: Outage
-    icon: mdi:flash-off
-    color: '#F3511E'
-  - name: probable_outages
-    entity: calendar.probable_outages
-    icon: mdi:flash-off
-    color: '#4285F4'
-  - name: emergency_shutdowns
-    entity: calendar.planned_outages
-    filter: Emergency Shutdowns
-    icon: mdi:transmission-tower-off
-    color: '#D40101'
-  - name: schedule_applies
-    entity: calendar.planned_outages
-    filter: Schedule Applies
-    icon: mdi:flash-off
-    color: '#34B779'
-  - name: waiting_for_schedule
-    entity: calendar.planned_outages
-    filter: Waiting for Schedule
-    icon: mdi:timer-sand
-    color: '#F6BE28'
-    hide:
-      - planned_outages
 css: |
   ha-card { 
-    --grid-bg: #FFF;
-    --grid-border-color: #dde3ea;
-    --grid-primary-text-color: #1f1f1f;
-    --grid-secondary-text-color: #444746;
-    --grid-event-text-color: #fff;
-    --grid-accent-color: #0b57d0;
-    --grid-accent-text-color: #fff;
+    --grid-bg: var(--card-background-color, #FFF);
+    --grid-border-color: var(--divider-color, #dde3ea);
+    --grid-primary-text-color: var(--primary-text-color, #1f1f1f);
+    --grid-secondary-text-color: var(--secondary-text-color, #444746);
+    --grid-event-text-color: var(--card-background-color, #fff);
+    --grid-accent-color: var(--primary-color, #0b57d0);
+    --grid-accent-text-color: var(--card-background-color, #fff);
   }
 
   ha-card.theme-dark {
-    --grid-bg: #202124;
-    --grid-border-color: #3c4043;
-    --grid-primary-text-color: #e3e3e3;
-    --grid-secondary-text-color: #c4c7c5;
-    --grid-event-text-color: #131314;
-    --grid-accent-color: #a8c7fa;
-    --grid-accent-text-color: #062e6f;
+    --grid-bg: var(--card-background-color, #202124);
+    --grid-border-color: var(--divider-color, #3c4043);
+    --grid-primary-text-color: var(--primary-text-color, #e3e3e3);
+    --grid-secondary-text-color: var(--secondary-text-color, #c4c7c5);
+    --grid-event-text-color: var(--card-background-color, #131314);
+    --grid-accent-color: var(--primary-color, #a8c7fa);
+    --grid-accent-text-color: var(--card-background-color, #062e6f);
   }
 
   ha-card {
     background-color: var(--grid-bg);
-    box-shadow: none !important;
-    border: none !important;
     font-family: 'Google Sans', Roboto, Arial, sans-serif;
   }
 
@@ -146,12 +116,50 @@ css: |
     background-color: var(--grid-accent-color);
   }
 
+  .time-label-wrapper {
+    position: relative;
+  }
+
   .time-label {
-    top: -14px;
+    display: block;
+    position: relative;
     font-size: 10px;
     line-height: 10px;
     color: var(--grid-secondary-text-color);
-    padding-right: 20px;
+    padding-right: 0;
+    margin-right: 20px;
+    text-align: right;
+  }
+
+  .time-label-all-day {
+    font-size: 8px;
+  }
+
+  .time-label-hour-separator {
+    display: none;
+  }
+
+  .time-label-hour-start,
+  .time-label-all-day,
+  .time-label-hour-end {
+    display: block;
+  }
+
+  .time-label-hour:not(.time-label-hour-end), 
+  .time-label-all-day {
+    position: relative;
+    top: -5px;
+    right: 0;
+  }
+
+  .time-label-hour-end {
+    position: absolute;
+    right: 0;
+    bottom: -5px;
+  }
+
+  .time-label-wrapper:has(~ .time-label-wrapper) .time-label-hour-end {
+    visibility: hidden;
   }
 
   .event-block {
@@ -168,11 +176,11 @@ css: |
   /* Current Time Line */
 
   .current-time-line {
-    background-color: #ea4335;
+    background-color: var(--warning-color);
     height: 2px;
   }
   .current-time-circle {
-    background-color: #ea4335;
+    background-color: var(--warning-color);
     width: 8px;
     height: 8px;
     left: -4px;

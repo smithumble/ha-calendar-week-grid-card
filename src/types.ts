@@ -23,6 +23,7 @@ export interface EntityConfig {
   under?: (string | EventCriteria)[];
   over?: (string | EventCriteria)[];
   hide?: (string | EventCriteria)[];
+  [key: string]: unknown;
 }
 
 // Legacy layout options (deprecated, use grid_options instead)
@@ -35,6 +36,11 @@ export interface LayoutOptions {
 export interface GridOptions {
   rows?: number | 'auto';
   columns?: number | 'auto';
+}
+
+export interface EntityVariable {
+  name?: string;
+  description?: string;
 }
 
 export interface CardConfig {
@@ -66,6 +72,7 @@ export interface CardConfig {
   days?: number;
   theme?: 'dark' | 'light' | 'auto';
   entities?: (string | EntityConfig)[];
+  entities_variables?: Record<string, EntityVariable>;
   css?: string;
   grid_options?: GridOptions;
   layout_options?: LayoutOptions;

@@ -451,10 +451,11 @@ export class CalendarWeekGridCard extends LitElement {
     eventClassesList.push(event.isAllDay ? 'all-day' : '');
     const eventClasses = eventClassesList.filter(Boolean).join(' ');
 
-    // Build style with color CSS variable if color is set
+    // Build style with CSS variables from entities_variables config
     let eventWrapperStyle = wrapperStyle;
-    if (event.color) {
-      eventWrapperStyle += ` --event-color: ${event.color};`;
+    const variables = this.getEventVariables(event);
+    for (const [varName, varValue] of Object.entries(variables)) {
+      eventWrapperStyle += ` --${varName}: ${varValue};`;
     }
 
     return html`<div
@@ -538,9 +539,11 @@ export class CalendarWeekGridCard extends LitElement {
     eventClassesList.push(isAllDay ? 'all-day' : '');
     const eventClasses = eventClassesList.filter(Boolean).join(' ');
 
+    // Build style with CSS variables from entities_variables config
     let iconStyle = '';
-    if (event.color) {
-      iconStyle = `--event-color: ${event.color};`;
+    const variables = this.getEventVariables(event);
+    for (const [varName, varValue] of Object.entries(variables)) {
+      iconStyle += ` --${varName}: ${varValue};`;
     }
 
     return html`<ha-icon
@@ -847,6 +850,49 @@ export class CalendarWeekGridCard extends LitElement {
       return events.filter((event) => !event.isAllDay);
     }
     return events;
+  }
+
+  /**
+   * Extracts CSS variable values from event based on entities_variables config
+   * Converts hyphenated property names (e.g., "event-color") to CSS variable names (e.g., "event-color")
+   * Also handles legacy "color" property for backward compatibility
+   */
+  private getEventVariables(event: Event): Record<string, string> {
+    const variables: Record<string, string> = {};
+    const entitiesVariables = this.config?.entities_variables;
+
+    if (!entitiesVariables) {
+      // Backward compatibility: handle legacy "color" property
+      if (event.color) {
+        variables['event-color'] = event.color;
+      }
+      return variables;
+    }
+
+    // Extract variables defined in entities_variables config
+    for (const varKey of Object.keys(entitiesVariables)) {
+      // Check if event has this property (supports both hyphenated and camelCase)
+      const eventObj = event as Record<string, unknown>;
+      const eventValue = eventObj[varKey] || eventObj[this.toCamelCase(varKey)];
+      if (eventValue && typeof eventValue === 'string') {
+        variables[varKey] = eventValue as string;
+      }
+    }
+
+    // Backward compatibility: handle legacy "color" property if not already set
+    if (event.color && !variables['event-color']) {
+      variables['event-color'] = event.color;
+    }
+
+    return variables;
+  }
+
+  /**
+   * Converts hyphenated string to camelCase
+   * e.g., "event-color" -> "eventColor"
+   */
+  private toCamelCase(str: string): string {
+    return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
   }
 
   private matchesCriteria(event: Event, criteria: EventCriteria): boolean {

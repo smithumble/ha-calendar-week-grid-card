@@ -7,14 +7,27 @@ time_range: true
 icons_container: event
 icons_mode: all
 all_day: row
+entities_variables:
+  color:
+    name: Event Color
+    description: The color of the event icon.
+  background:
+    name: Background
+    description: The background color of the event.
+  opacity:
+    name: Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
+    color: var(--color-highlight-icon)
+    background: var(--color-highlight)
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
+    color: var(--color-highlight-light-icon)
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -23,6 +36,8 @@ entities:
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    color: var(--color-highlight-light-icon)
+    opacity: 0.5
     hide:
       - planned_outages
 css: |
@@ -70,34 +85,13 @@ css: |
     }
   }
 
-  [data-name="planned_outages"] {
-    .event-block {
-      background-color: var(--color-highlight);
-    }
-
-    &.event-icon {
-      color: var(--color-highlight-icon);
-    }
+  .event-icon {
+    color: var(--color, var(--primary-text-color));
+    opacity: var(--opacity, 1.0);
   }
 
-  [data-name="waiting_for_schedule"] {
-    &.event-icon {
-      color: var(--color-highlight-light-icon);
-      opacity: 0.5;
-    }
-  }
-
-  [data-name="schedule_applies"] {
-    &.event-icon {
-      opacity: 0.4;
-      color: var(--color-highlight-icon);
-    }
-  }
-
-  [data-name="probable_outages"] {
-    &.event-icon {
-      color: var(--color-highlight-light-icon);
-    }
+  .event-block {
+    background-color: var(--background, var(--card-background-color));
   }
 
   .grid-container > :nth-child(16n+9),
@@ -108,7 +102,7 @@ css: |
   .grid-container > :nth-child(16n+14),
   .grid-container > :nth-child(16n+15),
   .grid-container > :nth-child(16n+16) {
-    .event-wrapper:not([data-name="planned_outages"]) .event-block, &.time-label {
+    .event-wrapper .event-block, &.time-label {
       filter: contrast(1.05) brightness(0.95); 
     }
   }

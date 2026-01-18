@@ -13,26 +13,43 @@ icons_container: event
 icons_mode: all
 blank_icon: mdi:circle-outline
 all_day: row
+entities_variables:
+  color:
+    name: Event Color
+    description: The color of the event icon.
+  background:
+    name: Background
+    description: The background color of the event.
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:close-circle
+    color: '#FFFFFF'
+    background: '#FF8A80'
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:close-circle
+    color: '#1B5E20'
+    background: '#B9F6CA'
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:alert-circle
+    color: '#FFFFFF'
+    background: '#FF80AB'
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:circle-outline
+    color: '#F57F17'
+    background: '#FFF176'
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:clock-outline
+    color: '#006064'
+    background: '#80DEEA'
     hide:
       - planned_outages
 css: |
@@ -59,62 +76,13 @@ css: |
 
   .event-icon {
     --icon-size: 20px;
+    color: var(--color, var(--primary-text-color));
   }
 
   .event-block {
-    background-color: #F5F5F5;
+    background-color: var(--background, #F5F5F5);
   }
 
   ha-icon[data-type="blank"] {
     color: #E0E0E0;
-  }
-
-  [data-name="planned_outages"] {
-    &.event-icon {
-      color: #FFFFFF;
-    }
-
-    .event-block {
-      background-color: #FF8A80;
-    }
-  }
-
-  [data-name="emergency_shutdowns"] {
-    &.event-icon {
-      color: #FFFFFF;
-    }
-
-    .event-block {
-      background-color: #FF80AB;
-    }
-  }
-
-  [data-name="waiting_for_schedule"] {
-    &.event-icon {
-      color: #006064;
-    }
-
-    .event-block {
-      background-color: #80DEEA;
-    }
-  }
-
-  [data-name="schedule_applies"] {
-    &.event-icon {
-      color: #F57F17;
-    }
-
-    .event-block {
-      background-color: #FFF176;
-    }
-  }
-
-  [data-name="probable_outages"] {
-    &.event-icon {
-      color: #1B5E20;
-    }
-
-    .event-block {
-      background-color: #B9F6CA;
-    }
   }
