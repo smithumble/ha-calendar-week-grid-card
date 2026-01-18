@@ -862,10 +862,6 @@ export class CalendarWeekGridCard extends LitElement {
     const entitiesVariables = this.config?.entities_variables;
 
     if (!entitiesVariables) {
-      // Backward compatibility: handle legacy "color" property
-      if (event.color) {
-        variables['event-color'] = event.color;
-      }
       return variables;
     }
 
@@ -874,14 +870,10 @@ export class CalendarWeekGridCard extends LitElement {
       // Check if event has this property (supports both hyphenated and camelCase)
       const eventObj = event as Record<string, unknown>;
       const eventValue = eventObj[varKey] || eventObj[this.toCamelCase(varKey)];
-      if (eventValue && typeof eventValue === 'string') {
-        variables[varKey] = eventValue as string;
+      if (eventValue != null) {
+        // Always convert to string
+        variables[varKey] = String(eventValue);
       }
-    }
-
-    // Backward compatibility: handle legacy "color" property if not already set
-    if (event.color && !variables['event-color']) {
-      variables['event-color'] = event.color;
     }
 
     return variables;
