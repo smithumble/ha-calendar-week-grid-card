@@ -27,8 +27,9 @@ export default {
   },
   context: 'window',
   watch: {
-    include: ['demo/**', 'src/**'],
+    include: ['demo/**'],
     clearScreen: false,
+    buildDelay: 100,
   },
   plugins: [
     {

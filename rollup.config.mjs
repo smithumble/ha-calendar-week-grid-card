@@ -20,6 +20,7 @@ export default {
   watch: {
     include: 'src/**',
     clearScreen: false,
+    buildDelay: 100,
   },
   plugins: [
     yaml(),

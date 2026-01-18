@@ -78,17 +78,16 @@ export default defineConfig({
     {
       name: 'reload-on-change',
       configureServer(server) {
-        // Watch dist
-        const distPath = resolve(__dirname, '../dist');
-        server.watcher.add(distPath);
-
         // Watch assets
         const assetsPath = resolve(__dirname, 'assets');
         server.watcher.add(assetsPath);
 
+        // Watch paths
+        const watchPaths = [assetsPath];
+
         // Reload on any change in dist or assets
         const handleFileEvent = (event: string, file: string) => {
-          if (file.startsWith(distPath) || file.startsWith(assetsPath)) {
+          if (watchPaths.some((path) => file.startsWith(path))) {
             console.log(`Reloading due to ${event} in:`, file);
             server.ws.send({
               type: 'full-reload',
