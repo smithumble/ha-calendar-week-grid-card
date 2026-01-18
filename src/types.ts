@@ -13,7 +13,7 @@ export interface EventCriteria {
   filter?: string;
 }
 
-export interface EntityConfig {
+export interface StandardEntityConfig {
   name?: string;
   type?: string;
   entity: string;
@@ -23,6 +23,9 @@ export interface EntityConfig {
   under?: (string | EventCriteria)[];
   over?: (string | EventCriteria)[];
   hide?: (string | EventCriteria)[];
+}
+
+export interface EntityConfig extends StandardEntityConfig {
   [key: string]: unknown;
 }
 
