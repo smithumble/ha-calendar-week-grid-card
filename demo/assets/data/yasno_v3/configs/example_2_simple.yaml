@@ -11,7 +11,7 @@ time_format:
   hour12: false
 all_day_icon: ''
 all_day: row
-entities_variables:
+event_variables:
   icon-opacity:
     name: Icon Opacity
     description: The opacity of the event icon (0.0 to 1.0).

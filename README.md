@@ -324,7 +324,7 @@ time_format:
   hour12: false
 all_day_icon: ''
 all_day: row
-entities_variables:
+event_variables:
   icon-opacity:
     name: Icon Opacity
     description: The opacity of the event icon (0.0 to 1.0).
@@ -418,7 +418,7 @@ time_format:
   hour12: false
 all_day_icon: mdi:checkbox-blank-circle
 all_day: row
-entities_variables:
+event_variables:
   icon-opacity:
     name: Icon Opacity
     description: The opacity of the event icon (0.0 to 1.0).
@@ -520,7 +520,7 @@ time_format:
   minute: '2-digit'
   hour12: false
 all_day: row
-entities_variables:
+event_variables:
   icon-opacity:
     name: Icon Opacity
     description: The opacity of the event icon (0.0 to 1.0).
@@ -609,7 +609,7 @@ time_format:
   minute: '2-digit'
   hour12: false
 all_day: row
-entities_variables:
+event_variables:
   icon-opacity:
     name: Icon Opacity
     description: The opacity of the event icon (0.0 to 1.0).
@@ -714,7 +714,7 @@ time_format:
 icons_container: event
 icons_mode: all
 all_day: row
-entities_variables:
+event_variables:
   color:
     name: Event Color
     description: The color of the event icon.
@@ -814,7 +814,7 @@ time_range: true
 icons_container: event
 icons_mode: all
 all_day: row
-entities_variables:
+event_variables:
   color:
     name: Event Color
     description: The color of the event icon.
@@ -944,7 +944,7 @@ time_range: true
 icons_mode: all
 icons_container: event
 all_day: row
-entities_variables:
+event_variables:
   color:
     name: Event Color
     description: The color of the event.
@@ -1185,7 +1185,7 @@ time_range: true
 icons_mode: all
 icons_container: event
 all_day: row
-entities_variables:
+event_variables:
   color:
     name: Event Color
     description: The color of the event.
@@ -1435,7 +1435,7 @@ time_format:
 icons_mode: all
 icons_container: event
 all_day: row
-entities_variables:
+event_variables:
   color:
     name: Event Color
     description: The color of the event.
@@ -1639,7 +1639,7 @@ time_format:
 icons_mode: all
 icons_container: event
 all_day: row
-entities_variables:
+event_variables:
   color:
     name: Event Color
     description: The color of the event.

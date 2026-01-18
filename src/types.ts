@@ -41,7 +41,7 @@ export interface GridOptions {
   columns?: number | 'auto';
 }
 
-export interface EntityVariable {
+export interface EventVariable {
   name?: string;
   description?: string;
 }
@@ -83,7 +83,7 @@ export interface CardConfig {
   days?: number;
   theme?: 'dark' | 'light' | 'auto';
   entities?: (string | EntityConfig)[];
-  entities_variables?: Record<string, EntityVariable>;
+  event_variables?: Record<string, EventVariable>;
   css?: string;
   grid_options?: GridOptions;
   layout_options?: LayoutOptions;

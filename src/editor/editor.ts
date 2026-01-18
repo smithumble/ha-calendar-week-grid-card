@@ -7,7 +7,7 @@
 import { LitElement, TemplateResult, html, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import type { HomeAssistant } from 'custom-card-helpers';
-import type { CardConfig, EntityConfig, EntityVariable } from '../types';
+import type { CardConfig, EntityConfig, EventVariable } from '../types';
 import styles from './styles.css';
 import classicYamlConfig from '../configs/classic.yaml';
 import googleCalendarYamlConfig from '../configs/google_calendar.yaml';
@@ -312,13 +312,13 @@ export class CalendarWeekGridCardEditor extends LitElement {
       // Find the selected theme and apply its config
       const selectedTheme = themes.find((t) => t.id === themeId);
       if (selectedTheme && selectedTheme.config) {
-        // Get current entities_variables before applying new theme
-        const currentEntitiesVariables = this.getConfigValue(
-          'entities_variables',
+        // Get current event_variables before applying new theme
+        const currentEventVariables = this.getConfigValue(
+          'event_variables',
           {},
-        ) as Record<string, EntityVariable> | undefined;
-        const currentVariableKeys = currentEntitiesVariables
-          ? Object.keys(currentEntitiesVariables)
+        ) as Record<string, EventVariable> | undefined;
+        const currentVariableKeys = currentEventVariables
+          ? Object.keys(currentEventVariables)
           : [];
 
         // Apply all config from YAML file (including CSS)
@@ -327,7 +327,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
         });
 
         // Remove previous vars from entities that are not in the new theme
-        this._removeObsoleteEntityVariables(
+        this._removeObsoleteEventVariables(
           selectedTheme.config,
           currentVariableKeys,
         );
@@ -1406,7 +1406,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
                   <div class="helper-text">
                     Icon for events from this entity
                   </div>
-                  ${this._renderEntityVariables(index)}
+                  ${this._renderEventVariables(index)}
                 </div>
 
                 <!-- Advanced Event Control -->
@@ -1607,10 +1607,10 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   /**
-   * Removes obsolete entity variables that were in the previous config's entities_variables
-   * Simply removes all properties from entities that match keys in previous entities_variables
+   * Removes obsolete entity variables that were in the previous config's event_variables
+   * Simply removes all properties from entities that match keys in previous event_variables
    */
-  private _removeObsoleteEntityVariables(
+  private _removeObsoleteEventVariables(
     themeConfig: Partial<CardConfig>,
     previousVariableKeys: string[],
   ): void {
@@ -1623,7 +1623,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
       return;
     }
 
-    // Process each entity - remove properties that were in previous entities_variables
+    // Process each entity - remove properties that were in previous event_variables
     const updatedEntities = entities.map((entity) => {
       // Skip string entities (they don't have variables)
       if (typeof entity === 'string') {
@@ -1634,7 +1634,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
       const entityObj = entity as EntityConfig;
       const cleanedEntity: EntityConfig = { entity: entityObj.entity };
 
-      // Copy all properties except those that were in previous entities_variables
+      // Copy all properties except those that were in previous event_variables
       for (const [key, value] of Object.entries(entityObj)) {
         if (!previousVariableKeys.includes(key)) {
           cleanedEntity[key] = value;
@@ -1650,30 +1650,30 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
   /**
    * Checks if the current CSS contains the --event-color variable
-   * or if entities_variables defines event-color
+   * or if event_variables defines event-color
    */
   private _hasEventColorVariable(): boolean {
     const currentCss = (this.getConfigValue('css', '') as string) || '';
     if (currentCss.includes('--event-color')) {
       return true;
     }
-    const entitiesVariables = this.getConfigValue(
-      'entities_variables',
-      {},
-    ) as Record<string, EntityVariable>;
-    return 'event-color' in entitiesVariables;
+    const eventVariables = this.getConfigValue('event_variables', {}) as Record<
+      string,
+      EventVariable
+    >;
+    return 'event-color' in eventVariables;
   }
 
   /**
-   * Renders fields for entity variables defined in entities_variables config
+   * Renders fields for entity variables defined in event_variables config
    */
-  private _renderEntityVariables(entityIndex: number): TemplateResult {
-    const entitiesVariables = this.getConfigValue(
-      'entities_variables',
-      {},
-    ) as Record<string, EntityVariable>;
+  private _renderEventVariables(entityIndex: number): TemplateResult {
+    const eventVariables = this.getConfigValue('event_variables', {}) as Record<
+      string,
+      EventVariable
+    >;
 
-    if (!entitiesVariables || Object.keys(entitiesVariables).length === 0) {
+    if (!eventVariables || Object.keys(eventVariables).length === 0) {
       // Backward compatibility: show color field if CSS uses --event-color
       if (this._hasEventColorVariable()) {
         return html`
@@ -1688,7 +1688,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
     }
 
     return html`
-      ${Object.entries(entitiesVariables).map(([varKey, varConfig]) => {
+      ${Object.entries(eventVariables).map(([varKey, varConfig]) => {
         const varName = varConfig?.name || varKey;
         const varDescription = varConfig?.description || '';
         return html`
@@ -1702,19 +1702,19 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   /**
-   * Renders fields for event variables defined in entities_variables config
+   * Renders fields for event variables defined in event_variables config
    * Used for event, blank_event, and blank_all_day_event configs
    */
   private _renderEventConfigVariables(
     configPath: 'event' | 'blank_event' | 'blank_all_day_event',
   ): TemplateResult {
-    const entitiesVariables = this.getConfigValue(
-      'entities_variables',
-      {},
-    ) as Record<string, EntityVariable>;
+    const eventVariables = this.getConfigValue('event_variables', {}) as Record<
+      string,
+      EventVariable
+    >;
 
     return html`
-      ${Object.entries(entitiesVariables).map(([varKey, varConfig]) => {
+      ${Object.entries(eventVariables).map(([varKey, varConfig]) => {
         const varName = varConfig?.name || varKey;
         const varDescription = varConfig?.description || '';
         return html`

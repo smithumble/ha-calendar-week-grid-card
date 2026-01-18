@@ -459,7 +459,7 @@ export class CalendarWeekGridCard extends LitElement {
     eventClassesList.push(event.isAllDay ? 'all-day' : '');
     const eventClasses = eventClassesList.filter(Boolean).join(' ');
 
-    // Build style with CSS variables from entities_variables config
+    // Build style with CSS variables from event_variables config
     let eventWrapperStyle = wrapperStyle;
     const variables = this.getEventVariables(event);
     for (const [varName, varValue] of Object.entries(variables)) {
@@ -559,7 +559,7 @@ export class CalendarWeekGridCard extends LitElement {
     eventClassesList.push(isAllDay ? 'all-day' : '');
     const eventClasses = eventClassesList.filter(Boolean).join(' ');
 
-    // Build style with CSS variables from entities_variables config
+    // Build style with CSS variables from event_variables config
     let iconStyle = '';
     const variables = this.getEventVariables(event);
     for (const [varName, varValue] of Object.entries(variables)) {
@@ -876,17 +876,16 @@ export class CalendarWeekGridCard extends LitElement {
   }
 
   /**
-   * Extracts CSS variable values from event based on entities_variables config
+   * Extracts CSS variable values from event based on event_variables config
    * Converts hyphenated property names (e.g., "event-color") to CSS variable names (e.g., "event-color")
-   * Also handles legacy "color" property for backward compatibility
    * For blank events, also considers blank_event and blank_all_day_event configs
    * For regular events, also considers root event config
    */
   private getEventVariables(event: Event): Record<string, string> {
     const variables: Record<string, string> = {};
-    const entitiesVariables = this.config?.entities_variables;
+    const eventVariables = this.config?.event_variables;
 
-    if (!entitiesVariables) {
+    if (!eventVariables) {
       return variables;
     }
 
@@ -910,8 +909,8 @@ export class CalendarWeekGridCard extends LitElement {
       baseConfig = { ...(this.config?.event || {}) };
     }
 
-    // Extract variables defined in entities_variables config
-    for (const varKey of Object.keys(entitiesVariables)) {
+    // Extract variables defined in event_variables config
+    for (const varKey of Object.keys(eventVariables)) {
       // Check if event has this property (supports both hyphenated and camelCase)
       const eventObj = event as Record<string, unknown>;
       const eventValue = eventObj[varKey] || eventObj[this.toCamelCase(varKey)];

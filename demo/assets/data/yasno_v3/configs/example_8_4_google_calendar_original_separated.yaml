@@ -11,7 +11,7 @@ time_format:
 icons_mode: all
 icons_container: event
 all_day: row
-entities_variables:
+event_variables:
   color:
     name: Event Color
     description: The color of the event.

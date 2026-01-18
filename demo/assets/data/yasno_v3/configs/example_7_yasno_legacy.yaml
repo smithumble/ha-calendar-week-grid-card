@@ -7,7 +7,7 @@ time_range: true
 icons_container: event
 icons_mode: all
 all_day: row
-entities_variables:
+event_variables:
   color:
     name: Event Color
     description: The color of the event icon.

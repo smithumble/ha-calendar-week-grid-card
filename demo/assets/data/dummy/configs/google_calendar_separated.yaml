@@ -12,13 +12,15 @@ time_range: true
 icons_mode: all
 icons_container: event
 all_day: row
-entities_variables:
+event_variables:
   color:
     name: Event Color
     description: The color of the event.
   icon-color:
     name: Icon Color
     description: The color of the event icon.
+blank_event:
+  color: transparent
 entities:
   - name: sleep
     entity: calendar.work_schedule
@@ -239,8 +241,4 @@ css: |
 
   .event-sub-block:after {
     background-color: var(--color, var(--grid-primary-text-color));
-  }
-
-  [data-type="blank"] .event-sub-block:after {
-    background-color: transparent;
   }
