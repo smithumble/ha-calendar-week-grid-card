@@ -312,10 +312,25 @@ export class CalendarWeekGridCardEditor extends LitElement {
       // Find the selected theme and apply its config
       const selectedTheme = themes.find((t) => t.id === themeId);
       if (selectedTheme && selectedTheme.config) {
+        // Get current entities_variables before applying new theme
+        const currentEntitiesVariables = this.getConfigValue(
+          'entities_variables',
+          {},
+        ) as Record<string, EntityVariable> | undefined;
+        const currentVariableKeys = currentEntitiesVariables
+          ? Object.keys(currentEntitiesVariables)
+          : [];
+
         // Apply all config from YAML file (including CSS)
         Object.entries(selectedTheme.config).forEach(([key, value]) => {
           this.setConfigValue(key, value);
         });
+
+        // Remove previous vars from entities that are not in the new theme
+        this._removeObsoleteEntityVariables(
+          selectedTheme.config,
+          currentVariableKeys,
+        );
       }
       // Don't save theme_selection to config, it's UI-only
       return;
@@ -1563,6 +1578,48 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
     // If no theme matches, it's custom
     this._selectedTheme = 'custom';
+  }
+
+  /**
+   * Removes obsolete entity variables that were in the previous config's entities_variables
+   * Simply removes all properties from entities that match keys in previous entities_variables
+   */
+  private _removeObsoleteEntityVariables(
+    themeConfig: Partial<CardConfig>,
+    previousVariableKeys: string[],
+  ): void {
+    if (!this._config) {
+      return;
+    }
+
+    const entities = this._config.entities || [];
+    if (entities.length === 0 || previousVariableKeys.length === 0) {
+      return;
+    }
+
+    // Process each entity - remove properties that were in previous entities_variables
+    const updatedEntities = entities.map((entity) => {
+      // Skip string entities (they don't have variables)
+      if (typeof entity === 'string') {
+        return entity;
+      }
+
+      // For object entities, remove properties that were in previous variables
+      const entityObj = entity as EntityConfig;
+      const cleanedEntity: EntityConfig = { entity: entityObj.entity };
+
+      // Copy all properties except those that were in previous entities_variables
+      for (const [key, value] of Object.entries(entityObj)) {
+        if (!previousVariableKeys.includes(key)) {
+          cleanedEntity[key] = value;
+        }
+      }
+
+      return cleanedEntity;
+    });
+
+    // Update the config with cleaned entities
+    this.setConfigValue('entities', updatedEntities);
   }
 
   /**
