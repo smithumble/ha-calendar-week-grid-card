@@ -25,6 +25,8 @@ const DEFAULT_PROVIDER = 'yasno_v3';
 const DEFAULT_CONFIG = 'example_8_2_google_calendar_separated';
 const DEFAULT_DATA_SOURCE = 'yasno_1';
 
+const DEPRECATED_PROVIDERS = ['yasno_v1', 'yasno_v2'];
+
 // Storage prefix
 const STORAGE_PREFIX = 'calendar-week-grid-card-';
 
@@ -702,7 +704,13 @@ function populateProviderSelect(selectedProvider?: string | null) {
   const sortedProviders = Array.from(providersToShow).sort();
 
   providerSelect.innerHTML = sortedProviders
-    .map((p) => `<option value="${p}">${formatSelectorLabel(p)}</option>`)
+    .map((p) => {
+      const label = formatSelectorLabel(p);
+      const deprecated = DEPRECATED_PROVIDERS.includes(p)
+        ? ' (Deprecated)'
+        : '';
+      return `<option value="${p}">${label}${deprecated}</option>`;
+    })
     .join('');
 
   // Always set the value to selectedProvider if provided and valid
