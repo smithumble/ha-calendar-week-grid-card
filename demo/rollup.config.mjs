@@ -75,10 +75,8 @@ export default {
         }
       },
     },
-    {
-      name: 'copy-assets',
-      buildStart() {
-        // Copy assets early so they're available for asset-manifest
+    (() => {
+      const copyAssets = () => {
         try {
           const sourcePath = resolve(__dirname, 'assets');
           const destPath = resolve(__dirname, '../dist/demo/assets');
@@ -114,12 +112,40 @@ export default {
         } catch (error) {
           console.error('Failed to copy assets:', error);
         }
-      },
-    },
-    {
-      name: 'copy-src-assets',
-      buildStart() {
-        // Copy src/configs to dist/demo/assets/data/yasno_v3/configs
+      };
+
+      return {
+        name: 'copy-assets',
+        buildStart() {
+          // Copy assets early so they're available for asset-manifest
+          copyAssets();
+
+          // Watch source files to trigger rebuild on changes
+          try {
+            const sourcePath = resolve(__dirname, 'assets');
+            if (existsSync(sourcePath)) {
+              const sourceFiles = glob.sync(resolve(sourcePath, '**/*'), {
+                absolute: true,
+              });
+              for (const file of sourceFiles) {
+                this.addWatchFile(file);
+              }
+            }
+          } catch (error) {
+            console.warn('Failed to watch demo assets:', error);
+          }
+        },
+        watchChange(id) {
+          // Re-copy assets when watched files change
+          const sourcePath = resolve(__dirname, 'assets');
+          if (id.startsWith(sourcePath)) {
+            copyAssets();
+          }
+        },
+      };
+    })(),
+    (() => {
+      const copySrcAssets = () => {
         try {
           const sourcePath = resolve(__dirname, '../src/configs');
           const destPath = resolve(
@@ -160,8 +186,38 @@ export default {
         } catch (error) {
           console.error('Failed to copy assets:', error);
         }
-      },
-    },
+      };
+
+      return {
+        name: 'copy-src-assets',
+        buildStart() {
+          // Copy src/configs to dist/demo/assets/data/yasno_v3/configs
+          copySrcAssets();
+
+          // Watch source files to trigger rebuild on changes
+          try {
+            const sourcePath = resolve(__dirname, '../src/configs');
+            if (existsSync(sourcePath)) {
+              const sourceFiles = glob.sync(resolve(sourcePath, '**/*'), {
+                absolute: true,
+              });
+              for (const file of sourceFiles) {
+                this.addWatchFile(file);
+              }
+            }
+          } catch (error) {
+            console.warn('Failed to watch src/configs:', error);
+          }
+        },
+        watchChange(id) {
+          // Re-copy src/configs when watched files change
+          const sourcePath = resolve(__dirname, '../src/configs');
+          if (id.startsWith(sourcePath)) {
+            copySrcAssets();
+          }
+        },
+      };
+    })(),
     {
       name: 'asset-manifest',
       resolveId(source) {
