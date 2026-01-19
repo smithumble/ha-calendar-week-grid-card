@@ -1,12 +1,11 @@
-/* eslint-disable import/order */
 /**
  * Visual editor for Calendar Week Grid Card
  * Provides a visual configuration interface using native Home Assistant elements
  */
 
+import type { HomeAssistant } from 'custom-card-helpers';
 import { LitElement, TemplateResult, html, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import type { HomeAssistant } from 'custom-card-helpers';
 import type {
   CardConfig,
   DefaultEventConfig,
@@ -14,90 +13,17 @@ import type {
   ThemeVariable,
 } from '../types';
 import styles from './styles.css';
-import basicYamlConfig from '../configs/basic.yaml';
-import simpleYamlConfig from '../configs/simple.yaml';
-import simpleColoredYamlConfig from '../configs/simple_colored.yaml';
-import classicYamlConfig from '../configs/classic.yaml';
-import neonYamlConfig from '../configs/neon.yaml';
-import softUiYamlConfig from '../configs/soft_ui.yaml';
-import yasnoLegacyYamlConfig from '../configs/yasno_legacy.yaml';
-import googleCalendarYamlConfig from '../configs/google_calendar.yaml';
-import googleCalendarSeparatedYamlConfig from '../configs/google_calendar_separated.yaml';
-import googleCalendarOriginalYamlConfig from '../configs/google_calendar_original.yaml';
-import googleCalendarOriginalSeparatedYamlConfig from '../configs/google_calendar_original_separated.yaml';
-
-// Material Design icon paths
-const mdiCalendar = 'mdi:calendar';
-const mdiCalendarMonth = 'mdi:calendar-month';
-const mdiCalendarMultiple = 'mdi:calendar-multiple';
-const mdiClockOutline = 'mdi:clock-outline';
-const mdiFormatColorText = 'mdi:format-color-text';
-const mdiPalette = 'mdi:palette';
-
-// Theme registry
-interface ThemeInfo {
-  id: string;
-  name: string;
-  config: Partial<CardConfig>;
-}
-
-export const themes: ThemeInfo[] = [
-  {
-    id: 'basic',
-    name: 'Basic',
-    config: basicYamlConfig,
-  },
-  {
-    id: 'simple',
-    name: 'Simple',
-    config: simpleYamlConfig,
-  },
-  {
-    id: 'simple_colored',
-    name: 'Simple Colored',
-    config: simpleColoredYamlConfig,
-  },
-  {
-    id: 'classic',
-    name: 'Classic',
-    config: classicYamlConfig,
-  },
-  {
-    id: 'neon',
-    name: 'Neon',
-    config: neonYamlConfig,
-  },
-  {
-    id: 'soft_ui',
-    name: 'Soft UI',
-    config: softUiYamlConfig,
-  },
-  {
-    id: 'yasno_legacy',
-    name: 'Yasno Legacy',
-    config: yasnoLegacyYamlConfig,
-  },
-  {
-    id: 'google_calendar_separated',
-    name: 'Google Calendar Separated',
-    config: googleCalendarSeparatedYamlConfig,
-  },
-  {
-    id: 'google_calendar',
-    name: 'Google Calendar',
-    config: googleCalendarYamlConfig,
-  },
-  {
-    id: 'google_calendar_original',
-    name: 'Google Calendar Original',
-    config: googleCalendarOriginalYamlConfig,
-  },
-  {
-    id: 'google_calendar_original_separated',
-    name: 'Google Calendar Original Separated',
-    config: googleCalendarOriginalSeparatedYamlConfig,
-  },
-];
+import { themes } from './themes';
+import { ConfigManager } from './utils/config';
+import type { FieldHandlerContext } from './utils/field';
+import {
+  handleTimeFormatTypeChange,
+  handleDateFormatFieldChange,
+  handleTimeFormatObjectFieldChange,
+  handleCriteriaTypeChange,
+  handleCriteriaFieldChange,
+} from './utils/field';
+import { ThemeManager } from './utils/theme';
 
 /**
  * Calendar Week Grid Card Editor component
@@ -174,141 +100,15 @@ export class CalendarWeekGridCardEditor extends LitElement {
     if (!this._config) {
       return defaultValue;
     }
-
-    if (!path.includes('.')) {
-      return this._config[path as keyof CardConfig] ?? defaultValue;
-    }
-
-    const pathParts = path.split('.');
-    let current: unknown = this._config;
-
-    for (const part of pathParts) {
-      if (current === undefined || current === null) {
-        return defaultValue;
-      }
-
-      if (/^\d+$/.test(part)) {
-        const index = parseInt(part, 10);
-        if (Array.isArray(current) && index >= 0 && index < current.length) {
-          current = current[index];
-          continue;
-        }
-        return defaultValue;
-      }
-
-      if (
-        typeof current === 'object' &&
-        current !== null &&
-        part in (current as Record<string, unknown>)
-      ) {
-        current = (current as Record<string, unknown>)[part];
-      } else {
-        return defaultValue;
-      }
-    }
-
-    return current ?? defaultValue;
+    return ConfigManager.getValue(this._config, path, defaultValue);
   }
 
   setConfigValue(path: string, value: unknown): void {
     if (!this._config) {
       return;
     }
-
-    const config = JSON.parse(JSON.stringify(this._config)) as Record<
-      string,
-      unknown
-    >;
-
-    if (!path.includes('.')) {
-      if (value === undefined) {
-        delete config[path];
-      } else {
-        config[path] = value;
-      }
-      this._fireConfigChanged(config as unknown as CardConfig);
-      return;
-    }
-
-    const pathParts = path.split('.');
-    const lastPart = pathParts.pop()!;
-    let current: Record<string, unknown> | unknown[] = config;
-
-    for (let i = 0; i < pathParts.length; i++) {
-      const part = pathParts[i];
-      const nextPart = pathParts[i + 1] || lastPart;
-      const isNextPartNumeric = /^\d+$/.test(nextPart);
-
-      if (/^\d+$/.test(part)) {
-        const index = parseInt(part, 10);
-        if (!Array.isArray(current)) {
-          current = [] as unknown[];
-        }
-        while ((current as unknown[]).length <= index) {
-          // If next part is numeric, create array; otherwise create object
-          (current as unknown[]).push(isNextPartNumeric ? [] : {});
-        }
-        const item = (current as unknown[])[index];
-        if (!item || (isNextPartNumeric && !Array.isArray(item))) {
-          (current as unknown[])[index] = isNextPartNumeric ? [] : {};
-        } else if (!isNextPartNumeric && typeof item !== 'object') {
-          (current as unknown[])[index] = {};
-        }
-        current = (current as unknown[])[index] as
-          | Record<string, unknown>
-          | unknown[];
-        continue;
-      }
-
-      // Non-numeric part
-      if (!Object.prototype.hasOwnProperty.call(current, part)) {
-        // If next part is numeric, create array; otherwise create object
-        (current as Record<string, unknown>)[part] = isNextPartNumeric
-          ? []
-          : {};
-      } else {
-        const existing = (current as Record<string, unknown>)[part];
-        // If next part is numeric but existing is not array, convert it
-        if (isNextPartNumeric && !Array.isArray(existing)) {
-          (current as Record<string, unknown>)[part] = [];
-        } else if (
-          !isNextPartNumeric &&
-          (typeof existing !== 'object' || Array.isArray(existing))
-        ) {
-          (current as Record<string, unknown>)[part] = {};
-        }
-      }
-      current = (current as Record<string, unknown>)[part] as
-        | Record<string, unknown>
-        | unknown[];
-    }
-
-    // Handle last part - could be array index or object property
-    if (/^\d+$/.test(lastPart)) {
-      const index = parseInt(lastPart, 10);
-      if (!Array.isArray(current)) {
-        // Shouldn't happen with proper navigation, but handle it
-        current = [] as unknown[];
-      }
-      // Ensure array is large enough
-      while ((current as unknown[]).length <= index) {
-        (current as unknown[]).push(undefined);
-      }
-      if (value === undefined) {
-        (current as unknown[]).splice(index, 1);
-      } else {
-        (current as unknown[])[index] = value;
-      }
-    } else {
-      // Last part is a property name
-      if (value === undefined) {
-        delete (current as Record<string, unknown>)[lastPart];
-      } else {
-        (current as Record<string, unknown>)[lastPart] = value;
-      }
-    }
-
-    this._fireConfigChanged(config as unknown as CardConfig);
+    const newConfig = ConfigManager.setValue(this._config, path, value);
+    this._fireConfigChanged(newConfig);
   }
 
   private _fireConfigChanged(config: CardConfig): void {
@@ -352,45 +152,15 @@ export class CalendarWeekGridCardEditor extends LitElement {
       value = parseFloat(value as string);
     }
 
+    // Create context for field handlers
+    const context: FieldHandlerContext = {
+      getConfigValue: this.getConfigValue.bind(this),
+      setConfigValue: this.setConfigValue.bind(this),
+    };
+
     // Handle theme_selection (UI-only field that controls theme switching)
     if (name === 'theme_selection') {
-      const themeId = value as string;
-      const previousTheme = this._selectedTheme;
-      this._selectedTheme = themeId;
-
-      if (themeId === 'custom') {
-        // Don't change CSS, just mark as custom
-        return;
-      }
-
-      // Find the selected theme and apply its config
-      const selectedTheme = themes.find((t) => t.id === themeId);
-      if (selectedTheme && selectedTheme.config) {
-        // Save current theme_values to archive before switching
-        if (previousTheme !== 'custom') {
-          this._archiveCurrentThemeValues(previousTheme);
-        }
-
-        // Apply all config from YAML file (including CSS) except entities
-        Object.entries(selectedTheme.config).forEach(([key, value]) => {
-          if (key !== 'entities') {
-            this.setConfigValue(key, value);
-          }
-        });
-
-        // Remove previous vars from entities that are not in the new theme
-        this._removeObsoleteThemeVariables();
-
-        // Apply theme_values_examples properties to existing entities
-        // First try to restore from archive, then use examples
-        this._applyThemeValuesExamplesToEntities(themeId);
-
-        // Restore archived theme_values for event configs if available
-        this._restoreEventConfigThemeValues('event', themeId);
-        this._restoreEventConfigThemeValues('blank_event', themeId);
-        this._restoreEventConfigThemeValues('blank_all_day_event', themeId);
-      }
-      // Don't save theme_selection to config, it's UI-only
+      this._handleThemeSelection(value as string);
       return;
     }
 
@@ -398,52 +168,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
     if (name === 'time_format_type') {
       const formatType = value as 'string' | 'object';
       this._timeFormatType = formatType;
-      const currentTimeFormat = this.getConfigValue('time_format');
-
-      if (formatType === 'string') {
-        // Convert object to string format (default pattern)
-        if (
-          typeof currentTimeFormat === 'object' &&
-          currentTimeFormat !== null
-        ) {
-          const formatObj = currentTimeFormat as Intl.DateTimeFormatOptions;
-          if (formatObj.hour === 'numeric' && formatObj.hour12) {
-            this.setConfigValue('time_format', 'h A');
-          } else if (
-            formatObj.hour === '2-digit' &&
-            formatObj.minute === '2-digit'
-          ) {
-            this.setConfigValue('time_format', 'HH:mm');
-          } else {
-            this.setConfigValue('time_format', 'h A');
-          }
-        } else if (!currentTimeFormat) {
-          this.setConfigValue('time_format', 'h A');
-        }
-      } else {
-        // Convert string to object format
-        if (typeof currentTimeFormat === 'string') {
-          const formatObj: Intl.DateTimeFormatOptions = {};
-          if (currentTimeFormat.includes('H')) {
-            formatObj.hour = '2-digit';
-            formatObj.hour12 = false;
-          } else if (currentTimeFormat.includes('h')) {
-            formatObj.hour = currentTimeFormat.includes('hh')
-              ? '2-digit'
-              : 'numeric';
-            formatObj.hour12 = true;
-          }
-          if (currentTimeFormat.includes('mm')) {
-            formatObj.minute = '2-digit';
-          } else if (currentTimeFormat.includes('m')) {
-            formatObj.minute = 'numeric';
-          }
-          this.setConfigValue('time_format', formatObj);
-        } else if (!currentTimeFormat) {
-          this.setConfigValue('time_format', { hour: 'numeric' });
-        }
-      }
-      // Don't save time_format_type to config, it's UI-only
+      handleTimeFormatTypeChange(formatType, context);
       return;
     }
 
@@ -454,171 +179,39 @@ export class CalendarWeekGridCardEditor extends LitElement {
     ) {
       const configPath = name.split('.')[0];
       const fieldName = name.split('.')[1];
-
-      // Get current format object or create new one
-      const currentFormat =
-        (this.getConfigValue(configPath, {}) as Intl.DateTimeFormatOptions) ||
-        {};
-      const newFormat: Record<string, unknown> = { ...currentFormat };
-
-      // Update the specific field
-      if (value === '' || value === null || value === undefined) {
-        delete newFormat[fieldName];
-      } else {
-        // Convert hour12 string to boolean if needed
-        if (fieldName === 'hour12') {
-          newFormat[fieldName] =
-            value === 'true' ? true : value === 'false' ? false : value;
-        } else {
-          newFormat[fieldName] = value as string;
-        }
-      }
-
-      // Remove empty object if no fields are set
-      if (Object.keys(newFormat).length === 0) {
-        this.setConfigValue(configPath, undefined);
-      } else {
-        this.setConfigValue(
-          configPath,
-          newFormat as Intl.DateTimeFormatOptions,
-        );
-      }
+      handleDateFormatFieldChange(configPath, fieldName, value, context);
       return;
     }
 
     // Handle time format object fields
     if (name.startsWith('time_format.')) {
       const fieldName = name.split('.')[1];
-      const currentFormat = this.getConfigValue('time_format', {}) as
-        | Intl.DateTimeFormatOptions
-        | string;
-
-      // Only handle if current format is an object
-      if (typeof currentFormat === 'object' && currentFormat !== null) {
-        const newFormat: Record<string, unknown> = { ...currentFormat };
-
-        if (value === '' || value === null || value === undefined) {
-          delete newFormat[fieldName];
-        } else {
-          // Convert hour12 string to boolean if needed
-          if (fieldName === 'hour12') {
-            newFormat[fieldName] =
-              value === 'true' ? true : value === 'false' ? false : value;
-          } else {
-            newFormat[fieldName] = value as string;
-          }
-        }
-
-        // Remove empty object if no fields are set
-        if (Object.keys(newFormat).length === 0) {
-          this.setConfigValue('time_format', undefined);
-        } else {
-          this.setConfigValue(
-            'time_format',
-            newFormat as Intl.DateTimeFormatOptions,
-          );
-        }
-      }
+      handleTimeFormatObjectFieldChange(fieldName, value, context);
       return;
     }
 
     // Handle criteria type switching (UI-only field)
     if (name.endsWith('.__type')) {
       const basePath = name.replace('.__type', '');
-      const currentItem = this.getConfigValue(basePath);
       const newType = value as 'string' | 'object';
-
-      if (newType === 'string') {
-        // Convert object to string (use name field if available)
-        if (
-          typeof currentItem === 'object' &&
-          currentItem !== null &&
-          !Array.isArray(currentItem)
-        ) {
-          const obj = currentItem as Record<string, unknown>;
-          this.setConfigValue(basePath, obj.name || '');
-        } else if (typeof currentItem !== 'string') {
-          this.setConfigValue(basePath, '');
-        }
-      } else {
-        // Convert string to object
-        if (typeof currentItem === 'string') {
-          this.setConfigValue(basePath, { name: currentItem });
-        } else if (
-          typeof currentItem !== 'object' ||
-          currentItem === null ||
-          Array.isArray(currentItem)
-        ) {
-          this.setConfigValue(basePath, {});
-        }
-      }
-      // Don't save __type to config, it's UI-only
+      handleCriteriaTypeChange(basePath, newType, context);
       return;
     }
 
     // Handle criteria object fields (name, type, entity, filter)
-    // Path format: entities.0.under.0.name or entities.0.over.1.filter, etc.
     const criteriaFieldMatch = name.match(
       /^(entities\.\d+\.(under|over|hide))\.(\d+)\.(.+)$/,
     );
     if (criteriaFieldMatch) {
-      const basePath = criteriaFieldMatch[1]; // e.g., entities.0.under
-      const itemIndex = parseInt(criteriaFieldMatch[3], 10); // e.g., 0
-      const fieldName = criteriaFieldMatch[4]; // e.g., name
+      const basePath = criteriaFieldMatch[1];
+      const itemIndex = parseInt(criteriaFieldMatch[3], 10);
+      const fieldName = criteriaFieldMatch[4];
 
-      // Skip if it's the __type field (handled above)
       if (fieldName === '__type') {
         return;
       }
 
-      const criteria =
-        (this.getConfigValue(basePath, []) as Array<
-          string | Record<string, unknown>
-        >) || [];
-
-      // Ensure the item exists
-      if (!criteria[itemIndex]) {
-        criteria[itemIndex] = {};
-      }
-
-      const currentItem = criteria[itemIndex];
-      let itemObj: Record<string, unknown>;
-
-      if (typeof currentItem === 'string') {
-        // Convert to object if needed
-        itemObj = { name: currentItem };
-      } else {
-        itemObj = { ...(currentItem as Record<string, unknown>) };
-      }
-
-      // Update the field
-      if (value === '' || value === null || value === undefined) {
-        delete itemObj[fieldName];
-      } else {
-        itemObj[fieldName] = value;
-      }
-
-      // Remove empty object fields and __type
-      const cleanedObj: Record<string, unknown> = {};
-      for (const [key, val] of Object.entries(itemObj)) {
-        if (
-          key !== '__type' &&
-          val !== '' &&
-          val !== null &&
-          val !== undefined
-        ) {
-          cleanedObj[key] = val;
-        }
-      }
-
-      // If object is empty, convert to empty string
-      if (Object.keys(cleanedObj).length === 0) {
-        criteria[itemIndex] = '';
-      } else {
-        criteria[itemIndex] = cleanedObj;
-      }
-
-      this.setConfigValue(basePath, criteria);
+      handleCriteriaFieldChange(basePath, itemIndex, fieldName, value, context);
       return;
     }
 
@@ -648,6 +241,38 @@ export class CalendarWeekGridCardEditor extends LitElement {
     // Archive theme_values when they change
     if (name.includes('.theme_values.')) {
       this._archiveThemeValueOnChange(name, value);
+    }
+  }
+
+  /**
+   * Handles theme selection changes
+   */
+  private _handleThemeSelection(themeId: string): void {
+    const previousTheme = this._selectedTheme;
+    this._selectedTheme = themeId;
+
+    if (themeId === 'custom') {
+      return;
+    }
+
+    const selectedTheme = themes.find((t) => t.id === themeId);
+    if (selectedTheme && selectedTheme.config) {
+      if (previousTheme !== 'custom') {
+        this._archiveCurrentThemeValues(previousTheme);
+      }
+
+      Object.entries(selectedTheme.config).forEach(([key, value]) => {
+        if (key !== 'entities') {
+          this.setConfigValue(key, value);
+        }
+      });
+
+      this._removeObsoleteThemeVariables();
+      this._applyThemeValuesExamplesToEntities(themeId);
+
+      this._restoreEventConfigThemeValues('event', themeId);
+      this._restoreEventConfigThemeValues('blank_event', themeId);
+      this._restoreEventConfigThemeValues('blank_all_day_event', themeId);
     }
   }
 
@@ -704,7 +329,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
         <!-- CALENDAR ENTITIES -->
         ${this.addExpansionPanel(
           'Calendar Entities',
-          mdiCalendarMultiple,
+          'mdi:calendar-multiple',
           html` ${this._renderCalendarEntities()} `,
           true,
         )}
@@ -712,7 +337,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
         <!-- CORE SETTINGS -->
         ${this.addExpansionPanel(
           'Core Settings',
-          mdiCalendarMonth,
+          'mdi:calendar-month',
           html`
             <!-- Language & Theme -->
             <h3>Language & Theme</h3>
@@ -775,7 +400,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
         <!-- DATE & TIME FORMAT -->
         ${this.addExpansionPanel(
           'Date & Time Format',
-          mdiClockOutline,
+          'mdi:clock-outline',
           html`
             <!-- Primary Date Format -->
             <h3>Date Format</h3>
@@ -802,7 +427,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
         <!-- EVENT DISPLAY -->
         ${this.addExpansionPanel(
           'Event Display',
-          mdiFormatColorText,
+          'mdi:format-color-text',
           html`
             <!-- All Day Events -->
             <h3>All Day Events</h3>
@@ -883,7 +508,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
         <!-- STYLING -->
         ${this.addExpansionPanel(
           'Styling',
-          mdiPalette,
+          'mdi:palette',
           html`
             <!-- Theme Selection -->
             <h3>Theme</h3>
@@ -1481,7 +1106,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
     return html`
       ${this.addExpansionPanel(
         panelHeader,
-        mdiCalendar,
+        'mdi:calendar',
         html`
           <!-- Entity Identification -->
           <div class="editor-section">
@@ -1679,60 +1304,35 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
   /**
    * Gets theme_values_examples entry by entity index (cycling with modulo)
-   * @param entityIndex - The index of the entity
-   * @returns The example object for the given index, or undefined if no examples available
    */
   private _getExampleByEntityIndex(
     entityIndex: number,
   ): Record<string, unknown> | undefined {
-    const themeValuesExamples = this.getConfigValue(
-      'theme_values_examples',
-      [],
-    ) as Array<Record<string, unknown>>;
-
-    if (themeValuesExamples.length === 0) {
+    if (!this._config) {
       return undefined;
     }
-
-    return themeValuesExamples[entityIndex % themeValuesExamples.length];
+    const themeManager = new ThemeManager(
+      this._config,
+      themes,
+      this._selectedTheme,
+    );
+    return themeManager.getExampleByEntityIndex(entityIndex);
   }
 
   /**
    * Detects which theme is currently selected based on CSS content
    */
   private _detectSelectedTheme(): void {
-    const currentCss = (this.getConfigValue('css', '') as string) || '';
-
-    if (!currentCss.trim()) {
+    if (!this._config) {
       this._selectedTheme = 'custom';
       return;
     }
-
-    // Normalize CSS for comparison (remove whitespace differences)
-    const normalizeCss = (css: string): string => {
-      return css
-        .replace(/\s+/g, ' ')
-        .replace(/\s*{\s*/g, '{')
-        .replace(/\s*}\s*/g, '}')
-        .replace(/\s*:\s*/g, ':')
-        .replace(/\s*;\s*/g, ';')
-        .trim();
-    };
-
-    const normalizedCurrent = normalizeCss(currentCss);
-
-    // Check each theme to see if current CSS matches
-    for (const theme of themes) {
-      const themeCss = (theme.config.css as string) || '';
-      const normalizedTheme = normalizeCss(themeCss);
-      if (normalizedCurrent === normalizedTheme) {
-        this._selectedTheme = theme.id;
-        return;
-      }
-    }
-
-    // If no theme matches, it's custom
-    this._selectedTheme = 'custom';
+    const themeManager = new ThemeManager(
+      this._config,
+      themes,
+      this._selectedTheme,
+    );
+    this._selectedTheme = themeManager.detectSelectedTheme();
   }
 
   /**
@@ -1748,85 +1348,39 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
   /**
    * Apply theme values from example to a single entity
-   * Extracts theme variable properties and sets them as theme_values
    */
   private _applyThemeValuesToEntity(
     entity: string | EntityConfig,
     example: Record<string, unknown>,
   ): string | EntityConfig {
-    // Get theme_variables keys
-    const themeVariables =
-      (this.getConfigValue('theme_variables', {}) as Record<
-        string,
-        ThemeVariable
-      >) || {};
-    const themeVariableKeys = Object.keys(themeVariables);
-
-    // Extract only theme variable properties from example
-    const themeValuesProps: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(example)) {
-      if (themeVariableKeys.includes(key)) {
-        themeValuesProps[key] = value;
-      }
+    if (!this._config) {
+      return entity;
     }
-
-    // Handle string entities - convert to object
-    if (typeof entity === 'string') {
-      const result: EntityConfig = { entity };
-      if (Object.keys(themeValuesProps).length > 0) {
-        result.theme_values = themeValuesProps;
-      }
-      return result;
-    }
-
-    // Handle object entities - replace theme_values
-    const result = { ...entity };
-    if (Object.keys(themeValuesProps).length > 0) {
-      result.theme_values = themeValuesProps;
-    }
-    return result;
+    const themeManager = new ThemeManager(
+      this._config,
+      themes,
+      this._selectedTheme,
+    );
+    return themeManager.applyThemeValuesToEntity(entity, example);
   }
 
   /**
-   * Archives current theme_values for all entities and configs under the given theme name
-   * This preserves values when switching themes so they can be restored later
+   * Archives current theme_values for all entities and configs
    */
   private _archiveCurrentThemeValues(themeId: string): void {
     if (!this._config) {
       return;
     }
 
-    // Archive entity theme_values
     const entities = this._config.entities || [];
     if (entities.length > 0) {
-      const updatedEntities = entities.map((entity) => {
-        // Skip string entities
-        if (typeof entity === 'string') {
-          return entity;
-        }
-
-        // For object entities, archive current theme_values if they exist
-        const entityObj = entity as EntityConfig;
-        if (
-          entityObj.theme_values &&
-          Object.keys(entityObj.theme_values).length > 0
-        ) {
-          const result = { ...entityObj };
-          if (!result.theme_values_archive) {
-            result.theme_values_archive = {};
-          }
-          result.theme_values_archive[themeId] = { ...entityObj.theme_values };
-          return result;
-        }
-
-        return entity;
-      });
-
-      // Update the config with archived values
+      const updatedEntities = ThemeManager.archiveEntityThemeValues(
+        entities,
+        themeId,
+      );
       this.setConfigValue('entities', updatedEntities);
     }
 
-    // Archive event config theme_values
     this._archiveConfigThemeValues('event', themeId);
     this._archiveConfigThemeValues('blank_event', themeId);
     this._archiveConfigThemeValues('blank_all_day_event', themeId);
@@ -1878,9 +1432,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   /**
-   * Apply properties from theme_values_examples to existing entities (cycling by index)
-   * Separates theme variable properties into theme_values nested object
-   * First checks for archived values for the theme, then falls back to examples
+   * Apply properties from theme_values_examples to existing entities
    */
   private _applyThemeValuesExamplesToEntities(themeId?: string): void {
     if (!this._config) {
@@ -1892,32 +1444,15 @@ export class CalendarWeekGridCardEditor extends LitElement {
       return;
     }
 
-    // Apply theme_values_examples properties to each entity, cycling by index
-    const updatedEntities = entities.map((entity, index) => {
-      // First check if there's an archived value for this theme
-      if (
-        themeId &&
-        typeof entity === 'object' &&
-        entity.theme_values_archive
-      ) {
-        const archivedValues = entity.theme_values_archive[themeId];
-        if (archivedValues) {
-          // Use archived values
-          const result = { ...entity };
-          result.theme_values = archivedValues;
-          return result;
-        }
-      }
-
-      // Fall back to theme_values_examples
-      const example = this._getExampleByEntityIndex(index);
-      if (!example) {
-        return entity;
-      }
-      return this._applyThemeValuesToEntity(entity, example);
-    });
-
-    // Update the config with updated entities
+    const themeManager = new ThemeManager(
+      this._config,
+      themes,
+      this._selectedTheme,
+    );
+    const updatedEntities = themeManager.applyThemeValuesExamplesToEntities(
+      entities,
+      themeId,
+    );
     this.setConfigValue('entities', updatedEntities);
   }
 
@@ -1934,22 +1469,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
       return;
     }
 
-    // Process each entity - remove theme_values object
-    const updatedEntities = entities.map((entity) => {
-      // Skip string entities (they don't have variables)
-      if (typeof entity === 'string') {
-        return entity;
-      }
-
-      // For object entities, remove theme_values
-      const entityObj = entity as EntityConfig;
-      const cleanedEntity: EntityConfig = { ...entityObj };
-      delete cleanedEntity.theme_values;
-
-      return cleanedEntity;
-    });
-
-    // Update the config with cleaned entities
+    const updatedEntities = ThemeManager.removeObsoleteThemeVariables(entities);
     this.setConfigValue('entities', updatedEntities);
   }
 
@@ -2015,41 +1535,9 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
   /**
    * Handles CSS changes from the code editor
-   * Switches to 'custom' if CSS doesn't match any theme
    */
   private _handleCssChange(newCss: string): void {
-    const normalizeCss = (css: string): string => {
-      return css
-        .replace(/\s+/g, ' ')
-        .replace(/\s*{\s*/g, '{')
-        .replace(/\s*}\s*/g, '}')
-        .replace(/\s*:\s*/g, ':')
-        .replace(/\s*;\s*/g, ';')
-        .trim();
-    };
-
-    const normalizedNew = normalizeCss(newCss);
-
-    // Check if the new CSS matches any theme
-    let matchedTheme: string | null = null;
-    for (const theme of themes) {
-      const themeCss = (theme.config.css as string) || '';
-      const normalizedTheme = normalizeCss(themeCss);
-      if (normalizedNew === normalizedTheme) {
-        matchedTheme = theme.id;
-        break;
-      }
-    }
-
-    if (matchedTheme) {
-      // CSS matches a theme, update selection
-      this._selectedTheme = matchedTheme;
-    } else {
-      // CSS doesn't match any theme, switch to custom
-      this._selectedTheme = 'custom';
-    }
-
-    // Update the config with the new CSS
     this.setConfigValue('css', newCss);
+    this._detectSelectedTheme();
   }
 }
