@@ -1,5 +1,4 @@
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
   weekday: 'short'
 secondary_date_format:

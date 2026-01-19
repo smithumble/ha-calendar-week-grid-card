@@ -1,3 +1,4 @@
+type: custom:calendar-week-grid-card
 primary_date_format:
   weekday: 'short'
 secondary_date_format:
@@ -22,8 +23,6 @@ event_variables:
     name: Opacity
     description: The opacity of the event background (0.1 to 1.0).
 event_examples:
-  - color: var(--error-color)
-    opacity: 0.2
   - color: var(--primary-color)
     opacity: 0.2
   - color: var(--success-color)
@@ -32,12 +31,46 @@ event_examples:
     opacity: 0.2
   - color: var(--info-color)
     opacity: 0.2
+  - color: var(--error-color)
+    opacity: 0.2
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
   icon-opacity: 0.3
   opacity: 0
 blank_all_day_event:
   icon: mdi:checkbox-blank-circle
+entities:
+  - name: planned_outages
+    entity: calendar.planned_outages
+    filter: Outage
+    icon: mdi:flash-off
+    color: var(--error-color)
+    opacity: 0.2
+  - name: probable_outages
+    entity: calendar.probable_outages
+    icon: mdi:flash-off
+    color: var(--primary-color)
+    opacity: 0.2
+  - name: emergency_shutdowns
+    entity: calendar.planned_outages
+    filter: Emergency Shutdowns
+    icon: mdi:transmission-tower-off
+    color: var(--error-color)
+    opacity: 0.2
+  - name: schedule_applies
+    entity: calendar.planned_outages
+    filter: Schedule Applies
+    icon: mdi:flash-off
+    color: var(--success-color)
+    opacity: 0.2
+  - name: waiting_for_schedule
+    entity: calendar.planned_outages
+    filter: Waiting for Schedule
+    icon: mdi:timer-sand
+    color: var(--warning-color)
+    opacity: 0.2
+    hide:
+      - planned_outages
 css: |
   .event-block {
     border-radius: 4px;

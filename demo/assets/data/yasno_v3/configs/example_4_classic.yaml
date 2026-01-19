@@ -1,5 +1,4 @@
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
   weekday: 'short'
 secondary_date_format:
@@ -9,6 +8,9 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
+time_range: false
+icons_mode: top
+icons_container: cell
 all_day: row
 event_variables:
   icon-opacity:
