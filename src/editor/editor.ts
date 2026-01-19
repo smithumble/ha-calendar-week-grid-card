@@ -1672,6 +1672,17 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   /**
+   * Get the display name for the currently selected theme
+   */
+  private get _selectedThemeName(): string {
+    if (this._selectedTheme === 'custom') {
+      return 'Custom';
+    }
+    const theme = themes.find((t) => t.id === this._selectedTheme);
+    return theme?.name || 'Custom';
+  }
+
+  /**
    * Apply properties from event_examples to existing entities (cycling by index)
    */
   private _applyEventExamplesToEntities(): void {
@@ -1770,6 +1781,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
           ${varDescription
             ? html`<div class="helper-text">${varDescription}</div>`
             : ''}
+          <div class="helper-text">Theme: ${this._selectedThemeName}</div>
         `;
       })}
     `;
@@ -1796,6 +1808,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
           ${varDescription
             ? html`<div class="helper-text">${varDescription}</div>`
             : ''}
+          <div class="helper-text">Theme: ${this._selectedThemeName}</div>
         `;
       })}
     `;
