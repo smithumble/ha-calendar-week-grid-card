@@ -569,6 +569,8 @@ event_examples:
     opacity: 0.2
   - color: var(--primary-color)
     opacity: 0.2
+  - color: var(--error-color)
+    opacity: 0.4
   - color: var(--success-color)
     opacity: 0.2
   - color: var(--warning-color)
@@ -598,7 +600,7 @@ entities:
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
     color: var(--error-color)
-    opacity: 0.2
+    opacity: 0.4
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
