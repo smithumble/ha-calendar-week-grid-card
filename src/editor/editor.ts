@@ -7,7 +7,7 @@
 import { LitElement, TemplateResult, html, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import type { HomeAssistant } from 'custom-card-helpers';
-import type { CardConfig, EntityConfig, EventVariable } from '../types';
+import type { CardConfig, EntityConfig, ThemeVariable } from '../types';
 import styles from './styles.css';
 import basicYamlConfig from '../configs/basic.yaml';
 import simpleYamlConfig from '../configs/simple.yaml';
@@ -360,13 +360,13 @@ export class CalendarWeekGridCardEditor extends LitElement {
       // Find the selected theme and apply its config
       const selectedTheme = themes.find((t) => t.id === themeId);
       if (selectedTheme && selectedTheme.config) {
-        // Get current event_variables before applying new theme
-        const currentEventVariables = this.getConfigValue(
-          'event_variables',
+        // Get current theme_variables before applying new theme
+        const currentThemeVariables = this.getConfigValue(
+          'theme_variables',
           {},
-        ) as Record<string, EventVariable> | undefined;
-        const currentVariableKeys = currentEventVariables
-          ? Object.keys(currentEventVariables)
+        ) as Record<string, ThemeVariable> | undefined;
+        const currentVariableKeys = currentThemeVariables
+          ? Object.keys(currentThemeVariables)
           : [];
 
         // Apply all config from YAML file (including CSS) except entities
@@ -377,13 +377,13 @@ export class CalendarWeekGridCardEditor extends LitElement {
         });
 
         // Remove previous vars from entities that are not in the new theme
-        this._removeObsoleteEventVariables(
+        this._removeObsoleteThemeVariables(
           selectedTheme.config,
           currentVariableKeys,
         );
 
-        // Apply event_examples properties to existing entities
-        this._applyEventExamplesToEntities();
+        // Apply theme_values_examples properties to existing entities
+        this._applyThemeValuesExamplesToEntities();
       }
       // Don't save theme_selection to config, it's UI-only
       return;
@@ -801,7 +801,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
               individual entity configs)
             </div>
             ${this.addIconPickerField('event.icon', 'Default Event Icon')}
-            ${this._renderEventConfigVariables('event')}
+            ${this._renderThemeConfigVariables('event')}
 
             <!-- Blank Event Config -->
             <h3>Blank Event</h3>
@@ -809,7 +809,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
               Configure blank event appearance and variables
             </div>
             ${this.addIconPickerField('blank_event.icon', 'Blank Event Icon')}
-            ${this._renderEventConfigVariables('blank_event')}
+            ${this._renderThemeConfigVariables('blank_event')}
 
             <!-- Blank All-Day Event Config -->
             <h3>Blank All-Day Event</h3>
@@ -820,7 +820,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
               'blank_all_day_event.icon',
               'Blank All-Day Event Icon',
             )}
-            ${this._renderEventConfigVariables('blank_all_day_event')}
+            ${this._renderThemeConfigVariables('blank_all_day_event')}
 
             <!-- Filter -->
             <h3>Filter</h3>
@@ -1459,7 +1459,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
                   <div class="helper-text">
                     Icon for events from this entity
                   </div>
-                  ${this._renderEventVariables(index)}
+                  ${this._renderThemeVariables(index)}
                 </div>
 
                 <!-- Advanced Event Control -->
@@ -1532,15 +1532,19 @@ export class CalendarWeekGridCardEditor extends LitElement {
     const entities = [...(this._config?.entities || [])];
     const newIndex = entities.length;
 
-    // Get event_examples from config and cycle through them by index
-    const eventExamples = this.getConfigValue('event_examples', []) as Array<
-      Record<string, unknown>
-    >;
+    // Get theme_values_examples from config and cycle through them by index
+    const themeValuesExamples = this.getConfigValue(
+      'theme_values_examples',
+      [],
+    ) as Array<Record<string, unknown>>;
 
-    // Create new entity with properties from event_examples (cycling by index)
+    // Create new entity with properties from theme_values_examples (cycling by index)
     const newEntity =
-      eventExamples.length > 0
-        ? { entity: '', ...eventExamples[newIndex % eventExamples.length] }
+      themeValuesExamples.length > 0
+        ? {
+            entity: '',
+            ...themeValuesExamples[newIndex % themeValuesExamples.length],
+          }
         : '';
 
     entities.push(newEntity);
@@ -1683,9 +1687,9 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   /**
-   * Apply properties from event_examples to existing entities (cycling by index)
+   * Apply properties from theme_values_examples to existing entities (cycling by index)
    */
-  private _applyEventExamplesToEntities(): void {
+  private _applyThemeValuesExamplesToEntities(): void {
     if (!this._config) {
       return;
     }
@@ -1695,18 +1699,19 @@ export class CalendarWeekGridCardEditor extends LitElement {
       return;
     }
 
-    // Get event_examples from config
-    const eventExamples = this.getConfigValue('event_examples', []) as Array<
-      Record<string, unknown>
-    >;
+    // Get theme_values_examples from config
+    const themeValuesExamples = this.getConfigValue(
+      'theme_values_examples',
+      [],
+    ) as Array<Record<string, unknown>>;
 
-    if (eventExamples.length === 0) {
+    if (themeValuesExamples.length === 0) {
       return;
     }
 
-    // Apply event_examples properties to each entity, cycling by index
+    // Apply theme_values_examples properties to each entity, cycling by index
     const updatedEntities = entities.map((entity, index) => {
-      const example = eventExamples[index % eventExamples.length];
+      const example = themeValuesExamples[index % themeValuesExamples.length];
 
       // Handle string entities
       if (typeof entity === 'string') {
@@ -1722,10 +1727,10 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   /**
-   * Removes obsolete entity variables that were in the previous config's event_variables
-   * Simply removes all properties from entities that match keys in previous event_variables
+   * Removes obsolete entity variables that were in the previous config's theme_variables
+   * Simply removes all properties from entities that match keys in previous theme_variables
    */
-  private _removeObsoleteEventVariables(
+  private _removeObsoleteThemeVariables(
     themeConfig: Partial<CardConfig>,
     previousVariableKeys: string[],
   ): void {
@@ -1738,7 +1743,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
       return;
     }
 
-    // Process each entity - remove properties that were in previous event_variables
+    // Process each entity - remove properties that were in previous theme_variables
     const updatedEntities = entities.map((entity) => {
       // Skip string entities (they don't have variables)
       if (typeof entity === 'string') {
@@ -1749,7 +1754,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
       const entityObj = entity as EntityConfig;
       const cleanedEntity: EntityConfig = { entity: entityObj.entity };
 
-      // Copy all properties except those that were in previous event_variables
+      // Copy all properties except those that were in previous theme_variables
       for (const [key, value] of Object.entries(entityObj)) {
         if (!previousVariableKeys.includes(key)) {
           cleanedEntity[key] = value;
@@ -1764,51 +1769,55 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   /**
-   * Renders fields for entity variables defined in event_variables config
+   * Renders fields for entity variables defined in theme_variables config
    */
-  private _renderEventVariables(entityIndex: number): TemplateResult {
-    const eventVariables = this.getConfigValue('event_variables', {}) as Record<
+  private _renderThemeVariables(entityIndex: number): TemplateResult {
+    const themeVariables = this.getConfigValue('theme_variables', {}) as Record<
       string,
-      EventVariable
+      ThemeVariable
     >;
 
     return html`
-      ${Object.entries(eventVariables).map(([varKey, varConfig]) => {
+      ${Object.entries(themeVariables).map(([varKey, varConfig]) => {
         const varName = varConfig?.name || varKey;
         const varDescription = varConfig?.description || '';
         return html`
           ${this.addTextField(`entities.${entityIndex}.${varKey}`, varName)}
+          <div class="helper-text" style="color: var(--primary-text-color);">
+            Theme: ${this._selectedThemeName}
+          </div>
           ${varDescription
             ? html`<div class="helper-text">${varDescription}</div>`
             : ''}
-          <div class="helper-text">Theme: ${this._selectedThemeName}</div>
         `;
       })}
     `;
   }
 
   /**
-   * Renders fields for event variables defined in event_variables config
+   * Renders fields for theme variables defined in theme_variables config
    * Used for event, blank_event, and blank_all_day_event configs
    */
-  private _renderEventConfigVariables(
+  private _renderThemeConfigVariables(
     configPath: 'event' | 'blank_event' | 'blank_all_day_event',
   ): TemplateResult {
-    const eventVariables = this.getConfigValue('event_variables', {}) as Record<
+    const themeVariables = this.getConfigValue('theme_variables', {}) as Record<
       string,
-      EventVariable
+      ThemeVariable
     >;
 
     return html`
-      ${Object.entries(eventVariables).map(([varKey, varConfig]) => {
+      ${Object.entries(themeVariables).map(([varKey, varConfig]) => {
         const varName = varConfig?.name || varKey;
         const varDescription = varConfig?.description || '';
         return html`
           ${this.addTextField(`${configPath}.${varKey}`, varName)}
+          <div class="helper-text" style="color: var(--primary-text-color);">
+            Theme: ${this._selectedThemeName}
+          </div>
           ${varDescription
             ? html`<div class="helper-text">${varDescription}</div>`
             : ''}
-          <div class="helper-text">Theme: ${this._selectedThemeName}</div>
         `;
       })}
     `;

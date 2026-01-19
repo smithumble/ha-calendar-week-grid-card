@@ -12,7 +12,7 @@ time_range: false
 icons_mode: top
 icons_container: cell
 all_day: row
-event_variables:
+theme_variables:
   icon-opacity:
     name: Icon Opacity
     description: The opacity of the event icon (0.0 to 1.0).
@@ -25,7 +25,7 @@ event_variables:
   border-style:
     name: Border Style
     description: The border style of the event (solid, dashed, dotted, double).
-event_examples:
+theme_values_examples:
   - opacity: 0.3
     border-style: solid
   - opacity: 0.1

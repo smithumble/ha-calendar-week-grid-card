@@ -11,7 +11,7 @@ time_range: true
 icons_container: event
 icons_mode: all
 all_day: row
-event_variables:
+theme_variables:
   color:
     name: Event Color
     description: The color of the event icon.
@@ -21,7 +21,7 @@ event_variables:
   opacity:
     name: Opacity
     description: The opacity of the event icon (0.0 to 1.0).
-event_examples:
+theme_values_examples:
   - color: var(--color-highlight-icon)
     background: var(--color-highlight)
   - color: var(--color-highlight-light-icon)

@@ -328,7 +328,7 @@ time_range: false
 icons_mode: top
 icons_container: cell
 all_day: row
-event_variables:
+theme_variables:
   icon-opacity:
     name: Icon Opacity
     description: The opacity of the event icon (0.0 to 1.0).
@@ -341,7 +341,7 @@ event_variables:
   border-style:
     name: Border Style
     description: The border style of the event (solid, dashed, dotted, double).
-event_examples:
+theme_values_examples:
   - opacity: 0.3
     border-style: solid
   - opacity: 0.1
@@ -434,7 +434,7 @@ time_range: false
 icons_mode: top
 icons_container: cell
 all_day: row
-event_variables:
+theme_variables:
   icon-opacity:
     name: Icon Opacity
     description: The opacity of the event icon (0.0 to 1.0).
@@ -450,7 +450,7 @@ event_variables:
   border-opacity:
     name: Border Opacity
     description: The opacity of the event border (0.0 to 1.0).
-event_examples:
+theme_values_examples:
   - color: var(--error-color)
     opacity: 0.1
     border-style: solid
@@ -554,7 +554,7 @@ time_range: false
 icons_mode: top
 icons_container: cell
 all_day: row
-event_variables:
+theme_variables:
   icon-opacity:
     name: Icon Opacity
     description: The opacity of the event icon (0.0 to 1.0).
@@ -564,7 +564,7 @@ event_variables:
   opacity:
     name: Opacity
     description: The opacity of the event background (0.1 to 1.0).
-event_examples:
+theme_values_examples:
   - color: var(--error-color)
     opacity: 0.2
   - color: var(--primary-color)
@@ -658,7 +658,7 @@ time_range: false
 icons_mode: top
 icons_container: cell
 all_day: row
-event_variables:
+theme_variables:
   icon-opacity:
     name: Icon Opacity
     description: The opacity of the event icon (0.0 to 1.0).
@@ -671,7 +671,7 @@ event_variables:
   background:
     name: Background
     description: The background of the event (color or repeating-linear-gradient).
-event_examples:
+theme_values_examples:
   - color: '#FF5252'
     background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
   - color: '#FF9800'
@@ -772,14 +772,14 @@ time_range: false
 icons_container: event
 icons_mode: all
 all_day: row
-event_variables:
+theme_variables:
   color:
     name: Event Color
     description: The color of the event icon.
   background:
     name: Background
     description: The background color of the event.
-event_examples:
+theme_values_examples:
   - color: '#FFFFFF'
     background: '#FF8A80'
   - color: '#1B5E20'
@@ -891,7 +891,7 @@ time_range: true
 icons_container: event
 icons_mode: all
 all_day: row
-event_variables:
+theme_variables:
   color:
     name: Event Color
     description: The color of the event icon.
@@ -901,7 +901,7 @@ event_variables:
   opacity:
     name: Opacity
     description: The opacity of the event icon (0.0 to 1.0).
-event_examples:
+theme_values_examples:
   - color: var(--color-highlight-icon)
     background: var(--color-highlight)
   - color: var(--color-highlight-light-icon)
@@ -1024,11 +1024,11 @@ time_range: true
 icons_mode: all
 icons_container: event
 all_day: row
-event_variables:
+theme_variables:
   color:
     name: Event Color
     description: The color of the event.
-event_examples:
+theme_values_examples:
   - color: var(--error-color)
   - color: var(--primary-color)
   - color: var(--error-color)
@@ -1271,11 +1271,11 @@ time_range: true
 icons_mode: all
 icons_container: event
 all_day: row
-event_variables:
+theme_variables:
   color:
     name: Event Color
     description: The color of the event.
-event_examples:
+theme_values_examples:
   - color: var(--error-color)
   - color: var(--primary-color)
   - color: var(--error-color)
@@ -1527,11 +1527,11 @@ time_format:
 icons_mode: all
 icons_container: event
 all_day: row
-event_variables:
+theme_variables:
   color:
     name: Event Color
     description: The color of the event.
-event_examples:
+theme_values_examples:
   - color: '#F3511E'
   - color: '#4285F4'
   - color: '#D40101'
@@ -1736,11 +1736,11 @@ time_format:
 icons_mode: all
 icons_container: event
 all_day: row
-event_variables:
+theme_variables:
   color:
     name: Event Color
     description: The color of the event.
-event_examples:
+theme_values_examples:
   - color: '#F3511E'
   - color: '#4285F4'
   - color: '#D40101'

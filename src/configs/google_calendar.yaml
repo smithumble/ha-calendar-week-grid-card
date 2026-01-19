@@ -11,11 +11,11 @@ time_range: true
 icons_mode: all
 icons_container: event
 all_day: row
-event_variables:
+theme_variables:
   color:
     name: Event Color
     description: The color of the event.
-event_examples:
+theme_values_examples:
   - color: var(--error-color)
   - color: var(--primary-color)
   - color: var(--error-color)

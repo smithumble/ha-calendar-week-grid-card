@@ -15,11 +15,11 @@ start_hour: 7
 end_hour: 22
 days: 8
 week_start: 'sunday'
-event_variables:
+theme_variables:
   color:
     name: Event Color
     description: The color of the event.
-event_examples:
+theme_values_examples:
   - color: var(--primary-color)
   - color: var(--success-color)
   - color: var(--warning-color)

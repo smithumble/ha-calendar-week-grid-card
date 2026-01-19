@@ -12,7 +12,7 @@ time_range: false
 icons_mode: top
 icons_container: cell
 all_day: row
-event_variables:
+theme_variables:
   icon-opacity:
     name: Icon Opacity
     description: The opacity of the event icon (0.0 to 1.0).
@@ -25,7 +25,7 @@ event_variables:
   background:
     name: Background
     description: The background of the event (color or repeating-linear-gradient).
-event_examples:
+theme_values_examples:
   - color: '#FF5252'
     background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
   - color: '#FF9800'

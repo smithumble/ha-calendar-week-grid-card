@@ -12,14 +12,14 @@ time_range: false
 icons_container: event
 icons_mode: all
 all_day: row
-event_variables:
+theme_variables:
   color:
     name: Event Color
     description: The color of the event icon.
   background:
     name: Background
     description: The background color of the event.
-event_examples:
+theme_values_examples:
   - color: '#FFFFFF'
     background: '#FF8A80'
   - color: '#1B5E20'

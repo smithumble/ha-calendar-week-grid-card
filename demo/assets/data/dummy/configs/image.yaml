@@ -8,7 +8,7 @@ end_hour: 24
 blank_icon: mdi:checkbox-blank-circle-outline
 all_day_icon: mdi:circle
 all_day: row
-event_variables:
+theme_variables:
   color:
     name: Event Color
     description: The color of the event icon.

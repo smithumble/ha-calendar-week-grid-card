@@ -41,7 +41,7 @@ export interface GridOptions {
   columns?: number | 'auto';
 }
 
-export interface EventVariable {
+export interface ThemeVariable {
   name?: string;
   description?: string;
 }
@@ -71,7 +71,7 @@ export interface CardConfig {
   event?: DefaultEventConfig;
   blank_event?: DefaultEventConfig;
   blank_all_day_event?: DefaultEventConfig;
-  event_examples?: DefaultEventConfig[];
+  theme_values_examples?: DefaultEventConfig[];
   week_start?:
     | 'today'
     | 'sunday'
@@ -84,7 +84,7 @@ export interface CardConfig {
   days?: number;
   theme?: 'dark' | 'light' | 'auto';
   entities?: (string | EntityConfig)[];
-  event_variables?: Record<string, EventVariable>;
+  theme_variables?: Record<string, ThemeVariable>;
   css?: string;
   grid_options?: GridOptions;
   layout_options?: LayoutOptions;

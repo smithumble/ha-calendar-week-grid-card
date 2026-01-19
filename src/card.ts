@@ -68,7 +68,7 @@ export class CalendarWeekGridCard extends LitElement {
     const calendarEntities = this.findCalendarEntities(hass);
     const configEntities = this.mapEntitiesToConfig(
       calendarEntities,
-      stubConfig.event_examples,
+      stubConfig.theme_values_examples,
     );
 
     return {
@@ -92,9 +92,9 @@ export class CalendarWeekGridCard extends LitElement {
    */
   private static mapEntitiesToConfig(
     entities: string[],
-    eventExamples?: unknown[],
+    themeValuesExamples?: unknown[],
   ): EntityConfig[] {
-    const examples = eventExamples || [];
+    const examples = themeValuesExamples || [];
     if (examples.length === 0) {
       return entities.map((entity) => ({ entity }));
     }
@@ -433,9 +433,9 @@ export class CalendarWeekGridCard extends LitElement {
     eventClassesList.push(event.isAllDay ? 'all-day' : '');
     const eventClasses = eventClassesList.filter(Boolean).join(' ');
 
-    // Build style with CSS variables from event_variables config
+    // Build style with CSS variables from theme_variables config
     let eventWrapperStyle = wrapperStyle;
-    const variables = this.getEventVariables(event);
+    const variables = this.getThemeVariables(event);
     for (const [varName, varValue] of Object.entries(variables)) {
       eventWrapperStyle += ` --${varName}: ${varValue};`;
     }
@@ -533,9 +533,9 @@ export class CalendarWeekGridCard extends LitElement {
     eventClassesList.push(isAllDay ? 'all-day' : '');
     const eventClasses = eventClassesList.filter(Boolean).join(' ');
 
-    // Build style with CSS variables from event_variables config
+    // Build style with CSS variables from theme_variables config
     let iconStyle = '';
-    const variables = this.getEventVariables(event);
+    const variables = this.getThemeVariables(event);
     for (const [varName, varValue] of Object.entries(variables)) {
       iconStyle += ` --${varName}: ${varValue};`;
     }
@@ -850,14 +850,14 @@ export class CalendarWeekGridCard extends LitElement {
   }
 
   /**
-   * Extracts CSS variable values from event based on event_variables config
+   * Extracts CSS variable values from event based on theme_variables config
    * Converts hyphenated property names (e.g., "event-color") to CSS variable names (e.g., "event-color")
    * For blank events, also considers blank_event and blank_all_day_event configs
    * For regular events, also considers root event config
    */
-  private getEventVariables(event: Event): Record<string, string> {
+  private getThemeVariables(event: Event): Record<string, string> {
     const variables: Record<string, string> = {};
-    const eventVariables = this.config?.event_variables;
+    const eventVariables = this.config?.theme_variables;
 
     if (!eventVariables) {
       return variables;
@@ -883,7 +883,7 @@ export class CalendarWeekGridCard extends LitElement {
       baseConfig = { ...(this.config?.event || {}) };
     }
 
-    // Extract variables defined in event_variables config
+    // Extract variables defined in theme_variables config
     for (const varKey of Object.keys(eventVariables)) {
       // Check if event has this property (supports both hyphenated and camelCase)
       const eventObj = event as Record<string, unknown>;
