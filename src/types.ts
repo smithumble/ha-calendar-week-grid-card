@@ -20,6 +20,7 @@ export interface StandardEntityConfig {
   filter?: string;
   icon?: string;
   theme_values?: Record<string, unknown>;
+  theme_values_archive?: Record<string, Record<string, unknown>>;
   under?: (string | EventCriteria)[];
   over?: (string | EventCriteria)[];
   hide?: (string | EventCriteria)[];
@@ -49,6 +50,7 @@ export interface ThemeVariable {
 export interface DefaultEventConfig {
   icon?: string;
   theme_values?: Record<string, unknown>;
+  theme_values_archive?: Record<string, Record<string, unknown>>;
   [key: string]: unknown;
 }
 
