@@ -851,7 +851,7 @@ export class CalendarWeekGridCard extends LitElement {
 
   /**
    * Extracts CSS variable values from event based on theme_variables config
-   * Converts hyphenated property names (e.g., "event-color") to CSS variable names (e.g., "event-color")
+   * Reads from theme_values nested object in event and base configs
    * For blank events, also considers blank_event and blank_all_day_event configs
    * For regular events, also considers root event config
    */
@@ -863,37 +863,39 @@ export class CalendarWeekGridCard extends LitElement {
       return variables;
     }
 
-    // Build base config based on event type
-    let baseConfig: Record<string, unknown> = {};
+    // Build base config's theme_values based on event type
+    let baseThemeValues: Record<string, unknown> = {};
 
     if (event.type === 'blank') {
-      // For blank events, merge variables from blank_event and blank_all_day_event configs
-      // Start with blank_event config
-      baseConfig = { ...(this.config?.blank_event || {}) };
+      // For blank events, merge theme_values from blank_event and blank_all_day_event configs
+      baseThemeValues = {
+        ...(this.config?.blank_event?.theme_values || {}),
+      };
 
       // Override with blank_all_day_event if it's an all-day event
       if (event.isAllDay) {
-        baseConfig = {
-          ...baseConfig,
-          ...(this.config?.blank_all_day_event || {}),
+        baseThemeValues = {
+          ...baseThemeValues,
+          ...(this.config?.blank_all_day_event?.theme_values || {}),
         };
       }
     } else {
-      // For regular events, start with root event config
-      baseConfig = { ...(this.config?.event || {}) };
+      // For regular events, start with root event config's theme_values
+      baseThemeValues = { ...(this.config?.event?.theme_values || {}) };
     }
+
+    // Get event's theme_values
+    const eventObj = event as Record<string, unknown>;
+    const eventThemeValues =
+      (eventObj.theme_values as Record<string, unknown>) || {};
 
     // Extract variables defined in theme_variables config
     for (const varKey of Object.keys(eventVariables)) {
-      // Check if event has this property (supports both hyphenated and camelCase)
-      const eventObj = event as Record<string, unknown>;
-      const eventValue = eventObj[varKey] || eventObj[this.toCamelCase(varKey)];
+      // Check event.theme_values first, then baseThemeValues
+      const eventValue = eventThemeValues[varKey];
+      const baseValue = baseThemeValues[varKey];
 
-      // Also check the base config
-      const baseValue =
-        baseConfig[varKey] || baseConfig[this.toCamelCase(varKey)];
-
-      // Priority: event property > base config
+      // Priority: event.theme_values > base config theme_values
       const finalValue = eventValue != null ? eventValue : baseValue;
 
       if (finalValue != null) {

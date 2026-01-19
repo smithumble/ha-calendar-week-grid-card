@@ -34,11 +34,13 @@ theme_values_examples:
     background: 'repeating-linear-gradient(45deg, rgb(from #FF8A80 r g b / 0.08), rgb(from #FF8A80 r g b / 0.08) 10px, rgb(from #FF8A80 r g b / 0.15) 10px, rgb(from #FF8A80 r g b / 0.15) 20px)'
   - color: '#29B6F6'
     background: 'repeating-linear-gradient(45deg, rgb(from #29B6F6 r g b / 0.08), rgb(from #29B6F6 r g b / 0.08) 10px, rgb(from #29B6F6 r g b / 0.15) 10px, rgb(from #29B6F6 r g b / 0.15) 20px)'
+event:
 blank_event:
   icon: mdi:lightning-bolt
-  icon-opacity: 0.7
-  color: var(--neon-green)
-  opacity: 0.01
+  theme_values:
+    icon-opacity: 0.7
+    color: var(--neon-green)
+    opacity: 0.01
 blank_all_day_event:
   icon: mdi:circle-outline
 entities:
@@ -46,33 +48,38 @@ entities:
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-    color: '#FF5252'
-    opacity: 0.08
-    background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
+    theme_values:
+      color: '#FF5252'
+      opacity: 0.08
+      background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:alert-circle-outline
-    color: '#FF9800'
-    opacity: 0.08
-    background: 'repeating-linear-gradient(45deg, rgb(from #FF9800 r g b / 0.08), rgb(from #FF9800 r g b / 0.08) 10px, rgb(from #FF9800 r g b / 0.15) 10px, rgb(from #FF9800 r g b / 0.15) 20px)'
+    theme_values:
+      color: '#FF9800'
+      opacity: 0.08
+      background: 'repeating-linear-gradient(45deg, rgb(from #FF9800 r g b / 0.08), rgb(from #FF9800 r g b / 0.08) 10px, rgb(from #FF9800 r g b / 0.15) 10px, rgb(from #FF9800 r g b / 0.15) 20px)'
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-    color: '#FF8A80'
-    opacity: 0.2
+    theme_values:
+      color: '#FF8A80'
+      opacity: 0.2
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:calendar-check
-    color: '#29B6F6'
-    opacity: 0.05
+    theme_values:
+      color: '#29B6F6'
+      opacity: 0.05
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    color: '#90A4AE'
-    opacity: 0.05
+    theme_values:
+      color: '#90A4AE'
+      opacity: 0.05
     hide:
       - planned_outages
 css: |

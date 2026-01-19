@@ -7,6 +7,7 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
+time_range: false
 icons_mode: all
 icons_container: event
 all_day: row
@@ -20,33 +21,41 @@ theme_values_examples:
   - color: '#D40101'
   - color: '#34B779'
   - color: '#F6BE28'
+event:
 blank_event:
-  color: transparent
+  theme_values:
+    color: transparent
+blank_all_day_event:
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-    color: '#F3511E'
+    theme_values:
+      color: '#F3511E'
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
-    color: '#4285F4'
+    theme_values:
+      color: '#4285F4'
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-    color: '#D40101'
+    theme_values:
+      color: '#D40101'
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
-    color: '#34B779'
+    theme_values:
+      color: '#34B779'
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    color: '#F6BE28'
+    theme_values:
+      color: '#F6BE28'
     hide:
       - planned_outages
 css: |

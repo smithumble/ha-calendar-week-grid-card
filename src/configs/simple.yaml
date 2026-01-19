@@ -36,11 +36,13 @@ theme_values_examples:
     border-style: dotted
   - opacity: 0.1
     border-style: dotted
+event:
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
-  icon-opacity: 0.3
-  opacity: 0
-  border-opacity: 0.3
+  theme_values:
+    icon-opacity: 0.3
+    opacity: 0
+    border-opacity: 0.3
 blank_all_day_event:
   icon: mdi:checkbox-blank-circle
 entities:
@@ -48,31 +50,36 @@ entities:
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-    opacity: 0.3
-    border-style: solid
+    theme_values:
+      opacity: 0.3
+      border-style: solid
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:alert-circle-outline
-    opacity: 0.1
-    border-style: dashed
+    theme_values:
+      opacity: 0.1
+      border-style: dashed
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-    opacity: 0.2
-    border-style: double
+    theme_values:
+      opacity: 0.2
+      border-style: double
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
-    opacity: 0.1
-    border-style: dotted
+    theme_values:
+      opacity: 0.1
+      border-style: dotted
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    opacity: 0.1
-    border-style: dotted
+    theme_values:
+      opacity: 0.1
+      border-style: dotted
     hide:
       - planned_outages
 css: |

@@ -30,10 +30,12 @@ theme_values_examples:
     background: '#FFF176'
   - color: '#006064'
     background: '#80DEEA'
+event:
 blank_event:
   icon: mdi:circle-outline
-  color: '#E0E0E0'
-  background: '#F5F5F5'
+  theme_values:
+    color: '#E0E0E0'
+    background: '#F5F5F5'
 blank_all_day_event:
   icon: mdi:checkbox-blank-circle
 entities:
@@ -41,31 +43,36 @@ entities:
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:close-circle
-    color: '#FFFFFF'
-    background: '#FF8A80'
+    theme_values:
+      color: '#FFFFFF'
+      background: '#FF8A80'
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:close-circle
-    color: '#1B5E20'
-    background: '#B9F6CA'
+    theme_values:
+      color: '#1B5E20'
+      background: '#B9F6CA'
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:alert-circle
-    color: '#FFFFFF'
-    background: '#FF80AB'
+    theme_values:
+      color: '#FFFFFF'
+      background: '#FF80AB'
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:circle-outline
-    color: '#F57F17'
-    background: '#FFF176'
+    theme_values:
+      color: '#F57F17'
+      background: '#FFF176'
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:clock-outline
-    color: '#006064'
-    background: '#80DEEA'
+    theme_values:
+      color: '#006064'
+      background: '#80DEEA'
     hide:
       - planned_outages
 css: |

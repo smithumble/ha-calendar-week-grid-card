@@ -25,20 +25,27 @@ theme_values_examples:
   - color: var(--color-highlight-icon)
     background: var(--color-highlight)
   - color: var(--color-highlight-light-icon)
+event:
 blank_event:
-  opacity: 0.3
+  icon:
+  theme_values:
+    opacity: 0.3
+blank_all_day_event:
+  icon:
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
     filter: Outage
     type: highlight
     icon: mdi:flash-off
-    color: var(--color-highlight-icon)
-    background: var(--color-highlight)
+    theme_values:
+      color: var(--color-highlight-icon)
+      background: var(--color-highlight)
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
-    color: var(--color-highlight-light-icon)
+    theme_values:
+      color: var(--color-highlight-light-icon)
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -47,8 +54,9 @@ entities:
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    color: var(--color-highlight-light-icon)
-    opacity: 0.5
+    theme_values:
+      color: var(--color-highlight-light-icon)
+      opacity: 0.5
     hide:
       - planned_outages
 css: |

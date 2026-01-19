@@ -360,15 +360,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
       // Find the selected theme and apply its config
       const selectedTheme = themes.find((t) => t.id === themeId);
       if (selectedTheme && selectedTheme.config) {
-        // Get current theme_variables before applying new theme
-        const currentThemeVariables = this.getConfigValue(
-          'theme_variables',
-          {},
-        ) as Record<string, ThemeVariable> | undefined;
-        const currentVariableKeys = currentThemeVariables
-          ? Object.keys(currentThemeVariables)
-          : [];
-
         // Apply all config from YAML file (including CSS) except entities
         Object.entries(selectedTheme.config).forEach(([key, value]) => {
           if (key !== 'entities') {
@@ -377,10 +368,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
         });
 
         // Remove previous vars from entities that are not in the new theme
-        this._removeObsoleteThemeVariables(
-          selectedTheme.config,
-          currentVariableKeys,
-        );
+        this._removeObsoleteThemeVariables();
 
         // Apply theme_values_examples properties to existing entities
         this._applyThemeValuesExamplesToEntities();
@@ -1541,10 +1529,10 @@ export class CalendarWeekGridCardEditor extends LitElement {
     // Create new entity with properties from theme_values_examples (cycling by index)
     const newEntity =
       themeValuesExamples.length > 0
-        ? {
-            entity: '',
-            ...themeValuesExamples[newIndex % themeValuesExamples.length],
-          }
+        ? this._applyThemeValuesToEntity(
+            '',
+            themeValuesExamples[newIndex % themeValuesExamples.length],
+          )
         : '';
 
     entities.push(newEntity);
@@ -1687,7 +1675,49 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   /**
+   * Apply theme values from example to a single entity
+   * Extracts theme variable properties and sets them as theme_values
+   */
+  private _applyThemeValuesToEntity(
+    entity: string | EntityConfig,
+    example: Record<string, unknown>,
+  ): string | EntityConfig {
+    // Get theme_variables keys
+    const themeVariables =
+      (this.getConfigValue('theme_variables', {}) as Record<
+        string,
+        ThemeVariable
+      >) || {};
+    const themeVariableKeys = Object.keys(themeVariables);
+
+    // Extract only theme variable properties from example
+    const themeValuesProps: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(example)) {
+      if (themeVariableKeys.includes(key)) {
+        themeValuesProps[key] = value;
+      }
+    }
+
+    // Handle string entities - convert to object
+    if (typeof entity === 'string') {
+      const result: EntityConfig = { entity };
+      if (Object.keys(themeValuesProps).length > 0) {
+        result.theme_values = themeValuesProps;
+      }
+      return result;
+    }
+
+    // Handle object entities - replace theme_values
+    const result = { ...entity };
+    if (Object.keys(themeValuesProps).length > 0) {
+      result.theme_values = themeValuesProps;
+    }
+    return result;
+  }
+
+  /**
    * Apply properties from theme_values_examples to existing entities (cycling by index)
+   * Separates theme variable properties into theme_values nested object
    */
   private _applyThemeValuesExamplesToEntities(): void {
     if (!this._config) {
@@ -1712,14 +1742,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
     // Apply theme_values_examples properties to each entity, cycling by index
     const updatedEntities = entities.map((entity, index) => {
       const example = themeValuesExamples[index % themeValuesExamples.length];
-
-      // Handle string entities
-      if (typeof entity === 'string') {
-        return { entity, ...example };
-      }
-
-      // Handle object entities - merge with example properties
-      return { ...entity, ...example };
+      return this._applyThemeValuesToEntity(entity, example);
     });
 
     // Update the config with updated entities
@@ -1727,39 +1750,29 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   /**
-   * Removes obsolete entity variables that were in the previous config's theme_variables
-   * Simply removes all properties from entities that match keys in previous theme_variables
+   * Removes theme_values from all entities before applying new theme
    */
-  private _removeObsoleteThemeVariables(
-    themeConfig: Partial<CardConfig>,
-    previousVariableKeys: string[],
-  ): void {
+  private _removeObsoleteThemeVariables(): void {
     if (!this._config) {
       return;
     }
 
     const entities = this._config.entities || [];
-    if (entities.length === 0 || previousVariableKeys.length === 0) {
+    if (entities.length === 0) {
       return;
     }
 
-    // Process each entity - remove properties that were in previous theme_variables
+    // Process each entity - remove theme_values object
     const updatedEntities = entities.map((entity) => {
       // Skip string entities (they don't have variables)
       if (typeof entity === 'string') {
         return entity;
       }
 
-      // For object entities, remove properties that were in previous variables
+      // For object entities, remove theme_values
       const entityObj = entity as EntityConfig;
-      const cleanedEntity: EntityConfig = { entity: entityObj.entity };
-
-      // Copy all properties except those that were in previous theme_variables
-      for (const [key, value] of Object.entries(entityObj)) {
-        if (!previousVariableKeys.includes(key)) {
-          cleanedEntity[key] = value;
-        }
-      }
+      const cleanedEntity: EntityConfig = { ...entityObj };
+      delete cleanedEntity.theme_values;
 
       return cleanedEntity;
     });
@@ -1770,6 +1783,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
   /**
    * Renders fields for entity variables defined in theme_variables config
+   * Values are stored in theme_values nested object
    */
   private _renderThemeVariables(entityIndex: number): TemplateResult {
     const themeVariables = this.getConfigValue('theme_variables', {}) as Record<
@@ -1782,7 +1796,10 @@ export class CalendarWeekGridCardEditor extends LitElement {
         const varName = varConfig?.name || varKey;
         const varDescription = varConfig?.description || '';
         return html`
-          ${this.addTextField(`entities.${entityIndex}.${varKey}`, varName)}
+          ${this.addTextField(
+            `entities.${entityIndex}.theme_values.${varKey}`,
+            varName,
+          )}
           <div class="helper-text" style="color: var(--primary-text-color);">
             Theme: ${this._selectedThemeName}
           </div>
@@ -1797,6 +1814,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
   /**
    * Renders fields for theme variables defined in theme_variables config
    * Used for event, blank_event, and blank_all_day_event configs
+   * Values are stored in theme_values nested object
    */
   private _renderThemeConfigVariables(
     configPath: 'event' | 'blank_event' | 'blank_all_day_event',
@@ -1811,7 +1829,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
         const varName = varConfig?.name || varKey;
         const varDescription = varConfig?.description || '';
         return html`
-          ${this.addTextField(`${configPath}.${varKey}`, varName)}
+          ${this.addTextField(`${configPath}.theme_values.${varKey}`, varName)}
           <div class="helper-text" style="color: var(--primary-text-color);">
             Theme: ${this._selectedThemeName}
           </div>

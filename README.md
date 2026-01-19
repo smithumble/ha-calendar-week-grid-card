@@ -285,6 +285,9 @@ Each item in `hide` can be:
 
 <!-- CONFIG:yasno_v3/basic -->
 
+<details>
+<summary>Configuration</summary>
+
 ```yaml
 type: custom:calendar-week-grid-card
 language: en
@@ -295,12 +298,17 @@ time_format:
 time_range: false
 icons_mode: top
 icons_container: cell
+event:
+blank_event:
+blank_all_day_event:
 entities:
   - entity: calendar.planned_outages
     filter: Outage
     icon: mdi:check-circle-outline
   - calendar.probable_outages
 ```
+
+</details>
 
 <!-- END_CONFIG -->
 
@@ -352,11 +360,13 @@ theme_values_examples:
     border-style: dotted
   - opacity: 0.1
     border-style: dotted
+event:
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
-  icon-opacity: 0.3
-  opacity: 0
-  border-opacity: 0.3
+  theme_values:
+    icon-opacity: 0.3
+    opacity: 0
+    border-opacity: 0.3
 blank_all_day_event:
   icon: mdi:checkbox-blank-circle
 entities:
@@ -364,31 +374,36 @@ entities:
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-    opacity: 0.3
-    border-style: solid
+    theme_values:
+      opacity: 0.3
+      border-style: solid
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:alert-circle-outline
-    opacity: 0.1
-    border-style: dashed
+    theme_values:
+      opacity: 0.1
+      border-style: dashed
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-    opacity: 0.2
-    border-style: double
+    theme_values:
+      opacity: 0.2
+      border-style: double
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
-    opacity: 0.1
-    border-style: dotted
+    theme_values:
+      opacity: 0.1
+      border-style: dotted
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    opacity: 0.1
-    border-style: dotted
+    theme_values:
+      opacity: 0.1
+      border-style: dotted
     hide:
       - planned_outages
 css: |
@@ -466,11 +481,13 @@ theme_values_examples:
   - color: var(--info-color)
     opacity: 0.1
     border-style: dotted
+event:
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
-  icon-opacity: 0.3
-  opacity: 0
-  border-opacity: 0.3
+  theme_values:
+    icon-opacity: 0.3
+    opacity: 0
+    border-opacity: 0.3
 blank_all_day_event:
   icon: mdi:checkbox-blank-circle
 entities:
@@ -478,36 +495,41 @@ entities:
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-    color: var(--error-color)
-    opacity: 0.1
-    border-style: solid
+    theme_values:
+      color: var(--error-color)
+      opacity: 0.1
+      border-style: solid
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:alert-circle-outline
-    color: var(--warning-color)
-    opacity: 0.1
-    border-style: dashed
+    theme_values:
+      color: var(--warning-color)
+      opacity: 0.1
+      border-style: dashed
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-    color: var(--error-color)
-    opacity: 0.2
-    border-style: double
+    theme_values:
+      color: var(--error-color)
+      opacity: 0.2
+      border-style: double
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
-    color: var(--success-color)
-    opacity: 0.1
-    border-style: dotted
+    theme_values:
+      color: var(--success-color)
+      opacity: 0.1
+      border-style: dotted
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    color: var(--info-color)
-    opacity: 0.1
-    border-style: dotted
+    theme_values:
+      color: var(--info-color)
+      opacity: 0.1
+      border-style: dotted
     hide:
       - planned_outages
 css: |
@@ -577,10 +599,12 @@ theme_values_examples:
     opacity: 0.2
   - color: var(--info-color)
     opacity: 0.2
+event:
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
-  icon-opacity: 0.3
-  opacity: 0
+  theme_values:
+    icon-opacity: 0.3
+    opacity: 0
 blank_all_day_event:
   icon: mdi:checkbox-blank-circle
 entities:
@@ -588,31 +612,36 @@ entities:
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-    color: var(--error-color)
-    opacity: 0.2
+    theme_values:
+      color: var(--error-color)
+      opacity: 0.2
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
-    color: var(--primary-color)
-    opacity: 0.2
+    theme_values:
+      color: var(--primary-color)
+      opacity: 0.2
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-    color: var(--error-color)
-    opacity: 0.4
+    theme_values:
+      color: var(--error-color)
+      opacity: 0.4
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
-    color: var(--success-color)
-    opacity: 0.2
+    theme_values:
+      color: var(--success-color)
+      opacity: 0.2
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    color: var(--warning-color)
-    opacity: 0.2
+    theme_values:
+      color: var(--warning-color)
+      opacity: 0.2
     hide:
       - planned_outages
 css: |
@@ -680,11 +709,13 @@ theme_values_examples:
     background: 'repeating-linear-gradient(45deg, rgb(from #FF8A80 r g b / 0.08), rgb(from #FF8A80 r g b / 0.08) 10px, rgb(from #FF8A80 r g b / 0.15) 10px, rgb(from #FF8A80 r g b / 0.15) 20px)'
   - color: '#29B6F6'
     background: 'repeating-linear-gradient(45deg, rgb(from #29B6F6 r g b / 0.08), rgb(from #29B6F6 r g b / 0.08) 10px, rgb(from #29B6F6 r g b / 0.15) 10px, rgb(from #29B6F6 r g b / 0.15) 20px)'
+event:
 blank_event:
   icon: mdi:lightning-bolt
-  icon-opacity: 0.7
-  color: var(--neon-green)
-  opacity: 0.01
+  theme_values:
+    icon-opacity: 0.7
+    color: var(--neon-green)
+    opacity: 0.01
 blank_all_day_event:
   icon: mdi:circle-outline
 entities:
@@ -692,33 +723,38 @@ entities:
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-    color: '#FF5252'
-    opacity: 0.08
-    background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
+    theme_values:
+      color: '#FF5252'
+      opacity: 0.08
+      background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:alert-circle-outline
-    color: '#FF9800'
-    opacity: 0.08
-    background: 'repeating-linear-gradient(45deg, rgb(from #FF9800 r g b / 0.08), rgb(from #FF9800 r g b / 0.08) 10px, rgb(from #FF9800 r g b / 0.15) 10px, rgb(from #FF9800 r g b / 0.15) 20px)'
+    theme_values:
+      color: '#FF9800'
+      opacity: 0.08
+      background: 'repeating-linear-gradient(45deg, rgb(from #FF9800 r g b / 0.08), rgb(from #FF9800 r g b / 0.08) 10px, rgb(from #FF9800 r g b / 0.15) 10px, rgb(from #FF9800 r g b / 0.15) 20px)'
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-    color: '#FF8A80'
-    opacity: 0.2
+    theme_values:
+      color: '#FF8A80'
+      opacity: 0.2
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:calendar-check
-    color: '#29B6F6'
-    opacity: 0.05
+    theme_values:
+      color: '#29B6F6'
+      opacity: 0.05
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    color: '#90A4AE'
-    opacity: 0.05
+    theme_values:
+      color: '#90A4AE'
+      opacity: 0.05
     hide:
       - planned_outages
 css: |
@@ -790,10 +826,12 @@ theme_values_examples:
     background: '#FFF176'
   - color: '#006064'
     background: '#80DEEA'
+event:
 blank_event:
   icon: mdi:circle-outline
-  color: '#E0E0E0'
-  background: '#F5F5F5'
+  theme_values:
+    color: '#E0E0E0'
+    background: '#F5F5F5'
 blank_all_day_event:
   icon: mdi:checkbox-blank-circle
 entities:
@@ -801,31 +839,36 @@ entities:
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:close-circle
-    color: '#FFFFFF'
-    background: '#FF8A80'
+    theme_values:
+      color: '#FFFFFF'
+      background: '#FF8A80'
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:close-circle
-    color: '#1B5E20'
-    background: '#B9F6CA'
+    theme_values:
+      color: '#1B5E20'
+      background: '#B9F6CA'
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:alert-circle
-    color: '#FFFFFF'
-    background: '#FF80AB'
+    theme_values:
+      color: '#FFFFFF'
+      background: '#FF80AB'
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:circle-outline
-    color: '#F57F17'
-    background: '#FFF176'
+    theme_values:
+      color: '#F57F17'
+      background: '#FFF176'
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:clock-outline
-    color: '#006064'
-    background: '#80DEEA'
+    theme_values:
+      color: '#006064'
+      background: '#80DEEA'
     hide:
       - planned_outages
 css: |
@@ -905,20 +948,27 @@ theme_values_examples:
   - color: var(--color-highlight-icon)
     background: var(--color-highlight)
   - color: var(--color-highlight-light-icon)
+event:
 blank_event:
-  opacity: 0.3
+  icon:
+  theme_values:
+    opacity: 0.3
+blank_all_day_event:
+  icon:
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
     filter: Outage
     type: highlight
     icon: mdi:flash-off
-    color: var(--color-highlight-icon)
-    background: var(--color-highlight)
+    theme_values:
+      color: var(--color-highlight-icon)
+      background: var(--color-highlight)
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
-    color: var(--color-highlight-light-icon)
+    theme_values:
+      color: var(--color-highlight-light-icon)
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -927,8 +977,9 @@ entities:
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    color: var(--color-highlight-light-icon)
-    opacity: 0.5
+    theme_values:
+      color: var(--color-highlight-light-icon)
+      opacity: 0.5
     hide:
       - planned_outages
 css: |
@@ -1035,33 +1086,41 @@ theme_values_examples:
   - color: var(--success-color)
   - color: var(--warning-color)
   - color: var(--info-color)
+event:
 blank_event:
-  color: transparent
+  theme_values:
+    color: transparent
+blank_all_day_event:
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-    color: var(--error-color)
+    theme_values:
+      color: var(--error-color)
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
-    color: var(--primary-color)
+    theme_values:
+      color: var(--primary-color)
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-    color: var(--error-color)
+    theme_values:
+      color: var(--error-color)
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
-    color: var(--success-color)
+    theme_values:
+      color: var(--success-color)
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    color: var(--warning-color)
+    theme_values:
+      color: var(--warning-color)
     hide:
       - planned_outages
 css: |
@@ -1282,33 +1341,41 @@ theme_values_examples:
   - color: var(--success-color)
   - color: var(--warning-color)
   - color: var(--info-color)
+event:
 blank_event:
-  color: transparent
+  theme_values:
+    color: transparent
+blank_all_day_event:
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-    color: var(--error-color)
+    theme_values:
+      color: var(--error-color)
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
-    color: var(--primary-color)
+    theme_values:
+      color: var(--primary-color)
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-    color: var(--error-color)
+    theme_values:
+      color: var(--error-color)
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
-    color: var(--success-color)
+    theme_values:
+      color: var(--success-color)
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    color: var(--warning-color)
+    theme_values:
+      color: var(--warning-color)
     hide:
       - planned_outages
 css: |
@@ -1524,6 +1591,7 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
+time_range: false
 icons_mode: all
 icons_container: event
 all_day: row
@@ -1537,33 +1605,41 @@ theme_values_examples:
   - color: '#D40101'
   - color: '#34B779'
   - color: '#F6BE28'
+event:
 blank_event:
-  color: transparent
+  theme_values:
+    color: transparent
+blank_all_day_event:
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-    color: '#F3511E'
+    theme_values:
+      color: '#F3511E'
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
-    color: '#4285F4'
+    theme_values:
+      color: '#4285F4'
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-    color: '#D40101'
+    theme_values:
+      color: '#D40101'
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
-    color: '#34B779'
+    theme_values:
+      color: '#34B779'
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    color: '#F6BE28'
+    theme_values:
+      color: '#F6BE28'
     hide:
       - planned_outages
 css: |
@@ -1733,6 +1809,7 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
+time_range: false
 icons_mode: all
 icons_container: event
 all_day: row
@@ -1746,33 +1823,41 @@ theme_values_examples:
   - color: '#D40101'
   - color: '#34B779'
   - color: '#F6BE28'
+event:
 blank_event:
-  color: transparent
+  theme_values:
+    color: transparent
+blank_all_day_event:
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-    color: '#F3511E'
+    theme_values:
+      color: '#F3511E'
   - name: probable_outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
-    color: '#4285F4'
+    theme_values:
+      color: '#4285F4'
   - name: emergency_shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-    color: '#D40101'
+    theme_values:
+      color: '#D40101'
   - name: schedule_applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
-    color: '#34B779'
+    theme_values:
+      color: '#34B779'
   - name: waiting_for_schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
-    color: '#F6BE28'
+    theme_values:
+      color: '#F6BE28'
     hide:
       - planned_outages
 css: |

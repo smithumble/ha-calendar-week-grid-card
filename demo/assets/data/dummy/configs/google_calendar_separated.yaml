@@ -20,40 +20,47 @@ theme_variables:
     name: Icon Color
     description: The color of the event icon.
 blank_event:
-  color: transparent
+  theme_values:
+    color: transparent
 entities:
   - name: sleep
     entity: calendar.work_schedule
     filter: Sleep
     icon: mdi:pause-circle-outline
-    color: transparent
-    icon-color: rgb(from var(--secondary-text-color) r g b / 0.5)
+    theme_values:
+      color: transparent
+      icon-color: rgb(from var(--secondary-text-color) r g b / 0.5)
   - name: beer
     entity: calendar.work_schedule
     filter: Beer
     icon: mdi:beer
-    color: var(--warning-color)
+    theme_values:
+      color: var(--warning-color)
   - name: planning
     entity: calendar.work_schedule
     filter: Planning
     icon: mdi:calendar-clock
-    color: var(--info-color)
+    theme_values:
+      color: var(--info-color)
   - name: stand_up
     entity: calendar.work_schedule
     filter: Stand Up
     icon: mdi:account-group
-    color: var(--success-color)
+    theme_values:
+      color: var(--success-color)
   - name: working_hours
     entity: calendar.work_schedule
     filter: Working Hours
     icon: mdi:checkbox-blank-circle-outline
-    color: transparent
-    icon-color: rgb(from var(--secondary-text-color) r g b / 0.5)
+    theme_values:
+      color: transparent
+      icon-color: rgb(from var(--secondary-text-color) r g b / 0.5)
   - name: company_holiday
     entity: calendar.work_schedule
     filter: Company Holiday
     icon: mdi:calendar-check
-    color: var(--error-color)
+    theme_values:
+      color: var(--error-color)
 css: |
   ha-card { 
     --grid-bg: var(--card-background-color, #FFF);
