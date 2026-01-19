@@ -19,15 +19,33 @@ import { CalendarWeekGridCardEditor } from './editor/editor';
 import styles from './styles.css';
 import type {
   CardConfig,
-  CalendarEvent,
   Event,
-  RawEvent,
   DayInfo,
-  EntityConfig,
-  EventCriteria,
   CustomCard,
-  ThemeValues,
+  EntityConfig,
+  RawEvent,
+  CalendarEvent,
 } from './types';
+import {
+  getDays,
+  formatHour,
+  toHaTime,
+  normalizeDate,
+  getWeekStartDate,
+} from './utils/datetime';
+import {
+  filterEvents,
+  filterAllDayEvents,
+  hideEvents,
+  shiftEvents,
+} from './utils/events';
+import {
+  calculateEventDimensions,
+  mergeVisibleBlocks,
+  calculateSubBlockPosition,
+  generateEventSubBlocks,
+} from './utils/positioning';
+import { getThemeValues, buildThemeStyle, getEventIcon } from './utils/theme';
 
 //-----------------------------------------------------------------------------
 // GLOBAL TYPE DECLARATIONS
@@ -276,11 +294,10 @@ export class CalendarWeekGridCard extends LitElement {
       isNow = new Date().getHours() === hour;
     }
 
-    // Build cell classes
-    const timeLabelClassesList: string[] = [];
-    timeLabelClassesList.push(isNow ? 'now' : '');
-    timeLabelClassesList.push(isAllDay ? 'all-day' : '');
-    const timeLabelClasses = timeLabelClassesList.filter(Boolean).join(' ');
+    const timeLabelClasses = this.buildClassList({
+      now: isNow,
+      'all-day': isAllDay,
+    });
 
     return html`
       <div class="time-label-wrapper ${timeLabelClasses}">
@@ -322,7 +339,6 @@ export class CalendarWeekGridCard extends LitElement {
     cellEvents = this.hideEvents(cellEvents);
 
     // If not all day and all day is in a row, filter out all day events
-
     cellEvents = isAllDay ? cellEvents : this.filterAllDayEvents(cellEvents);
 
     // Sort events based on shift configuration
@@ -331,12 +347,11 @@ export class CalendarWeekGridCard extends LitElement {
     // Determine if this is the current hour (for all days)
     const isNow = new Date().getHours() === hour;
 
-    // Build cell classes
-    const cellClassesList: string[] = [];
-    cellClassesList.push(day.isToday ? 'today' : '');
-    cellClassesList.push(isNow ? 'now' : '');
-    cellClassesList.push(isAllDay ? 'all-day' : '');
-    const cellClasses = cellClassesList.filter(Boolean).join(' ');
+    const cellClasses = this.buildClassList({
+      today: day.isToday,
+      now: isNow,
+      'all-day': isAllDay,
+    });
 
     return html`
       <div class="cell-wrapper ${cellClasses}">
@@ -376,70 +391,35 @@ export class CalendarWeekGridCard extends LitElement {
     const eventStartTime = event.start.getTime();
     const eventEndTime = event.end.getTime();
 
-    const start = Math.max(cellStartTime, eventStartTime);
-    const end = Math.min(cellEndTime, eventEndTime);
-
-    const duration = cellEndTime - cellStartTime;
-
-    const startRatio = (start - cellStartTime) / duration;
-    const endRatio = (end - cellStartTime) / duration;
-
-    const topPct = startRatio * 100;
-    const heightRatio = endRatio - startRatio;
-    const heightPct = heightRatio * 100;
-
-    const blocks = this.generateEventSubBlocks(
-      start,
-      end,
+    const dimensions = calculateEventDimensions(
+      eventStartTime,
+      eventEndTime,
       cellStartTime,
       cellEndTime,
     );
 
-    const innerHeightPct = heightRatio > 0 ? 100 / heightRatio : 100;
-    const innerTopPct = heightRatio > 0 ? -(startRatio / heightRatio) * 100 : 0;
+    const blocks = generateEventSubBlocks(
+      Math.max(cellStartTime, eventStartTime),
+      Math.min(cellEndTime, eventEndTime),
+      cellStartTime,
+      cellEndTime,
+    );
 
-    // Filter and merge blocks that should be rendered
-    const mergedBlocks: Array<{ start: number; end: number }> = [];
-    let currentBlock: { start: number; end: number } | null = null;
+    const mergedBlocks = mergeVisibleBlocks(blocks, event, cellEvents);
 
-    for (const block of blocks) {
-      // Find all events that overlap with this block time period
-      let events = this.filterEvents(cellEvents, block.start, block.end);
+    const wrapperStyle = `top: ${dimensions.topPct}%; height: ${dimensions.heightPct}%;`;
+    const innerStyle = `top: ${dimensions.innerTopPct}%; height: ${dimensions.innerHeightPct}%;`;
 
-      // Sort events based on shift configuration
-      events = this.shiftEvents(events);
-
-      // The last one is the topmost event
-      if (events.length > 0 && events[events.length - 1] === event) {
-        if (currentBlock && currentBlock.end === block.start) {
-          currentBlock.end = block.end;
-        } else {
-          if (currentBlock) mergedBlocks.push(currentBlock);
-          currentBlock = { ...block };
-        }
-      } else {
-        if (currentBlock) {
-          mergedBlocks.push(currentBlock);
-          currentBlock = null;
-        }
-      }
-    }
-
-    if (currentBlock) mergedBlocks.push(currentBlock);
-
-    const wrapperStyle = `top: ${topPct}%; height: ${heightPct}%;`;
-    const innerStyle = `top: ${innerTopPct}%; height: ${innerHeightPct}%;`;
-
-    const eventClassesList: string[] = [];
-    eventClassesList.push(event.isAllDay ? 'all-day' : '');
-    const eventClasses = eventClassesList.filter(Boolean).join(' ');
+    const eventClasses = this.buildClassList({
+      'all-day': !!event.isAllDay,
+    });
 
     // Build style with CSS variables values
-    let eventWrapperStyle = wrapperStyle;
     const variables = this.getThemeValues(event);
-    for (const [varName, varValue] of Object.entries(variables)) {
-      eventWrapperStyle += ` --${varName}: ${varValue};`;
-    }
+    const themeStyle = buildThemeStyle(variables);
+    const eventWrapperStyle = wrapperStyle + themeStyle;
+
+    const duration = cellEndTime - cellStartTime;
 
     return html`<div
       class="event-wrapper ${eventClasses}"
@@ -473,13 +453,12 @@ export class CalendarWeekGridCard extends LitElement {
     cellStartTime: number,
     duration: number,
   ): TemplateResult {
-    const startRatio = (block.start - cellStartTime) / duration;
-    const endRatio = (block.end - cellStartTime) / duration;
-
-    const blockTopPct = startRatio * 100;
-    const blockHeightPct = (endRatio - startRatio) * 100;
-
-    const style = `top: ${blockTopPct}%; height: ${blockHeightPct}%;`;
+    const { topPct, heightPct } = calculateSubBlockPosition(
+      block,
+      cellStartTime,
+      duration,
+    );
+    const style = `top: ${topPct}%; height: ${heightPct}%;`;
 
     return html`<div class="event-sub-block" style="${style}"></div>`;
   }
@@ -492,54 +471,22 @@ export class CalendarWeekGridCard extends LitElement {
       return html``;
     }
 
-    let icon;
+    const icon = getEventIcon(
+      event,
+      isAllDay,
+      this.config,
+      getDeprecatedBlankIcon(this.config),
+      getDeprecatedEventIcon(event),
+      getDeprecatedFilledIcon(this.config),
+    );
 
-    if (event.type === 'blank') {
-      if (isAllDay) {
-        // Blank all day event icon
-        icon = this.config?.blank_all_day_event?.icon;
-        // Blank all day event icon (legacy)
-        icon = icon || this.config?.all_day_icon;
-      } else {
-        // Blank event icon
-        icon = this.config?.blank_event?.icon;
-        // Blank event icon (legacy)
-        icon = icon || this.config?.blank_icon;
-      }
-
-      // Deprecated
-      icon = icon || getDeprecatedBlankIcon(this.config);
-
-      // Default
-      icon = icon || '';
-    }
-
-    if (event.type !== 'blank') {
-      // Event icon
-      icon = event?.icon;
-      // Default event icon
-      icon = icon || this.config?.event?.icon;
-      // Default event icon (legacy)
-      icon = icon || this.config?.event_icon;
-
-      // Deprecated
-      icon = icon || getDeprecatedEventIcon(event);
-      icon = icon || getDeprecatedFilledIcon(this.config);
-
-      // Default
-      icon = icon || 'mdi:check-circle';
-    }
-
-    const eventClassesList: string[] = [];
-    eventClassesList.push(isAllDay ? 'all-day' : '');
-    const eventClasses = eventClassesList.filter(Boolean).join(' ');
+    const eventClasses = this.buildClassList({
+      'all-day': isAllDay,
+    });
 
     // Build style with CSS variables from theme_variables config
-    let iconStyle = '';
     const variables = this.getThemeValues(event);
-    for (const [varName, varValue] of Object.entries(variables)) {
-      iconStyle += ` --${varName}: ${varValue};`;
-    }
+    const iconStyle = buildThemeStyle(variables);
 
     return html`<ha-icon
       class="event-icon ${eventClasses}"
@@ -559,27 +506,6 @@ export class CalendarWeekGridCard extends LitElement {
     return html`<div class="cell-icons">
       ${events.map((event) => this.renderEventIcon(event, isAllDay))}
     </div>`;
-  }
-
-  private renderCurrentTimeLine(
-    day: DayInfo,
-    hour: number,
-  ): TemplateResult | string {
-    if (!day.isToday) return '';
-
-    const now = new Date();
-    if (now.getHours() !== hour) return '';
-
-    const minutes = now.getMinutes();
-    const topPct = (minutes / 60) * 100;
-
-    const style = `top: ${topPct}%;`;
-
-    return html`
-      <div class="current-time-line" style="${style}">
-        <div class="current-time-circle"></div>
-      </div>
-    `;
   }
 
   // ============================================================================
@@ -606,12 +532,12 @@ export class CalendarWeekGridCard extends LitElement {
     this.lastFetched = Date.now();
 
     const daysCount = this.config?.days ?? 7;
-    const today = this.toHaTime(new Date());
+    const today = toHaTime(new Date(), this.hass);
     today.setHours(0, 0, 0, 0);
 
-    // Calculate the start date based on week_start config (same as in getDays)
+    // Calculate the start date based on week_start config
     const weekStart = this.config?.week_start || 'today';
-    const displayStartDate = this.getWeekStartDate(today, weekStart);
+    const displayStartDate = getWeekStartDate(today, weekStart);
 
     // Fetch events starting from a few days before the display start (buffer)
     // and extending to cover all displayed days
@@ -632,8 +558,8 @@ export class CalendarWeekGridCard extends LitElement {
 
       this.events = rawEvents.map((e) => ({
         ...e,
-        start: this.normalizeDate(e.start),
-        end: this.normalizeDate(e.end),
+        start: normalizeDate(e.start, this.hass),
+        end: normalizeDate(e.end, this.hass),
         isAllDay: !!e.start.date,
       }));
 
@@ -645,6 +571,7 @@ export class CalendarWeekGridCard extends LitElement {
         entity: '',
         filter: '',
         type: 'blank',
+        isAllDay: false,
         ...blankEventConfig,
       });
     } catch (e) {
@@ -683,147 +610,46 @@ export class CalendarWeekGridCard extends LitElement {
   // ============================================================================
 
   private getDays(): DayInfo[] {
-    const days: DayInfo[] = [];
-    const today = this.toHaTime(new Date());
-    today.setHours(0, 0, 0, 0);
-
-    // Calculate the start date based on week_start config
-    const weekStart = this.config?.week_start || 'today';
-    const startDate = this.getWeekStartDate(today, weekStart);
-
-    const lang = this.config?.language || this.hass?.language || 'en';
-
-    // Primary date format (default: weekday:short)
-    const primaryFormat = this.config?.primary_date_format || {
-      weekday: 'short',
-    };
-    const primaryDateFormat = new Intl.DateTimeFormat(lang, primaryFormat);
-
-    // Secondary date format (optional)
-    const secondaryFormat = this.config?.secondary_date_format;
-    const secondaryDateFormat = secondaryFormat
-      ? new Intl.DateTimeFormat(lang, secondaryFormat)
-      : null;
-
     const daysCount = this.config?.days ?? 7;
-    for (let i = 0; i < daysCount; i++) {
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + i);
-
-      const primaryLabel = primaryDateFormat.format(date);
-      const label =
-        primaryLabel.charAt(0).toUpperCase() + primaryLabel.slice(1);
-
-      const secondaryLabel = secondaryDateFormat
-        ? secondaryDateFormat.format(date)
-        : undefined;
-
-      // Check if this date is today
-      const isToday = date.toDateString() === today.toDateString();
-
-      days.push({
-        date: date,
-        label: label,
-        secondaryLabel: secondaryLabel,
-        isToday: isToday,
-      });
-    }
-    return days;
-  }
-
-  private getWeekStartDate(today: Date, weekStart: string): Date {
-    if (weekStart === 'today') {
-      return new Date(today);
-    }
-
-    // Map day names to day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
-    const dayMap: Record<string, number> = {
-      sunday: 0,
-      monday: 1,
-      tuesday: 2,
-      wednesday: 3,
-      thursday: 4,
-      friday: 5,
-      saturday: 6,
-    };
-
-    const targetDay = dayMap[weekStart.toLowerCase()];
-    if (targetDay === undefined) {
-      // Invalid week_start, default to today
-      return new Date(today);
-    }
-
-    const currentDay = today.getDay();
-    const daysToSubtract = (currentDay - targetDay + 7) % 7;
-
-    const startDate = new Date(today);
-    startDate.setDate(today.getDate() - daysToSubtract);
-    return startDate;
-  }
-
-  private formatHour(
-    h: number,
-    timeFormat: string | Intl.DateTimeFormatOptions | undefined,
-  ): string {
-    // If it's a string, use old style pattern replacement
-    if (typeof timeFormat === 'string') {
-      const format = timeFormat || 'h A';
-
-      // Custom pattern replacement
-      // H: 0-23, HH: 00-23
-      // h: 1-12, hh: 01-12
-      // m: 0-59, mm: 00-59
-      // a: am/pm, A: AM/PM
-      const tokens: Record<string, string> = {
-        HH: h.toString().padStart(2, '0'),
-        H: h.toString(),
-        hh: (h % 12 || 12).toString().padStart(2, '0'),
-        h: (h % 12 || 12).toString(),
-        mm: '00',
-        m: '0',
-        a: h < 12 ? 'am' : 'pm',
-        A: h < 12 ? 'AM' : 'PM',
-      };
-
-      return format.replace(/HH|H|hh|h|mm|m|a|A/g, (match) => tokens[match]);
-    }
-
-    // If it's an object or undefined, use Intl.DateTimeFormat
+    const weekStart = this.config?.week_start || 'today';
     const lang = this.config?.language || this.hass?.language || 'en';
-    const formatOptions = timeFormat || { hour: 'numeric' };
+    const primaryFormat = this.config?.primary_date_format;
+    const secondaryFormat = this.config?.secondary_date_format;
 
-    // Create a date object with the specified hour
-    const date = new Date();
-    date.setHours(h, 0, 0, 0);
-
-    const formatter = new Intl.DateTimeFormat(lang, formatOptions);
-    return formatter.format(date);
+    return getDays(
+      daysCount,
+      weekStart,
+      lang,
+      primaryFormat,
+      secondaryFormat,
+      this.hass,
+    );
   }
 
   private renderTimeLabel(hour: number): TemplateResult {
     const timeFormat = this.config?.time_format;
     const showRange = this.config?.time_range || false;
     const nextHour = (hour + 1) % 24;
+    const lang = this.config?.language || this.hass?.language || 'en';
+
+    const hourLabel = formatHour(hour, timeFormat, lang);
 
     if (showRange) {
+      const nextHourLabel = formatHour(nextHour, timeFormat, lang);
       return html`
         <span class="time-label-hour time-label-hour-start">
-          ${this.formatHour(hour, timeFormat)}
+          ${hourLabel}
         </span>
         <span class="time-label-hour time-label-hour-separator">
           &nbsp;-&nbsp;
         </span>
         <span class="time-label-hour time-label-hour-end">
-          ${this.formatHour(nextHour, timeFormat)}
+          ${nextHourLabel}
         </span>
       `;
     }
 
-    return html`
-      <span class="time-label-hour">
-        ${this.formatHour(hour, timeFormat)}
-      </span>
-    `;
+    return html`<span class="time-label-hour">${hourLabel}</span>`;
   }
 
   private renderAllDayLabel(label: string | undefined): TemplateResult {
@@ -831,376 +657,51 @@ export class CalendarWeekGridCard extends LitElement {
     return html`<div class="time-label-all-day">${cleanLabel}</div>`;
   }
 
+  private renderCurrentTimeLine(
+    day: DayInfo,
+    hour: number,
+  ): TemplateResult | string {
+    if (!day.isToday) return '';
+
+    const now = new Date();
+    if (now.getHours() !== hour) return '';
+
+    const minutes = now.getMinutes();
+    const topPct = (minutes / 60) * 100;
+
+    const style = `top: ${topPct}%;`;
+
+    return html`
+      <div class="current-time-line" style="${style}">
+        <div class="current-time-circle"></div>
+      </div>
+    `;
+  }
+
   private filterEvents(
     events: Event[],
     startTime: number,
     endTime: number,
   ): Event[] {
-    return events.filter((event) => {
-      const eventStart = event.start.getTime();
-      const eventEnd = event.end.getTime();
-      return endTime > eventStart && startTime < eventEnd;
-    });
+    return filterEvents(events, startTime, endTime);
   }
 
   private filterAllDayEvents(events: Event[]): Event[] {
-    if (this.config?.all_day === 'row') {
-      return events.filter((event) => !event.isAllDay);
-    }
-    return events;
+    return filterAllDayEvents(events, this.config?.all_day);
   }
 
-  /**
-   * Extracts CSS variable values from event
-   * Reads from theme_values nested object in event and base configs
-   * For blank events, also considers blank_event and blank_all_day_event configs
-   * For regular events, also considers root event config
-   */
-  private getThemeValues(event: Event): ThemeValues {
-    const themeValues: ThemeValues = {};
-    const themeVariables = this.config?.theme_variables;
-
-    if (!themeVariables) {
-      return themeValues;
-    }
-
-    // Build base config's theme_values based on event type
-    let baseThemeValues: ThemeValues = {};
-
-    if (event.type === 'blank') {
-      // For blank events, merge theme_values from blank_event and blank_all_day_event configs
-      baseThemeValues = {
-        ...(this.config?.blank_event?.theme_values || {}),
-      };
-
-      // Override with blank_all_day_event if it's an all-day event
-      if (event.isAllDay) {
-        baseThemeValues = {
-          ...baseThemeValues,
-          ...(this.config?.blank_all_day_event?.theme_values || {}),
-        };
-      }
-    } else {
-      // For regular events, start with root event config's theme_values
-      baseThemeValues = { ...(this.config?.event?.theme_values || {}) };
-    }
-
-    // Get event's theme_values
-    const eventObj = event as Event;
-    const eventThemeValues = eventObj.theme_values || {};
-
-    // Extract variables defined in theme_variables config
-    for (const varKey of Object.keys(themeVariables)) {
-      // Check event.theme_values first, then baseThemeValues
-      const eventValue = eventThemeValues[varKey];
-      const baseValue = baseThemeValues[varKey];
-
-      // Priority: event.theme_values > base config theme_values
-      const finalValue = eventValue != null ? eventValue : baseValue;
-
-      if (finalValue != null) {
-        // Always convert to string
-        themeValues[varKey] = String(finalValue);
-      }
-    }
-
-    return themeValues;
-  }
-
-  private matchesCriteria(event: Event, criteria: EventCriteria): boolean {
-    // Check if at least one field is specified
-    const hasAnyField =
-      criteria.name !== undefined ||
-      criteria.type !== undefined ||
-      criteria.entity !== undefined ||
-      criteria.filter !== undefined;
-    if (!hasAnyField) return false;
-
-    // Match only if all specified criteria fields match (AND logic)
-    if (criteria.name !== undefined && event.name !== criteria.name)
-      return false;
-    if (criteria.type !== undefined && event.type !== criteria.type)
-      return false;
-    if (criteria.entity !== undefined && event.entity !== criteria.entity)
-      return false;
-    if (criteria.filter !== undefined && event.filter !== criteria.filter)
-      return false;
-    return true;
+  private getThemeValues(event: Event) {
+    return getThemeValues(event, this.config);
   }
 
   private hideEvents(events: Event[]): Event[] {
-    if (!this.config) return events;
-
-    const entityHideMap = new Map<string, EventCriteria[]>();
     const normalizedEntities = this.getNormalizedEntities();
-
-    for (const entityConfig of normalizedEntities) {
-      if (
-        entityConfig.name &&
-        entityConfig.hide &&
-        entityConfig.hide.length > 0
-      ) {
-        const criteria: EventCriteria[] = entityConfig.hide.map((hide) => {
-          if (typeof hide === 'string') {
-            return { name: hide };
-          }
-          return hide;
-        });
-        entityHideMap.set(entityConfig.name, criteria);
-      }
-    }
-
-    if (entityHideMap.size === 0) {
-      return events;
-    }
-
-    const eventsToRemove = new Set<Event>();
-
-    for (const event of events) {
-      const hideCriteria = event.name
-        ? entityHideMap.get(event.name)
-        : undefined;
-
-      if (hideCriteria && hideCriteria.length > 0) {
-        for (const targetEvent of events) {
-          if (targetEvent === event) continue;
-
-          for (const criteria of hideCriteria) {
-            if (this.matchesCriteria(targetEvent, criteria)) {
-              eventsToRemove.add(targetEvent);
-              break;
-            }
-          }
-        }
-      }
-    }
-
-    if (eventsToRemove.size === 0) return events;
-
-    return events.filter((e) => !eventsToRemove.has(e));
+    return hideEvents(events, normalizedEntities);
   }
 
   private shiftEvents(events: Event[]): Event[] {
-    if (!this.config) return events;
-
-    // Build maps of entity name -> shift criteria lists from config
-    const entityUnderMap = new Map<string, EventCriteria[]>();
-    const entityOverMap = new Map<string, EventCriteria[]>();
     const normalizedEntities = this.getNormalizedEntities();
-
-    for (const entityConfig of normalizedEntities) {
-      if (entityConfig.name) {
-        // Process under
-        const underConfig = entityConfig.under;
-        if (underConfig && underConfig.length > 0) {
-          const criteria: EventCriteria[] = underConfig.map((shift) => {
-            if (typeof shift === 'string') {
-              // String is treated as name
-              return { name: shift };
-            }
-            return shift;
-          });
-          entityUnderMap.set(entityConfig.name, criteria);
-        }
-
-        // Process over
-        const overConfig = entityConfig.over;
-        if (overConfig && overConfig.length > 0) {
-          const criteria: EventCriteria[] = overConfig.map((shift) => {
-            if (typeof shift === 'string') {
-              // String is treated as name
-              return { name: shift };
-            }
-            return shift;
-          });
-          entityOverMap.set(entityConfig.name, criteria);
-        }
-      }
-    }
-
-    // If no entities have shift configuration, return events as-is
-    if (entityUnderMap.size === 0 && entityOverMap.size === 0) {
-      return events;
-    }
-
-    // Start with events in original order
-    const result = [...events];
-
-    // Process under: move matching events before the current event
-    for (let i = 0; i < events.length; i++) {
-      const event = events[i];
-      const underCriteria = event.name
-        ? entityUnderMap.get(event.name)
-        : undefined;
-
-      if (underCriteria && underCriteria.length > 0) {
-        // Check if any events match the under criteria
-        let hasMatchingEvents = false;
-        for (const originalEvent of events) {
-          for (const criteria of underCriteria) {
-            if (this.matchesCriteria(originalEvent, criteria)) {
-              hasMatchingEvents = true;
-              break;
-            }
-          }
-          if (hasMatchingEvents) break;
-        }
-
-        if (hasMatchingEvents) {
-          // Find the current position of the event with under in result
-          const eventIndex = result.indexOf(event);
-          if (eventIndex < 0) continue;
-
-          // Find all events that match under criteria and come after this event
-          const eventsToMove: Array<{ event: Event; originalIndex: number }> =
-            [];
-          for (let j = i + 1; j < events.length; j++) {
-            const laterEvent = events[j];
-            for (const criteria of underCriteria) {
-              if (this.matchesCriteria(laterEvent, criteria)) {
-                eventsToMove.push({ event: laterEvent, originalIndex: j });
-                break;
-              }
-            }
-          }
-
-          // Move matching events to come before the event with under
-          for (const { event: eventToMove } of eventsToMove) {
-            const eventToMoveIndex = result.indexOf(eventToMove);
-            if (eventToMoveIndex >= 0 && eventToMoveIndex > eventIndex) {
-              // Remove from current position
-              result.splice(eventToMoveIndex, 1);
-              // Insert before the event with under
-              const newEventIndex = result.indexOf(event);
-              result.splice(newEventIndex, 0, eventToMove);
-            }
-          }
-        }
-      }
-    }
-
-    // Process over: move matching events after the current event
-    // Process in reverse order to maintain correct positioning
-    for (let i = events.length - 1; i >= 0; i--) {
-      const event = events[i];
-      const overCriteria = event.name
-        ? entityOverMap.get(event.name)
-        : undefined;
-
-      if (overCriteria && overCriteria.length > 0) {
-        // Check if any events match the over criteria
-        let hasMatchingEvents = false;
-        for (const originalEvent of events) {
-          for (const criteria of overCriteria) {
-            if (this.matchesCriteria(originalEvent, criteria)) {
-              hasMatchingEvents = true;
-              break;
-            }
-          }
-          if (hasMatchingEvents) break;
-        }
-
-        if (hasMatchingEvents) {
-          // Find the current position of the event with over in result
-          const eventIndex = result.indexOf(event);
-          if (eventIndex < 0) continue;
-
-          // Find all events that match over criteria and come before this event
-          const eventsToMove: Array<{ event: Event; originalIndex: number }> =
-            [];
-          for (let j = i - 1; j >= 0; j--) {
-            const earlierEvent = events[j];
-            for (const criteria of overCriteria) {
-              if (this.matchesCriteria(earlierEvent, criteria)) {
-                eventsToMove.push({ event: earlierEvent, originalIndex: j });
-                break;
-              }
-            }
-          }
-
-          // Move matching events to come after the event with over
-          for (const { event: eventToMove } of eventsToMove) {
-            const eventToMoveIndex = result.indexOf(eventToMove);
-            if (eventToMoveIndex >= 0 && eventToMoveIndex < eventIndex) {
-              // Remove from current position
-              result.splice(eventToMoveIndex, 1);
-              // Insert after the event with over
-              const newEventIndex = result.indexOf(event);
-              result.splice(newEventIndex + 1, 0, eventToMove);
-            }
-          }
-        }
-      }
-    }
-
-    return result;
-  }
-
-  private generateEventSubBlocks(
-    eventStart: number,
-    eventEnd: number,
-    cellStartTime: number,
-    cellEndTime: number,
-  ): Array<{ start: number; end: number }> {
-    const BLOCK_INTERVAL_MINUTES = 5;
-    const BLOCK_INTERVAL_MS = BLOCK_INTERVAL_MINUTES * 60 * 1000;
-
-    const blocks: Array<{ start: number; end: number }> = [];
-
-    // Find the first event block start that is >= cellStartTime
-    const cellStartDate = new Date(cellStartTime);
-    const cellStartMinutes = cellStartDate.getMinutes();
-    const roundedCellStartMinutes =
-      Math.floor(cellStartMinutes / BLOCK_INTERVAL_MINUTES) *
-      BLOCK_INTERVAL_MINUTES;
-    cellStartDate.setMinutes(roundedCellStartMinutes, 0, 0);
-    let currentBlockStart = cellStartDate.getTime();
-
-    // If we rounded down, move to the next block if needed
-    if (currentBlockStart < cellStartTime) {
-      currentBlockStart += BLOCK_INTERVAL_MS;
-    }
-
-    // Find the last event block end that is <= cellEndTime
-    const cellEndDate = new Date(cellEndTime);
-    const cellEndMinutes = cellEndDate.getMinutes();
-    const roundedCellEndMinutes =
-      Math.ceil(cellEndMinutes / BLOCK_INTERVAL_MINUTES) *
-      BLOCK_INTERVAL_MINUTES;
-    cellEndDate.setMinutes(roundedCellEndMinutes, 0, 0);
-    const finalBlockEnd = Math.min(cellEndDate.getTime(), cellEndTime);
-
-    while (currentBlockStart < finalBlockEnd) {
-      const currentBlockEnd = Math.min(
-        currentBlockStart + BLOCK_INTERVAL_MS,
-        finalBlockEnd,
-      );
-
-      // Only create block if it overlaps with the actual event
-      if (currentBlockEnd > eventStart && currentBlockStart < eventEnd) {
-        blocks.push({
-          start: Math.max(currentBlockStart, eventStart),
-          end: Math.min(currentBlockEnd, eventEnd),
-        });
-      }
-
-      currentBlockStart = currentBlockEnd;
-    }
-
-    return blocks;
-  }
-
-  private normalizeDate(
-    dateObj: { dateTime?: string; date?: string } | Date,
-  ): Date {
-    if (dateObj instanceof Date) return dateObj;
-    if (dateObj.dateTime) {
-      return this.toHaTime(new Date(dateObj.dateTime));
-    }
-    if (dateObj.date) {
-      return new Date(dateObj.date + 'T00:00:00');
-    }
-    return new Date();
+    return shiftEvents(events, normalizedEntities);
   }
 
   private getNormalizedEntities(): EntityConfig[] {
@@ -1222,16 +723,11 @@ export class CalendarWeekGridCard extends LitElement {
       .filter((item): item is EntityConfig => !!(item && item.entity));
   }
 
-  private toHaTime(date: Date): Date {
-    try {
-      const tz = this.hass?.config?.time_zone;
-      if (!tz) return date;
-      const str = date.toLocaleString('en-US', { timeZone: tz });
-      return new Date(str);
-    } catch (e) {
-      console.error('Timezone conversion error', e);
-      return date;
-    }
+  private buildClassList(conditions: Record<string, boolean>): string {
+    return Object.entries(conditions)
+      .filter(([, value]) => value)
+      .map(([key]) => key)
+      .join(' ');
   }
 }
 
