@@ -27,130 +27,14 @@ export default {
   },
   context: 'window',
   watch: {
-    include: ['demo/**'],
+    include: ['demo/**', 'src/configs/**'],
     clearScreen: false,
     buildDelay: 100,
   },
   plugins: [
     {
-      name: 'asset-manifest',
-      resolveId(source) {
-        // Create virtual module for asset manifest
-        if (source === 'virtual:asset-manifest') {
-          return source;
-        }
-        return null;
-      },
-      load(id) {
-        // Generate asset manifest virtual module
-        if (id === 'virtual:asset-manifest') {
-          const demoRoot = __dirname;
-          const manifest = [];
-
-          // Scan everything in assets directory recursively
-          try {
-            const assetsPath = resolve(__dirname, 'assets');
-            if (existsSync(assetsPath)) {
-              // Find all files in assets directory
-              const allFiles = glob.sync(resolve(assetsPath, '**/*'), {
-                absolute: true,
-                nodir: true,
-              });
-
-              // Add all asset files to watch list so changes trigger rebuild
-              for (const file of allFiles) {
-                this.addWatchFile(file);
-                // Generate path relative to demo folder
-                const relativePath = relative(demoRoot, file);
-                manifest.push(relativePath);
-              }
-
-              // Also watch the assets directory itself for new files
-              this.addWatchFile(assetsPath);
-            }
-          } catch (error) {
-            console.warn('Failed to scan assets directory:', error);
-          }
-
-          return `export const ASSET_MANIFEST = ${JSON.stringify(manifest, null, 2)};`;
-        }
-        return null;
-      },
-    },
-    typescript({
-      tsconfig: resolve(__dirname, '../demo/tsconfig.json'),
-      rootDir: resolve(__dirname, '..'),
-      compilerOptions: {
-        outDir: resolve(__dirname, '../dist/demo'),
-      },
-    }),
-    nodeResolve({
-      browser: true,
-      preferBuiltins: false,
-    }),
-    commonjs(),
-    copy({
-      targets: [
-        { src: 'demo/index.html', dest: 'dist/demo' },
-        { src: 'demo/styles.css', dest: 'dist/demo' },
-        { src: 'demo/redirect.html', dest: 'dist', rename: 'index.html' },
-      ],
-      hook: 'writeBundle',
-    }),
-    {
-      name: 'copy-assets',
-      writeBundle() {
-        // Skip copying assets in watch mode (dev)
-        if (this.meta.watchMode) {
-          return;
-        }
-
-        // Copy assets to dist/demo/assets, excluding icons folder
-        try {
-          const sourcePath = resolve(__dirname, 'assets');
-          const destPath = resolve(__dirname, '../dist/demo/assets');
-          const excludeList = ['icons'];
-
-          // Ensure destination exists
-          mkdirSync(destPath, { recursive: true });
-
-          // Remove existing items in destination (except excluded ones)
-          if (existsSync(destPath)) {
-            const destItems = readdirSync(destPath);
-            for (const item of destItems) {
-              if (!excludeList.includes(item)) {
-                const itemPath = resolve(destPath, item);
-                rmSync(itemPath, { recursive: true, force: true });
-              }
-            }
-          }
-
-          // Copy items from source (except excluded ones)
-          if (existsSync(sourcePath)) {
-            const sourceItems = readdirSync(sourcePath);
-            for (const item of sourceItems) {
-              if (!excludeList.includes(item)) {
-                const srcItemPath = resolve(sourcePath, item);
-                const destItemPath = resolve(destPath, item);
-                cpSync(srcItemPath, destItemPath, { recursive: true });
-              }
-            }
-          }
-
-          console.log('✓ Copied assets to dist/demo/assets (excluding icons)');
-        } catch (error) {
-          console.error('Failed to copy assets:', error);
-        }
-      },
-    },
-    {
       name: 'copy-icons',
-      writeBundle() {
-        // Skip copying icons in watch mode (dev)
-        if (this.meta.watchMode) {
-          return;
-        }
-
+      buildStart() {
         // Copy SVG icon files as-is to assets/icons/
         try {
           const nodeModulesSvgSource = resolve(
@@ -191,5 +75,171 @@ export default {
         }
       },
     },
+    {
+      name: 'copy-assets',
+      buildStart() {
+        // Copy assets early so they're available for asset-manifest
+        try {
+          const sourcePath = resolve(__dirname, 'assets');
+          const destPath = resolve(__dirname, '../dist/demo/assets');
+          const excludeList = ['icons'];
+
+          // Ensure destination exists
+          mkdirSync(destPath, { recursive: true });
+
+          // Remove existing items in destination (except excluded ones)
+          if (existsSync(destPath)) {
+            const destItems = readdirSync(destPath);
+            for (const item of destItems) {
+              if (!excludeList.includes(item)) {
+                const itemPath = resolve(destPath, item);
+                rmSync(itemPath, { recursive: true, force: true });
+              }
+            }
+          }
+
+          // Copy items from source (except excluded ones)
+          if (existsSync(sourcePath)) {
+            const sourceItems = readdirSync(sourcePath);
+            for (const item of sourceItems) {
+              if (!excludeList.includes(item)) {
+                const srcItemPath = resolve(sourcePath, item);
+                const destItemPath = resolve(destPath, item);
+                cpSync(srcItemPath, destItemPath, { recursive: true });
+              }
+            }
+          }
+
+          console.log('✓ Copied demo assets to dist/demo/assets');
+        } catch (error) {
+          console.error('Failed to copy assets:', error);
+        }
+      },
+    },
+    {
+      name: 'copy-src-assets',
+      buildStart() {
+        // Copy src/configs to dist/demo/assets/data/yasno_v3/configs
+        try {
+          const sourcePath = resolve(__dirname, '../src/configs');
+          const destPath = resolve(
+            __dirname,
+            '../dist/demo/assets/data/yasno_v3/configs',
+          );
+          const excludeList = [];
+
+          // Ensure destination exists
+          mkdirSync(destPath, { recursive: true });
+
+          // Remove existing items in destination (except excluded ones)
+          if (existsSync(destPath)) {
+            const destItems = readdirSync(destPath);
+            for (const item of destItems) {
+              if (!excludeList.includes(item)) {
+                const itemPath = resolve(destPath, item);
+                rmSync(itemPath, { recursive: true, force: true });
+              }
+            }
+          }
+
+          // Copy items from source (except excluded ones)
+          if (existsSync(sourcePath)) {
+            const sourceItems = readdirSync(sourcePath);
+            for (const item of sourceItems) {
+              if (!excludeList.includes(item)) {
+                const srcItemPath = resolve(sourcePath, item);
+                const destItemPath = resolve(destPath, item);
+                cpSync(srcItemPath, destItemPath, { recursive: true });
+              }
+            }
+          }
+
+          console.log(
+            '✓ Copied src/configs to dist/demo/assets/data/yasno_v3/configs',
+          );
+        } catch (error) {
+          console.error('Failed to copy assets:', error);
+        }
+      },
+    },
+    {
+      name: 'asset-manifest',
+      resolveId(source) {
+        // Create virtual module for asset manifest
+        if (source === 'virtual:asset-manifest') {
+          return source;
+        }
+        return null;
+      },
+      load(id) {
+        // Generate asset manifest virtual module
+        if (id === 'virtual:asset-manifest') {
+          const distDemoRoot = resolve(__dirname, '../dist/demo');
+          const manifest = [];
+
+          // Watch source assets to trigger rebuild when they change
+          try {
+            const sourceAssetsPath = resolve(__dirname, 'assets');
+            if (existsSync(sourceAssetsPath)) {
+              const sourceFiles = glob.sync(resolve(sourceAssetsPath, '**/*'), {
+                absolute: true,
+                nodir: true,
+              });
+              // Watch source files to trigger rebuild
+              for (const file of sourceFiles) {
+                this.addWatchFile(file);
+              }
+              // Also watch the assets directory itself for new files
+              this.addWatchFile(sourceAssetsPath);
+            }
+          } catch (error) {
+            console.warn('Failed to watch source assets:', error);
+          }
+
+          // Read from dist/demo/assets to generate manifest
+          try {
+            const distAssetsPath = resolve(__dirname, '../dist/demo/assets');
+            if (existsSync(distAssetsPath)) {
+              // Find all files in dist assets directory
+              const allFiles = glob.sync(resolve(distAssetsPath, '**/*'), {
+                absolute: true,
+                nodir: true,
+              });
+
+              // Generate paths relative to dist/demo folder
+              for (const file of allFiles) {
+                const relativePath = relative(distDemoRoot, file);
+                manifest.push(relativePath);
+              }
+            }
+          } catch (error) {
+            console.warn('Failed to scan dist assets directory:', error);
+          }
+
+          return `export const ASSET_MANIFEST = ${JSON.stringify(manifest, null, 2)};`;
+        }
+        return null;
+      },
+    },
+    typescript({
+      tsconfig: resolve(__dirname, '../demo/tsconfig.json'),
+      rootDir: resolve(__dirname, '..'),
+      compilerOptions: {
+        outDir: resolve(__dirname, '../dist/demo'),
+      },
+    }),
+    nodeResolve({
+      browser: true,
+      preferBuiltins: false,
+    }),
+    commonjs(),
+    copy({
+      targets: [
+        { src: 'demo/index.html', dest: 'dist/demo' },
+        { src: 'demo/styles.css', dest: 'dist/demo' },
+        { src: 'demo/redirect.html', dest: 'dist', rename: 'index.html' },
+      ],
+      hook: 'writeBundle',
+    }),
   ],
 };

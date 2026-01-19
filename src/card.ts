@@ -8,6 +8,7 @@ import {
   unsafeCSS,
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import googleCalendarSeparatedYamlConfig from './configs/google_calendar_separated.yaml';
 import {
   generateCssFromDeprecatedStyleConfig,
   getDeprecatedEventIcon,
@@ -16,7 +17,6 @@ import {
 } from './deprecated';
 import { CalendarWeekGridCardEditor } from './editor/editor';
 import styles from './styles.css';
-import googleCalendarSeparatedYamlConfig from './configs/google_calendar_separated.yaml';
 import type {
   CardConfig,
   CalendarEvent,

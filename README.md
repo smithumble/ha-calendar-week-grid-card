@@ -283,7 +283,7 @@ Each item in `hide` can be:
 
 ![Calendar Week Grid Card Example 1: Basic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_1_basic.png)
 
-<!-- CONFIG:yasno_v3/example_1_basic -->
+<!-- CONFIG:yasno_v3/basic -->
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -292,6 +292,9 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
+time_range: false
+icons_mode: top
+icons_container: cell
 entities:
   - entity: calendar.planned_outages
     filter: Outage
@@ -305,14 +308,13 @@ entities:
 
 ![Calendar Week Grid Card Example 2: Simple](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_2_simple.png)
 
-<!-- CONFIG:yasno_v3/example_2_simple -->
+<!-- CONFIG:yasno_v3/simple -->
 
 <details>
 <summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
   weekday: 'short'
 secondary_date_format:
@@ -322,7 +324,9 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
-all_day_icon: ''
+time_range: false
+icons_mode: top
+icons_container: cell
 all_day: row
 event_variables:
   icon-opacity:
@@ -410,14 +414,13 @@ css: |
 
 ![Calendar Week Grid Card Example 3: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_3_simple_colored.png)
 
-<!-- CONFIG:yasno_v3/example_3_simple_colored -->
+<!-- CONFIG:yasno_v3/simple_colored -->
 
 <details>
 <summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
   weekday: 'short'
 secondary_date_format:
@@ -427,7 +430,9 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
-all_day_icon: mdi:checkbox-blank-circle
+time_range: false
+icons_mode: top
+icons_container: cell
 all_day: row
 event_variables:
   icon-opacity:
@@ -529,14 +534,13 @@ css: |
 
 ![Calendar Week Grid Card Example 4: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_4_classic.png)
 
-<!-- CONFIG:yasno_v3/example_4_classic -->
+<!-- CONFIG:yasno_v3/classic -->
 
 <details>
 <summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
   weekday: 'short'
 secondary_date_format:
@@ -546,6 +550,9 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
+time_range: false
+icons_mode: top
+icons_container: cell
 all_day: row
 event_variables:
   icon-opacity:
@@ -558,6 +565,8 @@ event_variables:
     name: Opacity
     description: The opacity of the event background (0.1 to 1.0).
 event_examples:
+  - color: var(--error-color)
+    opacity: 0.2
   - color: var(--primary-color)
     opacity: 0.2
   - color: var(--success-color)
@@ -565,8 +574,6 @@ event_examples:
   - color: var(--warning-color)
     opacity: 0.2
   - color: var(--info-color)
-    opacity: 0.2
-  - color: var(--error-color)
     opacity: 0.2
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
@@ -629,14 +636,13 @@ css: |
 
 ![Calendar Week Grid Card Example 5: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_5_neon.png)
 
-<!-- CONFIG:yasno_v3/example_5_neon -->
+<!-- CONFIG:yasno_v3/neon -->
 
 <details>
 <summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
   weekday: 'short'
 secondary_date_format:
@@ -646,6 +652,9 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
+time_range: false
+icons_mode: top
+icons_container: cell
 all_day: row
 event_variables:
   icon-opacity:
@@ -741,14 +750,13 @@ css: |
 
 ![Calendar Week Grid Card Example 6: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_6_soft_ui.png)
 
-<!-- CONFIG:yasno_v3/example_6_soft_ui -->
+<!-- CONFIG:yasno_v3/soft_ui -->
 
 <details>
 <summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
   weekday: 'short'
 secondary_date_format:
@@ -758,6 +766,7 @@ time_format:
   hour: '2-digit'
   minute: '2-digit'
   hour12: false
+time_range: false
 icons_container: event
 icons_mode: all
 all_day: row
@@ -769,6 +778,8 @@ event_variables:
     name: Background
     description: The background color of the event.
 event_examples:
+  - color: '#FFFFFF'
+    background: '#FF8A80'
   - color: '#1B5E20'
     background: '#B9F6CA'
   - color: '#FFFFFF'
@@ -777,8 +788,6 @@ event_examples:
     background: '#FFF176'
   - color: '#006064'
     background: '#80DEEA'
-  - color: '#FFFFFF'
-    background: '#FF8A80'
 blank_event:
   icon: mdi:circle-outline
   color: '#E0E0E0'
@@ -834,8 +843,12 @@ css: |
     gap: 8px;
   }
 
+  .cell-wrapper {
+    min-height: 28px;
+  }
+
   .cell {
-    height: 34px;
+    height:34px;
     border-radius: 17px;
   }
 
@@ -857,14 +870,18 @@ css: |
 
 ![Calendar Week Grid Card Example 7: Yasno Legacy](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_7_yasno_legacy.png)
 
-<!-- CONFIG:yasno_v3/example_7_yasno_legacy -->
+<!-- CONFIG:yasno_v3/yasno_legacy -->
 
 <details>
 <summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
+primary_date_format:
+  weekday: 'short'
+secondary_date_format:
+  day: 'numeric'
+  month: 'short'
 time_format:
   hour: '2-digit'
   hour12: false
@@ -986,14 +1003,13 @@ css: |
 
 ![Calendar Week Grid Card Example 8 (1): Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_1_google_calendar.png)
 
-<!-- CONFIG:yasno_v3/example_8_1_google_calendar -->
+<!-- CONFIG:yasno_v3/google_calendar -->
 
 <details>
 <summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
   weekday: 'short'
 secondary_date_format:
@@ -1011,11 +1027,12 @@ event_variables:
     name: Event Color
     description: The color of the event.
 event_examples:
+  - color: var(--error-color)
   - color: var(--primary-color)
+  - color: var(--error-color)
   - color: var(--success-color)
   - color: var(--warning-color)
   - color: var(--info-color)
-  - color: var(--error-color)
 blank_event:
   color: transparent
 entities:
@@ -1233,14 +1250,13 @@ css: |
 
 ![Calendar Week Grid Card Example 8 (2): Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_2_google_calendar_separated.png)
 
-<!-- CONFIG:yasno_v3/example_8_2_google_calendar_separated -->
+<!-- CONFIG:yasno_v3/google_calendar_separated -->
 
 <details>
 <summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
   weekday: 'short'
 secondary_date_format:
@@ -1258,11 +1274,12 @@ event_variables:
     name: Event Color
     description: The color of the event.
 event_examples:
+  - color: var(--error-color)
   - color: var(--primary-color)
+  - color: var(--error-color)
   - color: var(--success-color)
   - color: var(--warning-color)
   - color: var(--info-color)
-  - color: var(--error-color)
 blank_event:
   color: transparent
 entities:
@@ -1490,14 +1507,13 @@ css: |
 
 ![Calendar Week Grid Card Example 8 (3): Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_3_google_calendar_original.png)
 
-<!-- CONFIG:yasno_v3/example_8_3_google_calendar_original -->
+<!-- CONFIG:yasno_v3/google_calendar_original -->
 
 <details>
 <summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
   weekday: 'short'
 secondary_date_format:
@@ -1514,11 +1530,11 @@ event_variables:
     name: Event Color
     description: The color of the event.
 event_examples:
+  - color: '#F3511E'
   - color: '#4285F4'
   - color: '#D40101'
   - color: '#34B779'
   - color: '#F6BE28'
-  - color: '#F3511E'
 blank_event:
   color: transparent
 entities:
@@ -1700,14 +1716,13 @@ css: |
 
 ![Calendar Week Grid Card Example 8 (4): Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_4_google_calendar_original_separated.png)
 
-<!-- CONFIG:yasno_v3/example_8_4_google_calendar_original_separated -->
+<!-- CONFIG:yasno_v3/google_calendar_original_separated -->
 
 <details>
 <summary>Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
   weekday: 'short'
 secondary_date_format:
@@ -1724,11 +1739,11 @@ event_variables:
     name: Event Color
     description: The color of the event.
 event_examples:
+  - color: '#F3511E'
   - color: '#4285F4'
   - color: '#D40101'
   - color: '#34B779'
   - color: '#F6BE28'
-  - color: '#F3511E'
 blank_event:
   color: transparent
 entities:

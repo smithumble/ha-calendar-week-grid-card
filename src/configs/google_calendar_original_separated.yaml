@@ -15,11 +15,11 @@ event_variables:
     name: Event Color
     description: The color of the event.
 event_examples:
+  - color: '#F3511E'
   - color: '#4285F4'
   - color: '#D40101'
   - color: '#34B779'
   - color: '#F6BE28'
-  - color: '#F3511E'
 blank_event:
   color: transparent
 entities:

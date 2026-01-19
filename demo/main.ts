@@ -22,7 +22,7 @@ const MOCK_DATE_STR = '2024-05-20T11:45:00';
 
 // Default values
 const DEFAULT_PROVIDER = 'yasno_v3';
-const DEFAULT_CONFIG = 'example_8_2_google_calendar_separated';
+const DEFAULT_CONFIG = 'google_calendar_separated';
 const DEFAULT_DATA_SOURCE = 'yasno_1';
 
 const DEPRECATED_PROVIDERS = ['yasno_v1', 'yasno_v2'];

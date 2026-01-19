@@ -15,9 +15,9 @@
     "lint:fix": "eslint src demo --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "generate-screenshots": "npm run build && rollup -c demo/rollup.config.mjs && tsx scripts/generate-screenshots.ts",
-    "generate-screenshots:force": "npm run build && rollup -c demo/rollup.config.mjs && tsx scripts/generate-screenshots.ts --force",
-    "update-readme": "tsx scripts/update-readme.ts",
+    "generate-screenshots": "npm run demo:build && tsx scripts/generate-screenshots.ts",
+    "generate-screenshots:force": "npm run demo:build && tsx scripts/generate-screenshots.ts --force",
+    "update-readme": "npm run demo:build && tsx scripts/update-readme.ts",
     "pre-commit": "npm run lint:fix && npm run format && npm run update-readme",
     "pre-commit:generate": "npm run pre-commit && npm run generate-screenshots:force",
     "clean": "rm -rf dist"
