@@ -26,6 +26,7 @@ import type {
   EntityConfig,
   EventCriteria,
   CustomCard,
+  ThemeValues,
 } from './types';
 
 //-----------------------------------------------------------------------------
@@ -433,9 +434,9 @@ export class CalendarWeekGridCard extends LitElement {
     eventClassesList.push(event.isAllDay ? 'all-day' : '');
     const eventClasses = eventClassesList.filter(Boolean).join(' ');
 
-    // Build style with CSS variables from theme_variables config
+    // Build style with CSS variables values
     let eventWrapperStyle = wrapperStyle;
-    const variables = this.getThemeVariables(event);
+    const variables = this.getThemeValues(event);
     for (const [varName, varValue] of Object.entries(variables)) {
       eventWrapperStyle += ` --${varName}: ${varValue};`;
     }
@@ -535,7 +536,7 @@ export class CalendarWeekGridCard extends LitElement {
 
     // Build style with CSS variables from theme_variables config
     let iconStyle = '';
-    const variables = this.getThemeVariables(event);
+    const variables = this.getThemeValues(event);
     for (const [varName, varValue] of Object.entries(variables)) {
       iconStyle += ` --${varName}: ${varValue};`;
     }
@@ -850,21 +851,21 @@ export class CalendarWeekGridCard extends LitElement {
   }
 
   /**
-   * Extracts CSS variable values from event based on theme_variables config
+   * Extracts CSS variable values from event
    * Reads from theme_values nested object in event and base configs
    * For blank events, also considers blank_event and blank_all_day_event configs
    * For regular events, also considers root event config
    */
-  private getThemeVariables(event: Event): Record<string, string> {
-    const variables: Record<string, string> = {};
-    const eventVariables = this.config?.theme_variables;
+  private getThemeValues(event: Event): ThemeValues {
+    const themeValues: ThemeValues = {};
+    const themeVariables = this.config?.theme_variables;
 
-    if (!eventVariables) {
-      return variables;
+    if (!themeVariables) {
+      return themeValues;
     }
 
     // Build base config's theme_values based on event type
-    let baseThemeValues: Record<string, unknown> = {};
+    let baseThemeValues: ThemeValues = {};
 
     if (event.type === 'blank') {
       // For blank events, merge theme_values from blank_event and blank_all_day_event configs
@@ -885,12 +886,11 @@ export class CalendarWeekGridCard extends LitElement {
     }
 
     // Get event's theme_values
-    const eventObj = event as Record<string, unknown>;
-    const eventThemeValues =
-      (eventObj.theme_values as Record<string, unknown>) || {};
+    const eventObj = event as Event;
+    const eventThemeValues = eventObj.theme_values || {};
 
     // Extract variables defined in theme_variables config
-    for (const varKey of Object.keys(eventVariables)) {
+    for (const varKey of Object.keys(themeVariables)) {
       // Check event.theme_values first, then baseThemeValues
       const eventValue = eventThemeValues[varKey];
       const baseValue = baseThemeValues[varKey];
@@ -900,19 +900,11 @@ export class CalendarWeekGridCard extends LitElement {
 
       if (finalValue != null) {
         // Always convert to string
-        variables[varKey] = String(finalValue);
+        themeValues[varKey] = String(finalValue);
       }
     }
 
-    return variables;
-  }
-
-  /**
-   * Converts hyphenated string to camelCase
-   * e.g., "event-color" -> "eventColor"
-   */
-  private toCamelCase(str: string): string {
-    return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+    return themeValues;
   }
 
   private matchesCriteria(event: Event, criteria: EventCriteria): boolean {

@@ -13,7 +13,7 @@ export interface EventCriteria {
   filter?: string;
 }
 
-export interface StandardEntityConfig {
+export interface EntityConfig {
   name?: string;
   type?: string;
   entity: string;
@@ -24,10 +24,6 @@ export interface StandardEntityConfig {
   under?: (string | EventCriteria)[];
   over?: (string | EventCriteria)[];
   hide?: (string | EventCriteria)[];
-}
-
-export interface EntityConfig extends StandardEntityConfig {
-  [key: string]: unknown;
 }
 
 // Legacy layout options (deprecated, use grid_options instead)
@@ -47,11 +43,14 @@ export interface ThemeVariable {
   description?: string;
 }
 
+export interface ThemeValues {
+  [key: string]: unknown;
+}
+
 export interface DefaultEventConfig {
   icon?: string;
-  theme_values?: Record<string, unknown>;
-  theme_values_archive?: Record<string, Record<string, unknown>>;
-  [key: string]: unknown;
+  theme_values?: ThemeValues;
+  theme_values_archive?: Record<string, ThemeValues>;
 }
 
 export interface CardConfig {
