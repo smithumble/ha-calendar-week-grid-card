@@ -51,9 +51,11 @@ export async function loadConfigByName(
 /**
  * Get list of providers that should be visible in the dropdown
  */
-export function getVisibleProviders(allProviders: string[]): string[] {
-  const visibleNames = providerRegistry.getVisibleProviderNames();
-  return allProviders.filter((name) => visibleNames.includes(name));
+export function getVisibleProviders(
+  allProviders: string[],
+  hiddenProviders: string[] = [],
+): string[] {
+  return allProviders.filter((name) => !hiddenProviders.includes(name));
 }
 
 /**

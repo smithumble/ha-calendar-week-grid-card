@@ -28,6 +28,7 @@ const DEFAULT_CONFIG = 'google_calendar_separated';
 const DEFAULT_DATA_SOURCE = 'yasno_1';
 
 const DEPRECATED_PROVIDERS = ['yasno_v1', 'yasno_v2'];
+const HIDDEN_PROVIDERS = ['yasno_image', 'yasno_api'];
 
 // Storage prefix
 const STORAGE_PREFIX = 'calendar-week-grid-card-';
@@ -695,7 +696,7 @@ function populateProviderSelect(selectedProvider?: string | null) {
   if (!providerSelect) return;
 
   const allProviders = Object.keys(providerDataMap);
-  const visibleProviders = getVisibleProviders(allProviders);
+  const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
 
   // Include selected provider even if it's hidden
   const providersToShow = new Set(visibleProviders);
@@ -733,7 +734,7 @@ async function setupProviderSelector() {
   const allProviders = Object.keys(providerDataMap);
   if (allProviders.length === 0) return;
 
-  const visibleProviders = getVisibleProviders(allProviders);
+  const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
   const defaultProvider = allProviders.includes(DEFAULT_PROVIDER)
     ? DEFAULT_PROVIDER
     : visibleProviders[0] || allProviders[0];
@@ -793,7 +794,7 @@ async function setupProviderSelector() {
 
 async function initializeCards() {
   const allProviders = Object.keys(providerDataMap);
-  const visibleProviders = getVisibleProviders(allProviders);
+  const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
   const defaultProvider = allProviders.includes(DEFAULT_PROVIDER)
     ? DEFAULT_PROVIDER
     : visibleProviders[0] || allProviders[0];

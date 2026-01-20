@@ -8,7 +8,6 @@ import { BaseProvider } from './base';
  */
 export class DummyProvider extends BaseProvider {
   readonly name = 'dummy';
-  readonly hidden = false;
   readonly mockDate = new Date(MOCK_DATE_STR);
 
   private configPaths: Record<string, string> = {};

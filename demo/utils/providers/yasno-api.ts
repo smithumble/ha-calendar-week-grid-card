@@ -42,7 +42,6 @@ const DATA_SOURCES = [
  */
 export class YasnoApiProvider extends BaseProvider {
   readonly name = 'yasno_api';
-  readonly hidden = false;
   readonly mockDate?: Date;
 
   private configPaths: Record<string, string> = {};

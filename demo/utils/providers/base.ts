@@ -4,7 +4,6 @@ import type { Calendar } from '../data';
 export interface ProviderMetadata {
   name: string;
   dataSources: string[];
-  hidden: boolean;
   mockDate?: Date;
 }
 
@@ -15,7 +14,6 @@ export abstract class BaseProvider {
   protected configCache: Record<string, string> = {};
 
   abstract readonly name: string;
-  abstract readonly hidden: boolean;
   abstract readonly mockDate?: Date;
 
   /**
@@ -45,7 +43,6 @@ export abstract class BaseProvider {
     return {
       name: this.name,
       dataSources: this.getDataSources(),
-      hidden: this.hidden,
       mockDate: this.mockDate,
     };
   }

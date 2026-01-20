@@ -62,7 +62,6 @@ export class ProviderRegistry {
         'yasno_image',
         getConfigPaths('yasno_image'),
         yasnoCalendarPaths,
-        { hidden: true },
       ),
     );
 
@@ -113,15 +112,6 @@ export class ProviderRegistry {
    */
   getAllProviderNames(): string[] {
     return Array.from(this.providers.keys());
-  }
-
-  /**
-   * Get visible provider names (non-hidden)
-   */
-  getVisibleProviderNames(): string[] {
-    return Array.from(this.providers.values())
-      .filter((provider) => !provider.hidden)
-      .map((provider) => provider.name);
   }
 
   /**

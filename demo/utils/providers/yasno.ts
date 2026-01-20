@@ -27,7 +27,6 @@ const DATA_SOURCE_MONDAY_INDEX: Record<string, number> = {
  */
 export class YasnoProvider extends BaseProvider {
   readonly name: string;
-  readonly hidden: boolean;
   readonly mockDate?: Date = new Date(MOCK_DATE_STR);
 
   private configPaths: Record<string, string> = {};
@@ -40,13 +39,11 @@ export class YasnoProvider extends BaseProvider {
     name: string,
     configPaths: Record<string, string>,
     calendarPaths: Record<string, string>,
-    options: { hidden?: boolean } = {},
   ) {
     super();
     this.name = name;
     this.configPaths = configPaths;
     this.calendarPaths = calendarPaths;
-    this.hidden = options.hidden ?? false;
   }
 
   getDataSources(): string[] {
