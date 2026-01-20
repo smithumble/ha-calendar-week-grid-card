@@ -1,6 +1,11 @@
 import yaml from 'js-yaml';
 import type { CardConfig } from '../src/types';
-import { setupBrowserEnv, renderCards, type MockCard } from './utils/browser';
+import {
+  setupBrowserEnv,
+  updateDateOverride,
+  renderCards,
+  type MockCard,
+} from './utils/browser';
 import {
   ProviderData,
   loadCalendarsForDataSource,
@@ -16,9 +21,6 @@ import {
 } from './utils/editor';
 import { loadIcons } from './utils/icons';
 import { loadTheme } from './utils/theme';
-
-// Mock date: Monday, May 20, 2024
-const MOCK_DATE_STR = '2024-05-20T11:45:00';
 
 // Default values
 const DEFAULT_PROVIDER = 'yasno_v3';
@@ -755,6 +757,9 @@ async function setupProviderSelector() {
       saveToStorage('selected-provider', urlProvider);
     }
     updateURLParams({ provider: currentProvider });
+    // Update date override based on initial provider
+    const providerMeta = providerDataMap[currentProvider];
+    updateDateOverride(providerMeta?.mockDate);
     await updateSelectsForProvider(currentProvider, false);
   }
 
@@ -764,6 +769,10 @@ async function setupProviderSelector() {
       currentProvider = selectedProvider;
       saveToStorage('selected-provider', selectedProvider);
       updateURLParams({ provider: selectedProvider });
+
+      // Update date override based on provider
+      const providerMeta = providerDataMap[selectedProvider];
+      updateDateOverride(providerMeta?.mockDate);
 
       // Only repopulate if we're switching away from a hidden provider
       // (to remove it from the dropdown) or if we're switching to a hidden provider
@@ -845,8 +854,8 @@ async function main() {
   const haTheme = await loadTheme();
   const haIcons = await loadIcons();
 
-  // Setup browser environment
-  setupBrowserEnv(MOCK_DATE_STR, haTheme, haIcons);
+  // Setup browser environment (date override will be set based on provider)
+  setupBrowserEnv(haTheme, haIcons);
 
   // Load the card script
   await loadCardScript();
@@ -859,6 +868,7 @@ async function main() {
       calendars: {},
       configs: [],
       dataSources: meta.dataSources,
+      mockDate: meta.mockDate,
     };
   }
 

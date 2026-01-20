@@ -1,4 +1,5 @@
 import type { Calendar } from '../data';
+import { MOCK_DATE_STR } from '../datetime';
 import {
   parseYasnoData,
   type PlannedData,
@@ -27,6 +28,7 @@ const DATA_SOURCE_MONDAY_INDEX: Record<string, number> = {
 export class YasnoProvider extends BaseProvider {
   readonly name: string;
   readonly hidden: boolean;
+  readonly mockDate?: Date = new Date(MOCK_DATE_STR);
 
   private configPaths: Record<string, string> = {};
   private calendarPaths: Record<string, string> = {};
@@ -164,6 +166,8 @@ export class YasnoProvider extends BaseProvider {
       calendarData.planned,
       calendarData.probable,
       mondayIndex,
+      '6.1',
+      this.mockDate,
     ) as Calendar[];
   }
 }

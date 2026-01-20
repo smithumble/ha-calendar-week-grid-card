@@ -43,6 +43,7 @@ const DATA_SOURCES = [
 export class YasnoApiProvider extends BaseProvider {
   readonly name = 'yasno_api';
   readonly hidden = false;
+  readonly mockDate?: Date;
 
   private configPaths: Record<string, string> = {};
   private dataSourcesCache: string[] | null = null;
@@ -87,7 +88,7 @@ export class YasnoApiProvider extends BaseProvider {
         probableData,
         0,
         dataSource,
-        false,
+        this.mockDate,
       );
     } catch (error) {
       console.error(
@@ -135,7 +136,9 @@ export class YasnoApiProvider extends BaseProvider {
       '{region_id}',
       REGION_ID,
     ).replace('{dso_id}', DSO_ID);
-    const proxiedUrl = CORS_PROXY ? `${CORS_PROXY}${encodeURIComponent(url)}` : url;
+    const proxiedUrl = CORS_PROXY
+      ? `${CORS_PROXY}${encodeURIComponent(url)}`
+      : url;
     return this.fetchResource(proxiedUrl, (r) => r.json(), 'planned outages');
   }
 
@@ -147,7 +150,9 @@ export class YasnoApiProvider extends BaseProvider {
       '{region_id}',
       REGION_ID,
     ).replace('{dso_id}', DSO_ID);
-    const proxiedUrl = CORS_PROXY ? `${CORS_PROXY}${encodeURIComponent(url)}` : url;
+    const proxiedUrl = CORS_PROXY
+      ? `${CORS_PROXY}${encodeURIComponent(url)}`
+      : url;
     return this.fetchResource(proxiedUrl, (r) => r.json(), 'probable outages');
   }
 }

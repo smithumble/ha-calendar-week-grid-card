@@ -1,7 +1,6 @@
 import type { CalendarEvent } from '../../../src/types';
 import { Calendar } from '../data';
 import {
-  MOCK_DATE_STR,
   toTimeZoneISOString,
   getDateString,
   minutesToTime,
@@ -155,6 +154,9 @@ function parseProbableEvents(
       const slots = probableGroup?.slots?.[weekday.toString()];
       if (!slots) continue;
 
+      // Map weekday index from data to actual day offset
+      // If mondayIndex=0: weekday 0 -> day offset 0 (Monday), 1 -> 1 (Tuesday), etc.
+      // If mondayIndex=2: weekday 0 -> day offset 5 (Saturday), 1 -> 6 (Sunday), 2 -> 0 (Monday), etc.
       const dayOffset = (weekday - mondayIndex + 7) % 7;
       const dayDate = getDayDate(weekBaseDate, dayOffset);
 
@@ -177,7 +179,8 @@ function parsePlannedSlotEvents(
 
   for (const dayKey of ['today', 'tomorrow'] as const) {
     const dayData = plannedGroup[dayKey];
-    if (!dayData?.slots) continue;
+
+    if (!dayData || !dayData.slots) continue;
 
     const dayOffset = dayKey === 'tomorrow' ? 1 : 0;
     const dayDate = getDayDate(baseDate, dayOffset);
@@ -200,14 +203,15 @@ function parseAllDayStatusEvents(
 
   for (const dayKey of ['today', 'tomorrow'] as const) {
     const dayData = plannedGroup[dayKey];
-    if (!dayData?.status) continue;
+
+    if (!dayData || !dayData?.status) continue;
+
+    const dayOffset = dayKey === 'tomorrow' ? 1 : 0;
+    const dayDate = getDayDate(baseDate, dayOffset);
 
     const status = dayData.status;
     const summary = STATUS_SUMMARY_MAP[status];
     if (!summary) continue;
-
-    const dayOffset = dayKey === 'tomorrow' ? 1 : 0;
-    const dayDate = getDayDate(baseDate, dayOffset);
 
     events.push(createAllDayEvent(dayDate, summary));
   }
@@ -220,9 +224,9 @@ export function parseYasnoData(
   probableData: ProbableData,
   mondayIndex: number = 0,
   groupKey: string = PLANNED_GROUP_KEY,
-  useMockDate: boolean = true,
+  mockDate?: Date,
 ): Calendar[] {
-  const baseDate = useMockDate ? new Date(MOCK_DATE_STR) : new Date();
+  const baseDate: Date = mockDate ?? new Date();
   baseDate.setHours(0, 0, 0, 0);
 
   const plannedGroup = plannedData[groupKey];

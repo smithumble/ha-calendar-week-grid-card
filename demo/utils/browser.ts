@@ -143,35 +143,46 @@ function mockHaIcon(iconMap: Record<string, string>) {
   }
 }
 
-function overrideDate(mockDateStr: string) {
-  if (mockDateStr) {
-    const OriginalDate = Date;
-    const mockTime = new OriginalDate(mockDateStr).getTime();
+const originalDateConstructor: DateConstructor = Date;
 
-    class MockDate extends OriginalDate {
-      constructor(...args: unknown[]) {
-        if (args.length === 0) {
-          super(mockTime);
-        } else {
-          super(...(args as [number]));
-        }
-      }
-      static now() {
-        return mockTime;
+function overrideDate(mockDate: Date) {
+  const mockTime = mockDate.getTime();
+
+  class MockDate extends Date {
+    constructor(...args: unknown[]) {
+      if (args.length === 0) {
+        super(mockTime);
+      } else {
+        super(...(args as [number]));
       }
     }
-    window.Date = MockDate as DateConstructor;
+    static now() {
+      return mockTime;
+    }
+  }
+  window.Date = MockDate as DateConstructor;
+}
+
+function restoreDate() {
+  if (originalDateConstructor) {
+    window.Date = originalDateConstructor;
+  }
+}
+
+export function updateDateOverride(mockDate?: Date) {
+  if (mockDate) {
+    overrideDate(mockDate);
+  } else {
+    restoreDate();
   }
 }
 
 export function setupBrowserEnv(
-  mockDateStr: string,
   haTheme: { light: string; dark: string },
   haIcons: Record<string, string>,
 ) {
   mockHaCard();
   mockHaIcon(haIcons);
-  overrideDate(mockDateStr);
   injectTheme(haTheme);
 }
 

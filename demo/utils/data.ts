@@ -15,6 +15,7 @@ export interface ProviderData {
   calendars: Record<string, Calendar[]>;
   configs: ConfigItem[];
   dataSources: string[];
+  mockDate?: Date;
 }
 
 /**
@@ -66,7 +67,7 @@ export function getProviderMetadata(): Record<
   return Object.fromEntries(
     Object.entries(metadata).map(([name, meta]) => [
       name,
-      { dataSources: meta.dataSources },
+      { dataSources: meta.dataSources, mockDate: meta.mockDate },
     ]),
   );
 }

@@ -5,6 +5,7 @@ export interface ProviderMetadata {
   name: string;
   dataSources: string[];
   hidden: boolean;
+  mockDate?: Date;
 }
 
 /**
@@ -15,6 +16,7 @@ export abstract class BaseProvider {
 
   abstract readonly name: string;
   abstract readonly hidden: boolean;
+  abstract readonly mockDate?: Date;
 
   /**
    * Get available data sources for this provider
@@ -44,6 +46,7 @@ export abstract class BaseProvider {
       name: this.name,
       dataSources: this.getDataSources(),
       hidden: this.hidden,
+      mockDate: this.mockDate,
     };
   }
 
