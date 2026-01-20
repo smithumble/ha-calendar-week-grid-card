@@ -12,7 +12,6 @@ import {
 const PLANNED_GROUP_KEY = '6.1';
 const PROBABLE_REGION_KEY = '25';
 const PROBABLE_DSOS_KEY = '902';
-const PROBABLE_GROUP_KEY = '6.1';
 
 // Event type constants
 const SLOT_TYPE_DEFINITE = 'Definite';
@@ -220,22 +219,24 @@ export function parseYasnoData(
   plannedData: PlannedData,
   probableData: ProbableData,
   mondayIndex: number = 0,
+  groupKey: string = PLANNED_GROUP_KEY,
+  useMockDate: boolean = true,
 ): Calendar[] {
-  const baseDate = new Date(MOCK_DATE_STR);
+  const baseDate = useMockDate ? new Date(MOCK_DATE_STR) : new Date();
   baseDate.setHours(0, 0, 0, 0);
 
-  const plannedGroup = plannedData[PLANNED_GROUP_KEY];
+  const plannedGroup = plannedData[groupKey];
   const probableGroup =
     probableData[PROBABLE_REGION_KEY]?.['dsos']?.[PROBABLE_DSOS_KEY]?.[
       'groups'
-    ]?.[PROBABLE_GROUP_KEY];
+    ]?.[groupKey];
 
   if (!plannedGroup) {
-    throw new Error(`Planned group "${PLANNED_GROUP_KEY}" not found`);
+    throw new Error(`Planned group "${groupKey}" not found`);
   }
 
   if (!probableGroup) {
-    throw new Error('Probable group not found');
+    throw new Error(`Probable group "${groupKey}" not found`);
   }
 
   const rawProbableEvents = parseProbableEvents(

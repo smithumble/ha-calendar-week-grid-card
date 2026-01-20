@@ -2,6 +2,7 @@ import { ASSET_MANIFEST } from 'virtual:asset-manifest';
 import { BaseProvider } from './providers/base';
 import { DummyProvider } from './providers/dummy';
 import { YasnoProvider } from './providers/yasno';
+import { YasnoApiProvider } from './providers/yasno-api';
 
 /**
  * Search manifest for files matching a pattern
@@ -88,6 +89,9 @@ export class ProviderRegistry {
         yasnoCalendarPaths,
       ),
     );
+
+    // Register yasno API provider (uses yasno_v3 configs)
+    this.registerProvider(new YasnoApiProvider(getConfigPaths('yasno_v3')));
   }
 
   /**
