@@ -1184,7 +1184,7 @@ css: |
   }
 
   .day-header {
-    padding-bottom: 16px;
+    padding-bottom: 12px;
   }
 
   .day-header.today {
@@ -1206,8 +1206,12 @@ css: |
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 8px;
-    width: 100%;
+    text-align: center;
+    margin-top: 4px;
+    padding: 6px;
+    aspect-ratio: 1/1;
+    line-height: 1.2;
+    min-width: fit-content;
   }
 
   .day-header.today .day-header-secondary {
@@ -1218,9 +1222,10 @@ css: |
     content: '';
     position: absolute;
     z-index: -1; 
-    width: 100%;
-    max-width: 30px;
-    aspect-ratio: 1/1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     border-radius: 50%;
     background-color: var(--grid-accent-color);
   }
@@ -1437,7 +1442,7 @@ css: |
   }
 
   .day-header {
-    padding-bottom: 16px;
+    padding-bottom: 12px;
   }
 
   .day-header.today {
@@ -1459,8 +1464,12 @@ css: |
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 8px;
-    width: 100%;
+    text-align: center;
+    margin-top: 4px;
+    padding: 6px;
+    aspect-ratio: 1/1;
+    line-height: 1.2;
+    min-width: fit-content;
   }
 
   .day-header.today .day-header-secondary {
@@ -1471,9 +1480,10 @@ css: |
     content: '';
     position: absolute;
     z-index: -1; 
-    width: 100%;
-    max-width: 30px;
-    aspect-ratio: 1/1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     border-radius: 50%;
     background-color: var(--grid-accent-color);
   }
@@ -1705,7 +1715,7 @@ css: |
   }
 
   .day-header {
-    padding-bottom: 16px;
+    padding-bottom: 12px;
   }
 
   .day-header.today {
@@ -1727,8 +1737,12 @@ css: |
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 8px;
-    width: 100%;
+    text-align: center;
+    margin-top: 4px;
+    padding: 6px;
+    aspect-ratio: 1/1;
+    line-height: 1.2;
+    min-width: fit-content;
   }
 
   .day-header.today .day-header-secondary {
@@ -1739,9 +1753,10 @@ css: |
     content: '';
     position: absolute;
     z-index: -1; 
-    width: 100%;
-    max-width: 30px;
-    aspect-ratio: 1/1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     border-radius: 50%;
     background-color: var(--grid-accent-color);
   }
@@ -1922,7 +1937,7 @@ css: |
   }
 
   .day-header {
-    padding-bottom: 16px;
+    padding-bottom: 12px;
   }
 
   .day-header.today {
@@ -1944,8 +1959,12 @@ css: |
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 8px;
-    width: 100%;
+    text-align: center;
+    margin-top: 4px;
+    padding: 6px;
+    aspect-ratio: 1/1;
+    line-height: 1.2;
+    min-width: fit-content;
   }
 
   .day-header.today .day-header-secondary {
@@ -1956,9 +1975,10 @@ css: |
     content: '';
     position: absolute;
     z-index: -1; 
-    width: 100%;
-    max-width: 30px;
-    aspect-ratio: 1/1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     border-radius: 50%;
     background-color: var(--grid-accent-color);
   }
