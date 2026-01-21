@@ -1034,15 +1034,8 @@ css: |
     background-color: var(--background, var(--card-background-color));
   }
 
-  .grid-container > :nth-child(16n+9),
-  .grid-container > :nth-child(16n+10),
-  .grid-container > :nth-child(16n+11),
-  .grid-container > :nth-child(16n+12),
-  .grid-container > :nth-child(16n+13),
-  .grid-container > :nth-child(16n+14),
-  .grid-container > :nth-child(16n+15),
-  .grid-container > :nth-child(16n+16) {
-    .event-wrapper:not([data-type="highlight"]) .event-block, &.time-label {
+  .grid-container > .row-odd {
+    .event-wrapper:not([data-type="highlight"]) .event-block, .time-label {
       filter: contrast(1.05) brightness(0.95); 
     }
   }

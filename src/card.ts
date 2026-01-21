@@ -213,6 +213,15 @@ export class CalendarWeekGridCard extends LitElement {
 
     const daysCount = days.length;
 
+    // Track row index for row-odd/row-even classes
+    let currentRowIndex = 0;
+
+    const headerRowClasses = this.buildClassList({
+      'row-odd': currentRowIndex % 2 === 1,
+      'row-even': currentRowIndex % 2 === 0,
+      'column-even': true,
+    });
+
     return html`
       <div
         class="grid-container"
@@ -223,10 +232,10 @@ export class CalendarWeekGridCard extends LitElement {
         data-layout-fit="${!!this.getGridRows()}"
       >
         <!-- Header Row -->
-        <div></div>
+        <div class="${headerRowClasses}"></div>
         ${days.map(
           (day) => html`
-            <div class="day-header-wrapper">
+            <div class="day-header-wrapper ${headerRowClasses}">
               <div class="day-header ${day.isToday ? 'today' : ''}">
                 <div class="day-header-primary">${day.label}</div>
                 ${day.secondaryLabel
@@ -240,10 +249,14 @@ export class CalendarWeekGridCard extends LitElement {
         )}
 
         <!-- All Day Row -->
-        ${showAllDayRow ? this.renderRow(allDayEvents, days) : ''}
+        ${showAllDayRow
+          ? this.renderRow(allDayEvents, days, undefined, ++currentRowIndex)
+          : ''}
 
         <!-- Grid Rows -->
-        ${hours.map((hour) => this.renderRow(gridEvents, days, hour))}
+        ${hours.map((hour) =>
+          this.renderRow(gridEvents, days, hour, ++currentRowIndex),
+        )}
       </div>
     `;
   }
@@ -284,6 +297,7 @@ export class CalendarWeekGridCard extends LitElement {
     events: Event[],
     days: DayInfo[],
     hour?: number,
+    rowIndex: number = 0,
   ): TemplateResult {
     const isAllDay = hour == undefined;
 
@@ -301,13 +315,18 @@ export class CalendarWeekGridCard extends LitElement {
     const timeLabelClasses = this.buildClassList({
       now: isNow,
       'all-day': isAllDay,
+      'row-odd': rowIndex % 2 === 1,
+      'row-even': rowIndex % 2 === 0,
+      'column-even': true,
     });
 
     return html`
       <div class="time-label-wrapper ${timeLabelClasses}">
         <div class="time-label ${timeLabelClasses}">${timeLabel}</div>
       </div>
-      ${days.map((day) => this.renderCell(events, day, hour))}
+      ${days.map((day, colIndex) =>
+        this.renderCell(events, day, hour, rowIndex, colIndex + 1),
+      )}
     `;
   }
 
@@ -315,6 +334,8 @@ export class CalendarWeekGridCard extends LitElement {
     events: Event[],
     day: DayInfo,
     hour?: number,
+    rowIndex: number = 0,
+    colIndex: number = 0,
   ): TemplateResult {
     const cellDate = new Date(day.date);
 
@@ -355,6 +376,10 @@ export class CalendarWeekGridCard extends LitElement {
       today: day.isToday,
       now: isNow,
       'all-day': isAllDay,
+      'row-odd': rowIndex % 2 === 1,
+      'row-even': rowIndex % 2 === 0,
+      'column-odd': colIndex % 2 === 1,
+      'column-even': colIndex % 2 === 0,
     });
 
     return html`
