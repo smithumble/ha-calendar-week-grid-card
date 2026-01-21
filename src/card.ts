@@ -527,12 +527,6 @@ export class CalendarWeekGridCard extends LitElement {
   private async fetchEvents(): Promise<void> {
     if (!this.hass) return;
 
-    const entities = this.getNormalizedEntities();
-    if (!entities.length) {
-      this.events = [];
-      return;
-    }
-
     this.lastFetched = Date.now();
 
     const daysCount = this.config?.days ?? 7;
@@ -549,6 +543,8 @@ export class CalendarWeekGridCard extends LitElement {
     start.setDate(start.getDate() - daysCount - 1);
     const end = new Date(displayStartDate);
     end.setDate(end.getDate() + daysCount + 1);
+
+    const entities = this.getNormalizedEntities();
 
     const startIso = start.toISOString();
     const endIso = end.toISOString();
