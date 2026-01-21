@@ -1,4 +1,4 @@
-import { existsSync } from 'fs';
+import { existsSync, copyFileSync, mkdirSync } from 'fs';
 import { resolve, relative, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { green, greenBright, red, redBright, bold } from 'colorette';
@@ -30,8 +30,8 @@ export const getFilesPaths = (srcPath) => {
 };
 
 // Create a rollup plugin to watch asset files
-export const watchAssets = (options) => ({
-  name: 'watch-assets',
+export const watchFiles = (options) => ({
+  name: 'watch-files',
   buildStart() {
     const { targets, verbose = false } = options;
     const targetList = Array.isArray(targets) ? targets : [targets];
@@ -54,7 +54,7 @@ export const watchAssets = (options) => ({
         }
       } catch (error) {
         console.warn(
-          red('failed to watch assets'),
+          red('failed to watch'),
           red(`${redBright(bold(relativePath))}:`),
           red(`${redBright(error)}`),
         );
@@ -65,15 +65,13 @@ export const watchAssets = (options) => ({
     if (verbose) {
       if (successPaths.length > 0) {
         console.log(
-          green(
-            `watching assets:\n  ${greenBright(bold(successPaths.join('\n  ')))}`,
-          ),
+          green(`watching:\n  ${greenBright(bold(successPaths.join('\n  ')))}`),
         );
       }
       if (failedPaths.length > 0) {
         console.log(
           red(
-            `failed to watch assets:\n  ${redBright(bold(failedPaths.join('\n  ')))}`,
+            `failed to watch:\n  ${redBright(bold(failedPaths.join('\n  ')))}`,
           ),
         );
       }

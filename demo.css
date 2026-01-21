@@ -1,0 +1,673 @@
+/* Base Styles */
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  padding-top: 60px;
+  font-family: 'Roboto', sans-serif;
+  display: flex;
+  flex-direction: row;
+  width: 100vw;
+  max-width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+  transition:
+    padding-right 0.3s,
+    flex-direction 0.3s,
+    padding-top 0.3s;
+  background-color: var(--primary-background-color, rgb(40, 40, 40));
+}
+
+/* Navbar */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: 60px;
+  background-color: var(--primary-background-color, rgb(40, 40, 40));
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: min-height 0.3s;
+}
+
+.data-source-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.data-source-selector select {
+  padding: 8px 12px;
+  padding-right: 32px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.1);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 150px;
+  max-width: 100%;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  box-sizing: border-box;
+}
+
+.data-source-selector select:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.data-source-selector select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.mode-toggle-btn {
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 4px;
+}
+
+.mode-toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.mode-toggle-btn.active {
+  background-color: rgba(3, 169, 244, 0.8);
+  border-color: rgba(3, 169, 244, 1);
+}
+
+.theme-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  background-color: var(--primary-background-color, rgb(40, 40, 40));
+  color: var(--primary-text-color);
+  position: relative;
+  min-width: 350px;
+  overflow: hidden;
+  padding: 80px 20px;
+}
+
+#card-container-light,
+#card-container-dark {
+  width: 100%;
+  max-width: 440px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-content: center;
+}
+
+/* Root Variables */
+:root {
+  --box-sizing: border-box;
+  --ha-card-border-radius: 12px;
+  --ha-border-radius-lg: 12px;
+  --mdc-typography-body1-font-family: Roboto, sans-serif;
+  --mdc-typography-button-font-family: Roboto, sans-serif;
+  --mdc-icon-size: 24px;
+}
+:host {
+  display: block;
+  background: var(--ha-card-background, var(--card-background-color, #fff));
+  box-shadow: var(--ha-card-box-shadow, none);
+  border-radius: var(--ha-card-border-radius, 12px);
+  color: var(--primary-text-color);
+  transition: all 0.3s ease-out;
+  position: relative;
+}
+.theme-light {
+  --hover-color: rgba(0, 0, 0, 0.04);
+}
+.theme-dark {
+  --hover-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Base Styles */
+html {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  padding-top: 60px;
+  overflow-x: hidden;
+  font-family: 'Roboto', sans-serif;
+  display: flex;
+  flex-direction: row;
+  width: 100vw;
+  max-width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+  transition:
+    padding-right 0.3s,
+    flex-direction 0.3s,
+    padding-top 0.3s;
+  background-color: var(--primary-background-color, rgb(40, 40, 40));
+}
+
+body.with-editor {
+  padding-right: 700px;
+  flex-direction: column;
+}
+
+/* Navbar */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: 60px;
+  background-color: var(--primary-background-color, rgb(40, 40, 40));
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: min-height 0.3s;
+}
+
+.provider-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.config-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 20px;
+}
+
+.data-source-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 20px;
+}
+
+.config-editor-toggle {
+  margin-left: 20px;
+}
+
+.config-editor-toggle button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.config-editor-toggle button:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.provider-selector select,
+.config-selector select,
+.data-source-selector select {
+  padding: 8px 12px;
+  padding-right: 32px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.1);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 200px;
+  max-width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  box-sizing: border-box;
+}
+
+.provider-selector select:hover,
+.config-selector select:hover,
+.data-source-selector select:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.provider-selector select:focus,
+.config-selector select:focus,
+.data-source-selector select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.config-editor-panel {
+  position: fixed;
+  top: 60px;
+  right: 0;
+  width: 700px;
+  height: calc(100vh - 60px);
+  background-color: var(--primary-background-color, rgb(30, 30, 30));
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  display: none;
+  flex-direction: column;
+  z-index: 999;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.config-editor-panel.visible {
+  display: flex;
+}
+
+.config-editor-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.config-editor-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--primary-text-color, #fff);
+}
+
+.config-editor-mode-toggle {
+  display: flex;
+  gap: 4px;
+  margin: 0 16px;
+}
+
+.mode-toggle-btn {
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 4px;
+}
+
+.mode-toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.mode-toggle-btn.active {
+  background-color: rgba(3, 169, 244, 0.8);
+  border-color: rgba(3, 169, 244, 1);
+}
+
+.editor-mode {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.editor-mode[style*='display: none'] {
+  display: none !important;
+}
+
+#config-editor-visual.editor-mode {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#config-editor-yaml.editor-mode {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#visual-editor-container {
+  padding: 16px;
+  min-height: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  background-color: var(
+    --card-background-color,
+    var(--primary-background-color)
+  );
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s;
+}
+
+#visual-editor-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+#visual-editor-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#visual-editor-container::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+#visual-editor-container.scrolling::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+#visual-editor-container.scrolling {
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+#visual-editor-container:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+#visual-editor-container:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
+}
+
+#visual-editor-container calendar-week-grid-card-editor {
+  display: block;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.config-editor-close {
+  background: none;
+  border: none;
+  color: var(--primary-text-color, #fff);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: all 0.2s;
+  border-radius: 4px;
+  position: relative;
+}
+
+.config-editor-close::before,
+.config-editor-close::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 2px;
+  background-color: currentColor;
+  border-radius: 1px;
+}
+
+.config-editor-close::before {
+  transform: rotate(45deg);
+}
+
+.config-editor-close::after {
+  transform: rotate(-45deg);
+}
+
+.config-editor-close:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.config-editor-close:active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.config-editor-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.config-editor-textarea {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  background-color: var(--primary-background-color, rgb(30, 30, 30));
+  color: var(--primary-text-color, #fff);
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  resize: none;
+  outline: none;
+  overflow-y: auto;
+  overflow-x: auto;
+  white-space: pre;
+  tab-size: 2;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s;
+  box-sizing: border-box;
+}
+
+.config-editor-textarea::-webkit-scrollbar {
+  width: 8px;
+}
+
+.config-editor-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.config-editor-textarea::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.config-editor-textarea.scrolling::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.config-editor-textarea.scrolling {
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.config-editor-textarea:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.config-editor-textarea:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.config-editor-actions {
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  gap: 10px;
+}
+
+.config-editor-actions button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.config-editor-actions button:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.config-editor-actions button.primary {
+  background-color: rgba(76, 175, 80, 0.3);
+  border-color: rgba(76, 175, 80, 0.5);
+}
+
+.config-editor-actions button.primary:hover {
+  background-color: rgba(76, 175, 80, 0.4);
+}
+
+.config-editor-error {
+  padding: 12px 16px;
+  background-color: rgba(244, 67, 54, 0.2);
+  color: #ffcdd2;
+  font-size: 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: none;
+  flex-shrink: 0;
+}
+
+.config-editor-error.visible {
+  display: block;
+}
+
+.theme-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  background-color: var(--primary-background-color, rgb(40, 40, 40));
+  color: var(--primary-text-color);
+  position: relative;
+  min-width: 350px;
+  overflow: hidden;
+  padding: 80px;
+}
+
+body.with-editor .theme-container {
+  flex: none;
+  min-height: auto;
+  padding: 20px;
+}
+
+/* Label for the theme mode */
+.theme-label {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 24px;
+  opacity: 0.5;
+  font-weight: bold;
+  color: var(--primary-text-color);
+}
+
+body.with-editor .theme-label {
+  display: none;
+}
+
+#card-container-light,
+#card-container-dark {
+  width: 100%;
+  max-width: 440px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-content: center;
+}
+
+/* Responsive: Vertical layout for smaller screens */
+@media (max-width: 1000px) {
+  body {
+    flex-direction: column;
+    padding-top: 190px;
+  }
+
+  .navbar {
+    flex-direction: column;
+    min-height: auto;
+    height: auto;
+    padding: 10px;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .provider-selector,
+  .config-selector,
+  .data-source-selector,
+  .config-editor-toggle {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .provider-selector select,
+  .config-selector select,
+  .data-source-selector select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .config-editor-toggle button {
+    width: 100%;
+  }
+}
+
+/* Responsive: Vertical layout for smaller screens */
+@media (max-width: 1300px) {
+  body {
+    flex-direction: column;
+  }
+
+  .config-editor-panel {
+    width: 100%;
+    height: 50vh;
+    top: auto;
+    bottom: 0;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  body.with-editor {
+    padding-right: 0;
+  }
+
+  .theme-container {
+    flex: none;
+    min-height: auto;
+    padding: 20px;
+  }
+
+  .theme-label {
+    display: none;
+  }
+}
