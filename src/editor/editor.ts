@@ -237,11 +237,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
     }
 
     this.setConfigValue(name, value);
-
-    // Archive theme_values when they change
-    if (name.includes('.theme_values.')) {
-      this._archiveThemeValueOnChange(name, value);
-    }
   }
 
   /**
@@ -273,45 +268,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
       this._restoreEventConfigThemeValues('event', themeId);
       this._restoreEventConfigThemeValues('blank_event', themeId);
       this._restoreEventConfigThemeValues('blank_all_day_event', themeId);
-    }
-  }
-
-  /**
-   * Archives a theme value when it changes
-   * Only archives if the value differs from the potential example
-   */
-  private _archiveThemeValueOnChange(path: string, value: unknown): void {
-    // Only archive if we have a selected theme (not custom)
-    if (this._selectedTheme === 'custom') {
-      return;
-    }
-
-    // Extract the theme variable key from the path
-    const themeValueMatch = path.match(/^(.+)\.theme_values\.([^.]+)$/);
-    if (!themeValueMatch) {
-      return;
-    }
-
-    const basePath = themeValueMatch[1]; // e.g., "entities.0" or "event"
-    const varKey = themeValueMatch[2]; // e.g., "color"
-
-    // Get the example value for comparison
-    let exampleValue: unknown = undefined;
-
-    // Check if this is an entity path (e.g., "entities.0")
-    const entityMatch = basePath.match(/^entities\.(\d+)$/);
-    if (entityMatch) {
-      const entityIndex = parseInt(entityMatch[1], 10);
-      const example = this._getExampleByEntityIndex(entityIndex);
-      if (example) {
-        exampleValue = example[varKey];
-      }
-    }
-
-    // Only archive if the value is different from the example
-    if (value !== exampleValue) {
-      const archivePath = `${basePath}.theme_values_archive.${this._selectedTheme}.${varKey}`;
-      this.setConfigValue(archivePath, value);
     }
   }
 
@@ -576,7 +532,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
         label="${label ?? name}"
         type="${type ?? 'text'}"
         .value="${value}"
-        @keyup="${this._valueChanged}"
         @change="${this._valueChanged}"
       ></ha-textfield>
     `;
@@ -1303,6 +1258,40 @@ export class CalendarWeekGridCardEditor extends LitElement {
   //-----------------------------------------------------------------------------
 
   /**
+   * Compares two values for equality, handling type conversions
+   * (e.g., string "0.3" equals number 0.3)
+   */
+  private _valuesAreEqual(a: unknown, b: unknown): boolean {
+    // Strict equality check first
+    if (a === b) {
+      return true;
+    }
+
+    // If either is undefined, they're not equal (unless both are, caught above)
+    if (a === undefined || b === undefined) {
+      return false;
+    }
+
+    // Convert both to strings and compare
+    const aStr = String(a);
+    const bStr = String(b);
+
+    // String comparison
+    if (aStr === bStr) {
+      return true;
+    }
+
+    // Try numeric comparison if both can be parsed as numbers
+    const aNum = parseFloat(aStr);
+    const bNum = parseFloat(bStr);
+    if (!isNaN(aNum) && !isNaN(bNum)) {
+      return aNum === bNum;
+    }
+
+    return false;
+  }
+
+  /**
    * Gets theme_values_examples entry by entity index (cycling with modulo)
    */
   private _getExampleByEntityIndex(
@@ -1374,7 +1363,12 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
     const entities = this._config.entities || [];
     if (entities.length > 0) {
-      const updatedEntities = ThemeManager.archiveEntityThemeValues(
+      const themeManager = new ThemeManager(
+        this._config,
+        themes,
+        this._selectedTheme,
+      );
+      const updatedEntities = themeManager.archiveEntityThemeValues(
         entities,
         themeId,
       );
@@ -1388,6 +1382,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
   /**
    * Archives theme_values for a specific config (event, blank_event, blank_all_day_event)
+   * Only archives values that differ from the theme's example values
    */
   private _archiveConfigThemeValues(
     configKey: 'event' | 'blank_event' | 'blank_all_day_event',
@@ -1404,13 +1399,32 @@ export class CalendarWeekGridCardEditor extends LitElement {
       return;
     }
 
+    // Get example values from the theme
+    const theme = themes.find((t) => t.id === themeId);
+    const exampleThemeValues = theme?.config[configKey] as
+      | { theme_values?: Record<string, unknown> }
+      | undefined;
+
     const archivePath = `${configKey}.theme_values_archive.${themeId}`;
     const currentArchive = this.getConfigValue(archivePath, {}) as Record<
       string,
       unknown
     >;
-    const updatedArchive = { ...currentArchive, ...config.theme_values };
-    this.setConfigValue(archivePath, updatedArchive);
+
+    // Only archive values that differ from examples
+    const valuesToArchive: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(config.theme_values)) {
+      const exampleValue = exampleThemeValues?.theme_values?.[key];
+      // Archive if value differs from example (using type-aware comparison)
+      if (!this._valuesAreEqual(value, exampleValue)) {
+        valuesToArchive[key] = value;
+      }
+    }
+
+    if (Object.keys(valuesToArchive).length > 0) {
+      const updatedArchive = { ...currentArchive, ...valuesToArchive };
+      this.setConfigValue(archivePath, updatedArchive);
+    }
   }
 
   /**

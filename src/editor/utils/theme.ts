@@ -122,12 +122,13 @@ export class ThemeManager {
 
   /**
    * Archives current theme_values for all entities
+   * Only archives values that differ from the theme's example values
    */
-  static archiveEntityThemeValues(
+  archiveEntityThemeValues(
     entities: Array<string | EntityConfig>,
     themeId: string,
   ): Array<string | EntityConfig> {
-    return entities.map((entity) => {
+    return entities.map((entity, index) => {
       if (typeof entity === 'string') {
         return entity;
       }
@@ -137,16 +138,66 @@ export class ThemeManager {
         entityObj.theme_values &&
         Object.keys(entityObj.theme_values).length > 0
       ) {
-        const result = { ...entityObj };
-        if (!result.theme_values_archive) {
-          result.theme_values_archive = {};
+        // Get example values for this entity index
+        const example = this.getExampleByEntityIndex(index);
+
+        // Only archive values that differ from examples
+        const valuesToArchive: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(entityObj.theme_values)) {
+          const exampleValue = example?.[key];
+          // Archive if value differs from example (using type-aware comparison)
+          if (!this.valuesAreEqual(value, exampleValue)) {
+            valuesToArchive[key] = value;
+          }
         }
-        result.theme_values_archive[themeId] = { ...entityObj.theme_values };
-        return result;
+
+        // Only update entity if there are values to archive
+        if (Object.keys(valuesToArchive).length > 0) {
+          const result = { ...entityObj };
+          if (!result.theme_values_archive) {
+            result.theme_values_archive = {};
+          }
+          result.theme_values_archive[themeId] = valuesToArchive;
+          return result;
+        }
       }
 
       return entity;
     });
+  }
+
+  /**
+   * Compares two values for equality, handling type conversions
+   * (e.g., string "0.3" equals number 0.3)
+   */
+  private valuesAreEqual(a: unknown, b: unknown): boolean {
+    // Strict equality check first
+    if (a === b) {
+      return true;
+    }
+
+    // If either is undefined, they're not equal (unless both are, caught above)
+    if (a === undefined || b === undefined) {
+      return false;
+    }
+
+    // Convert both to strings and compare
+    const aStr = String(a);
+    const bStr = String(b);
+
+    // String comparison
+    if (aStr === bStr) {
+      return true;
+    }
+
+    // Try numeric comparison if both can be parsed as numbers
+    const aNum = parseFloat(aStr);
+    const bNum = parseFloat(bStr);
+    if (!isNaN(aNum) && !isNaN(bNum)) {
+      return aNum === bNum;
+    }
+
+    return false;
   }
 
   /**
