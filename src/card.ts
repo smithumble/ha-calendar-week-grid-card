@@ -91,9 +91,9 @@ export class CalendarWeekGridCard extends LitElement {
     );
 
     return {
+      ...stubConfig,
       type: 'custom:calendar-week-grid-card',
       entities: configEntities,
-      ...stubConfig,
     };
   }
 
@@ -120,9 +120,13 @@ export class CalendarWeekGridCard extends LitElement {
 
     return entities.map((entity, index) => {
       const example = examples[index % examples.length];
+      const themeValues =
+        typeof example === 'object' && example !== null
+          ? (example as Record<string, unknown>)
+          : {};
       return {
         entity,
-        ...(typeof example === 'object' && example !== null ? example : {}),
+        theme_values: themeValues,
       };
     });
   }
