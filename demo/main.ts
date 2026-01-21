@@ -830,18 +830,6 @@ async function initializeCards() {
   updateVisualEditor();
 }
 
-async function loadCardScript(): Promise<void> {
-  try {
-    // Dynamically import the card script
-    // Reference from parent directory (dist/calendar-week-grid-card.js)
-    // @ts-expect-error - Dynamic import path resolved at runtime
-    await import('../calendar-week-grid-card.js');
-  } catch (error) {
-    console.error('Failed to load card script:', error);
-    // Don't throw - allow demo to continue even if card script fails
-  }
-}
-
 async function waitForCustomElement(maxAttempts = 100): Promise<boolean> {
   for (let i = 0; i < maxAttempts; i++) {
     if (customElements.get('calendar-week-grid-card')) return true;
@@ -857,9 +845,6 @@ async function main() {
 
   // Setup browser environment (date override will be set based on provider)
   setupBrowserEnv(haTheme, haIcons);
-
-  // Load the card script
-  await loadCardScript();
 
   // Initialize provider data structure with metadata only (no file loading)
   const metadata = getProviderMetadata();
