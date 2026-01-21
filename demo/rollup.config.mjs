@@ -5,26 +5,31 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import copy from 'rollup-plugin-copy';
 import cardConfig from '../rollup.config.mjs';
-import { getAssetsPaths, watchSourceFiles } from './rollup.utils.mjs';
+import { assetsManifest, watchAssets } from './rollup.utils.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = resolve(__dirname, '..');
 
 const demoConfig = {
-  input: resolve(projectRoot, 'demo/main.ts'),
-  output: {
-    dir: 'dist/demo',
-    format: 'es',
-    entryFileNames: 'main.js',
-    assetFileNames: '[name][extname]',
+  input: {
+    demo: resolve(projectRoot, 'demo/demo/demo.ts'),
+    schedule: resolve(projectRoot, 'demo/schedule/schedule.ts'),
   },
-  external: (id) => {
-    // Mark card script as external - it will be loaded at runtime
-    if (id.includes('calendar-week-grid-card.js')) {
-      return true;
-    }
-    return false;
+  output: {
+    dir: '.',
+    format: 'es',
+    entryFileNames: (chunkInfo) => {
+      const name = chunkInfo.name;
+      switch (name) {
+        case 'schedule':
+          return 'dist/schedule/[name].js';
+        default:
+          return 'dist/demo/[name].js';
+      }
+    },
+    chunkFileNames: 'dist/demo/[name]-[hash].js',
+    assetFileNames: 'dist/demo/[name][extname]',
   },
   context: 'window',
   watch: {
@@ -70,17 +75,31 @@ const demoConfig = {
     copy({
       targets: [
         {
-          src: 'demo/index.html',
-          dest: 'dist/demo',
-        },
-        {
-          src: 'demo/styles.css',
-          dest: 'dist/demo',
-        },
-        {
-          src: 'demo/redirect.html',
+          src: 'demo/root.html',
           dest: 'dist',
           rename: 'index.html',
+        },
+        {
+          src: 'demo/demo/common.css',
+          dest: 'dist/demo',
+        },
+        {
+          src: 'demo/demo/demo.html',
+          dest: 'dist/demo',
+          rename: 'index.html',
+        },
+        {
+          src: 'demo/demo/demo.css',
+          dest: 'dist/demo',
+        },
+        {
+          src: 'demo/schedule/schedule.html',
+          dest: 'dist/schedule',
+          rename: 'index.html',
+        },
+        {
+          src: 'demo/schedule/schedule.css',
+          dest: 'dist/schedule',
         },
       ],
       hook: 'buildStart',
@@ -88,45 +107,23 @@ const demoConfig = {
       copyOnce: true,
       verbose: true,
     }),
-    {
-      name: 'watch-assets',
-      buildStart() {
-        watchSourceFiles(this, {
-          targets: [
-            'src/configs', // card configs
-            'demo/assets/data', // providers data and card configs
-            'demo/assets/themes', // ha themes
-          ],
-          verbose: true,
-        });
-      },
-    },
-    {
-      name: 'asset-manifest',
-      resolveId(source) {
-        // Create virtual module for asset manifest
-        if (source === 'virtual:asset-manifest') {
-          return source;
-        }
-        return null;
-      },
-      load(id) {
-        // Generate asset manifest virtual module
-        if (id === 'virtual:asset-manifest') {
-          const manifest = getAssetsPaths({
-            targets: [
-              'dist/demo/assets/data', // providers data
-              'dist/demo/assets/themes', // ha themes
-            ],
-            relativeTo: 'dist/demo',
-            verbose: true,
-          });
-
-          return `export const ASSET_MANIFEST = ${JSON.stringify(manifest, null, 2)};`;
-        }
-        return null;
-      },
-    },
+    watchAssets({
+      targets: [
+        'src/configs', // card configs
+        'demo/assets/data', // providers data and card configs
+        'demo/assets/themes', // ha themes
+      ],
+      verbose: true,
+    }),
+    assetsManifest({
+      targets: [
+        'dist/demo/assets/data', // providers data
+        'dist/demo/assets/themes', // ha themes
+      ],
+      relativeTo: 'dist',
+      absolute: true,
+      verbose: true,
+    }),
     typescript({
       tsconfig: resolve(projectRoot, 'demo/tsconfig.json'),
       rootDir: projectRoot,

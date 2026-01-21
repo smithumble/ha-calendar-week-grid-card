@@ -1,0 +1,24 @@
+/* Root Variables */
+:root {
+  --box-sizing: border-box;
+  --ha-card-border-radius: 12px;
+  --ha-border-radius-lg: 12px;
+  --mdc-typography-body1-font-family: Roboto, sans-serif;
+  --mdc-typography-button-font-family: Roboto, sans-serif;
+  --mdc-icon-size: 24px;
+}
+:host {
+  display: block;
+  background: var(--ha-card-background, var(--card-background-color, #fff));
+  box-shadow: var(--ha-card-box-shadow, none);
+  border-radius: var(--ha-card-border-radius, 12px);
+  color: var(--primary-text-color);
+  transition: all 0.3s ease-out;
+  position: relative;
+}
+.theme-light {
+  --hover-color: rgba(0, 0, 0, 0.04);
+}
+.theme-dark {
+  --hover-color: rgba(255, 255, 255, 0.08);
+}

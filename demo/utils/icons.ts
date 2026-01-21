@@ -20,7 +20,7 @@ export async function loadIcon(iconName: string): Promise<string> {
     try {
       // Convert icon name from "mdi/icon-name" to "icon-name.svg"
       const iconFile = iconName.replace('mdi/', '') + '.svg';
-      const response = await fetch(`./assets/icons/${iconFile}`);
+      const response = await fetch(`/demo/assets/icons/${iconFile}`);
 
       if (!response.ok) {
         throw new Error(

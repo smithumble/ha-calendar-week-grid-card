@@ -29,74 +29,99 @@ export const getFilesPaths = (srcPath) => {
   }
 };
 
-// Get assets paths from target path(s) and return as relative paths
-export const getAssetsPaths = (options) => {
-  const { targets, relativeTo, verbose = true } = options;
-  const targetList = Array.isArray(targets) ? targets : [targets];
-  const resolvedRelativeTo = resolve(projectRoot, relativeTo);
-  const manifest = [];
+// Create a rollup plugin to watch asset files
+export const watchAssets = (options) => ({
+  name: 'watch-assets',
+  buildStart() {
+    const { targets, verbose = false } = options;
+    const targetList = Array.isArray(targets) ? targets : [targets];
 
-  for (const target of targetList) {
-    const targetPath = resolve(projectRoot, target);
-    const allFiles = getFilesPaths(targetPath);
+    const successPaths = [];
+    const failedPaths = [];
 
-    for (const file of allFiles) {
-      const relativeAssetPath = relative(resolvedRelativeTo, file);
-      manifest.push(relativeAssetPath);
-    }
-  }
+    for (const target of targetList) {
+      const sourcePath = resolve(projectRoot, target);
+      const relativePath = relative(projectRoot, sourcePath);
 
-  if (verbose) {
-    console.log(
-      green(`generated:\n `),
-      green(`${greenBright(bold('asset manifest'))} with`),
-      green(`${greenBright(bold(manifest.length))} files`),
-    );
-  }
-
-  return manifest;
-};
-
-// Shared utility function for watching source files
-export const watchSourceFiles = (plugin, options) => {
-  const { targets, verbose = false } = options;
-  const targetList = Array.isArray(targets) ? targets : [targets];
-
-  const successPaths = [];
-  const failedPaths = [];
-
-  for (const target of targetList) {
-    const sourcePath = resolve(projectRoot, target);
-    const relativePath = relative(projectRoot, sourcePath);
-
-    try {
-      if (existsSync(sourcePath)) {
-        const sourceFiles = getFilesPaths(sourcePath);
-        for (const file of sourceFiles) {
-          plugin.addWatchFile(file);
+      try {
+        if (existsSync(sourcePath)) {
+          const sourceFiles = getFilesPaths(sourcePath);
+          for (const file of sourceFiles) {
+            this.addWatchFile(file);
+          }
+          this.addWatchFile(sourcePath);
+          successPaths.push(relativePath);
         }
-        plugin.addWatchFile(sourcePath);
-        successPaths.push(relativePath);
+      } catch (error) {
+        console.warn(
+          red('failed to watch assets'),
+          red(`${redBright(bold(relativePath))}:`),
+          red(`${redBright(error)}`),
+        );
+        failedPaths.push(relativePath);
       }
-    } catch {
-      failedPaths.push(relativePath);
     }
-  }
 
-  if (verbose) {
-    if (successPaths.length > 0) {
-      console.log(
-        green(
-          `watching assets:\n  ${greenBright(bold(successPaths.join('\n  ')))}`,
-        ),
-      );
+    if (verbose) {
+      if (successPaths.length > 0) {
+        console.log(
+          green(
+            `watching assets:\n  ${greenBright(bold(successPaths.join('\n  ')))}`,
+          ),
+        );
+      }
+      if (failedPaths.length > 0) {
+        console.log(
+          red(
+            `failed to watch assets:\n  ${redBright(bold(failedPaths.join('\n  ')))}`,
+          ),
+        );
+      }
     }
-    if (failedPaths.length > 0) {
-      console.log(
-        red(
-          `failed to watch assets:\n  ${redBright(bold(failedPaths.join('\n  ')))}`,
-        ),
-      );
+  },
+});
+
+// Create a rollup plugin to generate asset manifest as virtual module
+export const assetsManifest = (options) => ({
+  name: 'asset-manifest',
+  resolveId(source) {
+    // Create virtual module for asset manifest
+    if (source === 'virtual:asset-manifest') {
+      return source;
     }
-  }
-};
+    return null;
+  },
+  load(id) {
+    // Generate asset manifest virtual module
+    if (id === 'virtual:asset-manifest') {
+      const { targets, relativeTo, absolute = false, verbose = true } = options;
+      const targetList = Array.isArray(targets) ? targets : [targets];
+      const resolvedRelativeTo = resolve(projectRoot, relativeTo);
+      const manifest = [];
+
+      for (const target of targetList) {
+        const targetPath = resolve(projectRoot, target);
+        const allFiles = getFilesPaths(targetPath);
+
+        for (const file of allFiles) {
+          let relativeAssetPath = relative(resolvedRelativeTo, file);
+          if (absolute) {
+            relativeAssetPath = '/' + relativeAssetPath;
+          }
+          manifest.push(relativeAssetPath);
+        }
+      }
+
+      if (verbose) {
+        console.log(
+          green(`generated:\n `),
+          green(`${greenBright(bold('asset manifest'))} with`),
+          green(`${greenBright(bold(manifest.length))} files`),
+        );
+      }
+
+      return `export const ASSET_MANIFEST = ${JSON.stringify(manifest, null, 2)};`;
+    }
+    return null;
+  },
+});
