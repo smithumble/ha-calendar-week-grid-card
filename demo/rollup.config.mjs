@@ -28,7 +28,7 @@ const demoConfig = {
   },
   context: 'window',
   watch: {
-    include: ['demo/**'],
+    include: ['demo/**', 'src/configs/**'],
     clearScreen: false,
     buildDelay: 100,
   },
