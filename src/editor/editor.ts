@@ -256,8 +256,19 @@ export class CalendarWeekGridCardEditor extends LitElement {
         this._archiveCurrentThemeValues(previousTheme);
       }
 
+      // Clear theme-related fields if not present in theme (e.g., basic theme has no CSS or theme variables)
+      if (!('css' in selectedTheme.config)) {
+        this.setConfigValue('css', '');
+      }
+      if (!('theme_variables' in selectedTheme.config)) {
+        this.setConfigValue('theme_variables', undefined);
+      }
+      if (!('theme_values_examples' in selectedTheme.config)) {
+        this.setConfigValue('theme_values_examples', undefined);
+      }
+
       Object.entries(selectedTheme.config).forEach(([key, value]) => {
-        if (key !== 'entities') {
+        if (key !== 'entities' && value !== null && value !== undefined) {
           this.setConfigValue(key, value);
         }
       });
