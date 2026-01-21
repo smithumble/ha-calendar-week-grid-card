@@ -26,31 +26,4 @@ export default defineConfig({
       allow: ['..'],
     },
   },
-  plugins: [
-    {
-      name: 'reload-on-change',
-      configureServer(server) {
-        // Watch assets
-        const assetsPath = resolve(__dirname, 'assets');
-        server.watcher.add(assetsPath);
-
-        // Watch paths
-        const watchPaths = [assetsPath];
-
-        // Reload on any change in dist or assets
-        const handleFileEvent = (event: string, file: string) => {
-          if (watchPaths.some((path) => file.startsWith(path))) {
-            console.log(`Reloading due to ${event} in:`, file);
-            server.ws.send({
-              type: 'full-reload',
-            });
-          }
-        };
-
-        server.watcher.on('change', (file) => handleFileEvent('change', file));
-        server.watcher.on('add', (file) => handleFileEvent('add', file));
-        server.watcher.on('unlink', (file) => handleFileEvent('unlink', file));
-      },
-    },
-  ],
 });

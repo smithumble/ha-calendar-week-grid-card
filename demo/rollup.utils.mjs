@@ -1,45 +1,15 @@
-import { cpSync, rmSync, existsSync } from 'fs';
-import { resolve, relative } from 'path';
+import { existsSync } from 'fs';
+import { resolve, relative, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { green, greenBright, red, redBright, bold } from 'colorette';
 import glob from 'glob';
 
-// Shared utility function for copying assets
-export const copyAsset = (srcPath, destPath, projectRoot, force = true) => {
-  try {
-    if (!existsSync(srcPath)) {
-      console.warn(
-        `✗ Source path does not exist: ${relative(projectRoot, srcPath)}`,
-      );
-      return;
-    }
-
-    // Remove existing destination folder if it exists
-    if (existsSync(destPath)) {
-      if (force) {
-        rmSync(destPath, { recursive: true, force: true });
-      } else {
-        console.log(
-          `✓ Skipping copy of ${relative(projectRoot, destPath)}, already exists`,
-        );
-        return;
-      }
-    }
-
-    // Copy the folder
-    cpSync(srcPath, destPath, { recursive: true });
-
-    console.log(
-      `✓ Copied ${relative(projectRoot, srcPath)} to ${relative(projectRoot, destPath)}`,
-    );
-  } catch (error) {
-    console.error(
-      `✗ Failed to copy ${relative(projectRoot, srcPath)} to ${relative(projectRoot, destPath)}:`,
-      error,
-    );
-  }
-};
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const projectRoot = resolve(__dirname, '..');
 
 // Get all file paths from a source path
-export const getFilesPaths = (srcPath, projectRoot) => {
+export const getFilesPaths = (srcPath) => {
   try {
     if (!existsSync(srcPath)) {
       return [];
@@ -49,28 +19,84 @@ export const getFilesPaths = (srcPath, projectRoot) => {
       nodir: true,
     });
   } catch (error) {
+    const relativePath = relative(projectRoot, srcPath);
     console.warn(
-      `✗ Failed to get files from ${relative(projectRoot, srcPath)}:`,
-      error,
+      red('failed to get files from'),
+      red(`${redBright(bold(relativePath))}:`),
+      red(`${redBright(error)}`),
     );
     return [];
   }
 };
 
-// Shared utility function for watching source files
-export const watchSourceFiles = (plugin, sourcePath, projectRoot) => {
-  try {
-    if (existsSync(sourcePath)) {
-      const sourceFiles = getFilesPaths(sourcePath, projectRoot);
-      for (const file of sourceFiles) {
-        plugin.addWatchFile(file);
-      }
-      plugin.addWatchFile(sourcePath);
+// Get assets paths from target path(s) and return as relative paths
+export const getAssetsPaths = (options) => {
+  const { targets, relativeTo, verbose = true } = options;
+  const targetList = Array.isArray(targets) ? targets : [targets];
+  const resolvedRelativeTo = resolve(projectRoot, relativeTo);
+  const manifest = [];
+
+  for (const target of targetList) {
+    const targetPath = resolve(projectRoot, target);
+    const allFiles = getFilesPaths(targetPath);
+
+    for (const file of allFiles) {
+      const relativeAssetPath = relative(resolvedRelativeTo, file);
+      manifest.push(relativeAssetPath);
     }
-  } catch (error) {
-    console.warn(
-      `✗ Failed to watch ${relative(projectRoot, sourcePath)}:`,
-      error,
+  }
+
+  if (verbose) {
+    console.log(
+      green(`generated:\n `),
+      green(`${greenBright(bold('asset manifest'))} with`),
+      green(`${greenBright(bold(manifest.length))} files`),
     );
+  }
+
+  return manifest;
+};
+
+// Shared utility function for watching source files
+export const watchSourceFiles = (plugin, options) => {
+  const { targets, verbose = false } = options;
+  const targetList = Array.isArray(targets) ? targets : [targets];
+
+  const successPaths = [];
+  const failedPaths = [];
+
+  for (const target of targetList) {
+    const sourcePath = resolve(projectRoot, target);
+    const relativePath = relative(projectRoot, sourcePath);
+
+    try {
+      if (existsSync(sourcePath)) {
+        const sourceFiles = getFilesPaths(sourcePath);
+        for (const file of sourceFiles) {
+          plugin.addWatchFile(file);
+        }
+        plugin.addWatchFile(sourcePath);
+        successPaths.push(relativePath);
+      }
+    } catch {
+      failedPaths.push(relativePath);
+    }
+  }
+
+  if (verbose) {
+    if (successPaths.length > 0) {
+      console.log(
+        green(
+          `watching assets:\n  ${greenBright(bold(successPaths.join('\n  ')))}`,
+        ),
+      );
+    }
+    if (failedPaths.length > 0) {
+      console.log(
+        red(
+          `failed to watch assets:\n  ${redBright(bold(failedPaths.join('\n  ')))}`,
+        ),
+      );
+    }
   }
 };

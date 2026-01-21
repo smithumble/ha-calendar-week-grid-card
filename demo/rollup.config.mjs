@@ -1,17 +1,18 @@
-import { resolve, dirname, relative } from 'path';
+import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import commonjs from '@rollup/plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import copy from 'rollup-plugin-copy';
-import { copyAsset, getFilesPaths, watchSourceFiles } from './rollup.utils.mjs';
+import cardConfig from '../rollup.config.mjs';
+import { getAssetsPaths, watchSourceFiles } from './rollup.utils.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = resolve(__dirname, '..');
 
-export default {
-  input: resolve(__dirname, '../demo/main.ts'),
+const demoConfig = {
+  input: resolve(projectRoot, 'demo/main.ts'),
   output: {
     dir: 'dist/demo',
     format: 'es',
@@ -27,57 +28,81 @@ export default {
   },
   context: 'window',
   watch: {
-    include: ['demo/**', 'src/configs/**'],
+    include: ['demo/**'],
     clearScreen: false,
     buildDelay: 100,
   },
   plugins: [
+    copy({
+      targets: [
+        {
+          src: 'node_modules/@mdi/svg/svg',
+          dest: 'dist/demo/assets',
+          rename: 'icons',
+        },
+      ],
+      hook: 'buildStart',
+      copySync: true,
+      copyOnce: true,
+      overwrite: false,
+      verbose: true,
+    }),
+    copy({
+      targets: [
+        {
+          src: 'demo/assets/data',
+          dest: 'dist/demo/assets',
+        },
+        {
+          src: 'demo/assets/themes',
+          dest: 'dist/demo/assets',
+        },
+        {
+          src: 'src/configs',
+          dest: 'dist/demo/assets/data/yasno_v3',
+        },
+      ],
+      hook: 'buildStart',
+      copySync: true,
+      copyOnce: false,
+      verbose: true,
+    }),
+    copy({
+      targets: [
+        {
+          src: 'demo/index.html',
+          dest: 'dist/demo',
+        },
+        {
+          src: 'demo/styles.css',
+          dest: 'dist/demo',
+        },
+        {
+          src: 'demo/redirect.html',
+          dest: 'dist',
+          rename: 'index.html',
+        },
+      ],
+      hook: 'buildStart',
+      copySync: true,
+      copyOnce: true,
+      verbose: true,
+    }),
     {
-      name: 'copy-assets',
+      name: 'watch-assets',
       buildStart() {
-        const assetsCopyRules = [
-          {
-            src: '../node_modules/@mdi/svg/svg',
-            dst: '../dist/demo/assets/icons',
-            force: false,
-          },
-          {
-            src: 'assets/data',
-            dst: '../dist/demo/assets/data',
-          },
-          {
-            src: 'assets/themes',
-            dst: '../dist/demo/assets/themes',
-          },
-          {
-            src: '../src/configs',
-            dst: '../dist/demo/assets/data/yasno_v3/configs',
-          },
-        ];
-
-        for (const rule of assetsCopyRules) {
-          const sourcePath = resolve(__dirname, rule.src);
-          const destPath = resolve(__dirname, rule.dst);
-
-          copyAsset(sourcePath, destPath, projectRoot, rule.force);
-          watchSourceFiles(this, sourcePath, projectRoot);
-        }
+        watchSourceFiles(this, {
+          targets: [
+            'src/configs', // card configs
+            'demo/assets/data', // providers data and card configs
+            'demo/assets/themes', // ha themes
+          ],
+          verbose: true,
+        });
       },
     },
     {
       name: 'asset-manifest',
-      buildStart() {
-        // Watch asset directories for changes (only once per build cycle)
-        const distAssets = [
-          '../dist/demo/assets/data',
-          '../dist/demo/assets/themes',
-        ];
-
-        for (const distAsset of distAssets) {
-          const distAssetsPath = resolve(__dirname, distAsset);
-          watchSourceFiles(this, distAssetsPath, projectRoot);
-        }
-      },
       resolveId(source) {
         // Create virtual module for asset manifest
         if (source === 'virtual:asset-manifest') {
@@ -88,27 +113,14 @@ export default {
       load(id) {
         // Generate asset manifest virtual module
         if (id === 'virtual:asset-manifest') {
-          const distAssets = [
-            '../dist/demo/assets/data',
-            '../dist/demo/assets/themes',
-          ];
-          const distDemoRoot = resolve(__dirname, '../dist/demo');
-          const manifest = [];
-
-          for (const distAsset of distAssets) {
-            const distAssetsPath = resolve(__dirname, distAsset);
-
-            // Get all paths for manifest
-            const allFiles = getFilesPaths(distAssetsPath, projectRoot);
-            for (const file of allFiles) {
-              const relativePath = relative(distDemoRoot, file);
-              manifest.push(relativePath);
-            }
-          }
-
-          console.log(
-            `✓ Generated asset manifest with ${manifest.length} files`,
-          );
+          const manifest = getAssetsPaths({
+            targets: [
+              'dist/demo/assets/data', // providers data
+              'dist/demo/assets/themes', // ha themes
+            ],
+            relativeTo: 'dist/demo',
+            verbose: true,
+          });
 
           return `export const ASSET_MANIFEST = ${JSON.stringify(manifest, null, 2)};`;
         }
@@ -116,10 +128,10 @@ export default {
       },
     },
     typescript({
-      tsconfig: resolve(__dirname, '../demo/tsconfig.json'),
-      rootDir: resolve(__dirname, '..'),
+      tsconfig: resolve(projectRoot, 'demo/tsconfig.json'),
+      rootDir: projectRoot,
       compilerOptions: {
-        outDir: resolve(__dirname, '../dist/demo'),
+        outDir: resolve(projectRoot, 'dist/demo'),
       },
     }),
     nodeResolve({
@@ -127,13 +139,7 @@ export default {
       preferBuiltins: false,
     }),
     commonjs(),
-    copy({
-      targets: [
-        { src: 'demo/index.html', dest: 'dist/demo' },
-        { src: 'demo/styles.css', dest: 'dist/demo' },
-        { src: 'demo/redirect.html', dest: 'dist', rename: 'index.html' },
-      ],
-      hook: 'writeBundle',
-    }),
   ],
 };
+
+export default [cardConfig, demoConfig];
