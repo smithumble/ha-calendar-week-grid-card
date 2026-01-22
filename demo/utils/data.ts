@@ -16,6 +16,8 @@ export interface ProviderData {
   configs: ConfigItem[];
   dataSources: string[];
   mockDate?: Date;
+  defaultConfig?: string;
+  defaultDataSource?: string;
 }
 
 /**
@@ -56,20 +58,4 @@ export function getVisibleProviders(
   hiddenProviders: string[] = [],
 ): string[] {
   return allProviders.filter((name) => !hiddenProviders.includes(name));
-}
-
-/**
- * Get provider metadata structure without loading all files
- */
-export function getProviderMetadata(): Record<
-  string,
-  Omit<ProviderData, 'calendars' | 'configs'>
-> {
-  const metadata = providerRegistry.getAllMetadata();
-  return Object.fromEntries(
-    Object.entries(metadata).map(([name, meta]) => [
-      name,
-      { dataSources: meta.dataSources, mockDate: meta.mockDate },
-    ]),
-  );
 }

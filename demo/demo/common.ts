@@ -1,3 +1,7 @@
+// ============================================================================
+// IMPORTS
+// ============================================================================
+
 import yaml from 'js-yaml';
 import type { CardConfig } from '../../src/types';
 import {
@@ -5,62 +9,43 @@ import {
   renderCards,
   type MockCard,
 } from '../utils/browser';
-import {
-  ProviderData,
-  loadCalendarsForDataSource,
-  loadConfigByName,
-  getAvailableConfigNames,
-  getProviderMetadata,
-  getVisibleProviders,
-} from '../utils/data';
+import { getAvailableConfigNames, getVisibleProviders } from '../utils/data';
 import type { Calendar } from '../utils/data';
 import {
   createMockHassForEditor,
   mockHaEditorComponents,
 } from '../utils/editor';
+import { providerRegistry } from '../utils/registry';
 
-// Default values
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
 export const DEFAULT_PROVIDER = 'yasno_v3';
-export const DEFAULT_CONFIG = 'google_calendar_separated';
-export const DEFAULT_DATA_SOURCE = 'yasno_1';
-
 export const DEPRECATED_PROVIDERS = ['yasno_v1', 'yasno_v2'];
 export const HIDDEN_PROVIDERS = ['yasno_image'];
 
-// Storage prefix
+// ============================================================================
+// GLOBAL STATE
+// ============================================================================
+
 let STORAGE_PREFIX = 'calendar-week-grid-card-';
+let currentProvider: string = DEFAULT_PROVIDER;
+export let currentConfig: CardConfig | null = null;
+export let originalConfig: CardConfig | null = null;
+export let currentCalendars: Calendar[] = [];
+
+// ============================================================================
+// STORAGE PREFIX MANAGEMENT
+// ============================================================================
 
 export function setStoragePrefix(prefix: string) {
   STORAGE_PREFIX = `calendar-week-grid-card-${prefix}-`;
 }
 
-// Global state
-let currentProvider: string = DEFAULT_PROVIDER;
-export let currentConfig: CardConfig | null = null;
-export let originalConfig: CardConfig | null = null;
-export let currentCalendars: Calendar[] = [];
-let providerDataMap: Record<string, ProviderData> = {};
-
-// State setters
-export function setCurrentConfig(config: CardConfig | null) {
-  currentConfig = config;
-}
-
-export function setOriginalConfig(config: CardConfig | null) {
-  originalConfig = config;
-}
-
-export function setCurrentCalendars(calendars: Calendar[]) {
-  currentCalendars = calendars;
-}
-
-export function getCurrentProvider(): string {
-  return currentProvider;
-}
-
-export function setCurrentProvider(provider: string) {
-  currentProvider = provider;
-}
+// ============================================================================
+// STORAGE UTILITIES
+// ============================================================================
 
 export function saveToStorage(key: string, value: string): void {
   try {
@@ -79,6 +64,14 @@ export function loadFromStorage(key: string): string | null {
   }
 }
 
+function getProviderStorageKey(provider: string, key: string): string {
+  return `${key}-${provider}`;
+}
+
+// ============================================================================
+// URL UTILITIES
+// ============================================================================
+
 export function getFromURL(paramName: string): string | null {
   const params = new URLSearchParams(window.location.search);
   return params.get(paramName);
@@ -95,6 +88,10 @@ export function updateURLParams(params: Record<string, string | null>): void {
   });
   window.history.replaceState({}, '', url.toString());
 }
+
+// ============================================================================
+// STORAGE AND URL VALUE HELPERS
+// ============================================================================
 
 export function getValue(
   storageKey: string,
@@ -114,6 +111,30 @@ export function getValue(
   return defaultValue || '';
 }
 
+export function getProviderValue(
+  provider: string,
+  storageKey: string,
+  urlParam: string,
+  defaultValue?: string,
+): string {
+  const urlValue = getFromURL(urlParam);
+  if (urlValue) {
+    // Save URL param value to provider-specific localStorage
+    saveToStorage(getProviderStorageKey(provider, storageKey), urlValue);
+    return urlValue;
+  }
+  const providerStorageKey = getProviderStorageKey(provider, storageKey);
+  const storageValue = loadFromStorage(providerStorageKey);
+  if (storageValue) {
+    return storageValue;
+  }
+  return defaultValue || '';
+}
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
 export function formatSelectorLabel(label: string): string {
   return label
     .split('_')
@@ -121,66 +142,79 @@ export function formatSelectorLabel(label: string): string {
     .join(' ');
 }
 
-export function getProviderData(provider: string): ProviderData | null {
-  return providerDataMap[provider] || null;
-}
+// ============================================================================
+// PROVIDER DATA MANAGEMENT
+// ============================================================================
 
 export async function getConfigByName(
   provider: string,
   configName: string,
 ): Promise<CardConfig | null> {
-  const providerData = getProviderData(provider);
-  if (!providerData) return null;
+  const providerInstance = providerRegistry.getProvider(provider);
+  if (!providerInstance) return null;
 
-  // Check if config is already loaded in providerData
-  const existingConfig = providerData.configs.find(
-    (c) => c.name === configName,
-  );
-  if (existingConfig) {
-    return existingConfig.config;
-  }
-
-  // Load the specific config file
-  const config = await loadConfigByName(provider, configName);
-  if (config) {
-    // Cache it in providerData
-    providerData.configs.push({ name: configName, config });
-  }
-  return config;
+  // Provider handles caching internally
+  return await providerInstance.loadConfig(configName);
 }
 
-export async function updateCalendars(dataSource: string, provider: string) {
-  const providerData = getProviderData(provider);
-  if (!providerData) return;
+export function initializeProviderData(availableProviders?: string[]): string {
+  // Get all providers from registry
+  let allProviders = providerRegistry.getAllProviderNames();
 
-  // Load calendar if not already loaded
-  if (!providerData.calendars[dataSource]) {
-    try {
-      const calendars = await loadCalendarsForDataSource(dataSource, provider);
-      providerData.calendars[dataSource] = calendars;
-    } catch (error) {
-      console.error(`Failed to load calendars for ${dataSource}:`, error);
-      providerData.calendars[dataSource] = [];
-    }
+  // Filter providers based on availableProviders if provided
+  if (availableProviders) {
+    allProviders = allProviders.filter((p) => availableProviders.includes(p));
   }
 
-  currentCalendars = providerData.calendars[dataSource] || [];
+  const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
+  const defaultProvider = allProviders.includes(DEFAULT_PROVIDER)
+    ? DEFAULT_PROVIDER
+    : visibleProviders[0] || allProviders[0];
+
+  // Check URL param first (highest priority)
+  const urlProvider = getFromURL('provider');
+  const selectedProvider =
+    urlProvider || getValue('selected-provider', 'provider', defaultProvider);
+
+  if (selectedProvider && allProviders.includes(selectedProvider)) {
+    currentProvider = selectedProvider;
+    if (urlProvider) {
+      saveToStorage('selected-provider', urlProvider);
+    }
+    updateURLParams({ provider: currentProvider });
+    // Update date override based on initial provider
+    const providerInstance = providerRegistry.getProvider(currentProvider);
+    updateDateOverride(providerInstance?.getMockDate());
+  }
+
+  return currentProvider;
+}
+
+// ============================================================================
+// CALENDAR OPERATIONS
+// ============================================================================
+
+export async function updateCalendars(dataSource: string, provider: string) {
+  const providerInstance = providerRegistry.getProvider(provider);
+  if (!providerInstance) return;
+
+  // Provider handles caching internally
+  currentCalendars = await providerInstance.loadCalendars(dataSource);
 }
 
 export async function updateCalendarsAndRender(
   dataSource: string,
   provider: string,
-  shouldRender = true,
-  onRender?: () => void,
 ) {
   await updateCalendars(dataSource, provider);
-  if (shouldRender && currentConfig && currentCalendars) {
+  if (currentConfig && currentCalendars) {
     renderCards(currentConfig, currentCalendars);
-    if (onRender) {
-      onRender();
-    }
   }
 }
+
+// ============================================================================
+// CONFIG OPERATIONS
+// ============================================================================
 
 export async function selectConfig(
   configName: string,
@@ -201,6 +235,10 @@ export function renderCurrentCards() {
   }
 }
 
+// ============================================================================
+// SELECT ELEMENTS UPDATE
+// ============================================================================
+
 export async function updateConfigSelect(provider: string) {
   const configSelect = document.getElementById(
     'config-select',
@@ -216,66 +254,107 @@ export async function updateConfigSelect(provider: string) {
     )
     .join('');
 
-  const savedConfig = getValue('selected-config', 'config');
-  const defaultConfig = configKeys.includes(DEFAULT_CONFIG)
-    ? DEFAULT_CONFIG
-    : configKeys[0] || '';
+  const providerInstance = providerRegistry.getProvider(provider);
+  const savedConfig = getProviderValue(provider, 'selected-config', 'config');
   const selectedConfig =
     savedConfig && configKeys.includes(savedConfig)
       ? savedConfig
-      : defaultConfig;
+      : providerInstance?.getDefaultConfig() || '';
 
   if (selectedConfig && (await selectConfig(selectedConfig, provider))) {
     configSelect.value = selectedConfig;
     if (!savedConfig) {
-      saveToStorage('selected-config', selectedConfig);
+      saveToStorage(
+        getProviderStorageKey(provider, 'selected-config'),
+        selectedConfig,
+      );
     }
     updateURLParams({ config: selectedConfig });
+    updateConfigEditorWithVisual();
   }
 }
 
-export async function updateDataSourceSelect(
-  provider: string,
-  shouldRender = false,
-  onRender?: () => void,
-) {
+export async function updateDataSourceSelect(provider: string) {
   const dataSourceSelect = document.getElementById(
     'data-source-select',
   ) as HTMLSelectElement;
   if (!dataSourceSelect) return;
 
-  const providerData = getProviderData(provider);
-  if (!providerData) return;
+  const providerInstance = providerRegistry.getProvider(provider);
+  if (!providerInstance) return;
 
-  dataSourceSelect.innerHTML = providerData.dataSources
+  const dataSources = providerInstance.getDataSources();
+  dataSourceSelect.innerHTML = dataSources
     .map((ds) => `<option value="${ds}">${formatSelectorLabel(ds)}</option>`)
     .join('');
 
-  const savedDataSource = getValue('selected-data-source', 'dataSource');
-  const defaultDataSource = providerData.dataSources.includes(
-    DEFAULT_DATA_SOURCE,
-  )
-    ? DEFAULT_DATA_SOURCE
-    : providerData.dataSources[0] || '';
+  const savedDataSource = getProviderValue(
+    provider,
+    'selected-data-source',
+    'dataSource',
+  );
   const selectedDataSource =
-    savedDataSource && providerData.dataSources.includes(savedDataSource)
+    savedDataSource && dataSources.includes(savedDataSource)
       ? savedDataSource
-      : defaultDataSource;
+      : providerInstance.getDefaultDataSource() || '';
 
   if (selectedDataSource) {
     dataSourceSelect.value = selectedDataSource;
     if (!savedDataSource) {
-      saveToStorage('selected-data-source', selectedDataSource);
+      saveToStorage(
+        getProviderStorageKey(provider, 'selected-data-source'),
+        selectedDataSource,
+      );
     }
     updateURLParams({ dataSource: selectedDataSource });
-    await updateCalendarsAndRender(
-      selectedDataSource,
-      provider,
-      shouldRender,
-      onRender,
-    );
+    await updateCalendarsAndRender(selectedDataSource, provider);
   }
 }
+
+export async function updateSelectsForProvider(provider: string) {
+  await updateConfigSelect(provider);
+  await updateDataSourceSelect(provider);
+}
+
+function populateProviderSelect(selectedProvider?: string | null) {
+  const providerSelect = document.getElementById(
+    'provider-select',
+  ) as HTMLSelectElement;
+  if (!providerSelect) return;
+
+  const allProviders = providerRegistry.getAllProviderNames();
+  const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
+
+  // Include selected provider even if it's hidden
+  const providersToShow = new Set(visibleProviders);
+  if (selectedProvider && allProviders.includes(selectedProvider)) {
+    providersToShow.add(selectedProvider);
+  }
+
+  const sortedProviders = Array.from(providersToShow).sort();
+
+  providerSelect.innerHTML = sortedProviders
+    .map((p) => {
+      const label = formatSelectorLabel(p);
+      const deprecated = DEPRECATED_PROVIDERS.includes(p)
+        ? ' (Deprecated)'
+        : '';
+      return `<option value="${p}">${label}${deprecated}</option>`;
+    })
+    .join('');
+
+  // Always set the value to selectedProvider if provided and valid
+  if (selectedProvider && sortedProviders.includes(selectedProvider)) {
+    providerSelect.value = selectedProvider;
+  } else if (sortedProviders.length > 0 && !providerSelect.value) {
+    // Fallback to first provider if no valid selection
+    providerSelect.value = sortedProviders[0];
+  }
+}
+
+// ============================================================================
+// SELECT LISTENERS SETUP
+// ============================================================================
 
 export function setupSelectListener(
   selectId: string,
@@ -290,6 +369,113 @@ export function setupSelectListener(
     handler(target.value);
   });
 }
+
+export function setupConfigSelectListener() {
+  setupSelectListener('config-select', async (selectedName) => {
+    if (await selectConfig(selectedName, currentProvider)) {
+      if (currentConfig) {
+        renderCards(currentConfig, currentCalendars);
+      }
+      updateConfigEditorWithVisual();
+      saveToStorage(
+        getProviderStorageKey(currentProvider, 'selected-config'),
+        selectedName,
+      );
+      updateURLParams({ config: selectedName });
+    }
+  });
+  setupSelectKeyboardNavigation('config-select');
+}
+
+export function setupDataSourceSelectListener() {
+  setupSelectListener('data-source-select', async (selectedDataSource) => {
+    saveToStorage(
+      getProviderStorageKey(currentProvider, 'selected-data-source'),
+      selectedDataSource,
+    );
+    updateURLParams({ dataSource: selectedDataSource });
+    await updateCalendarsAndRender(selectedDataSource, currentProvider);
+  });
+  setupSelectKeyboardNavigation('data-source-select');
+}
+
+export function setupProviderSelector() {
+  const providerSelect = document.getElementById(
+    'provider-select',
+  ) as HTMLSelectElement;
+  if (!providerSelect) return;
+
+  const allProviders = providerRegistry.getAllProviderNames();
+  if (allProviders.length === 0) return;
+
+  const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
+  const defaultProvider = allProviders.includes(DEFAULT_PROVIDER)
+    ? DEFAULT_PROVIDER
+    : visibleProviders[0] || allProviders[0];
+
+  // Check URL param first (highest priority)
+  const urlProvider = getFromURL('provider');
+  const currentProviderValue =
+    urlProvider || getValue('selected-provider', 'provider', defaultProvider);
+
+  // Populate select with visible providers + selected provider (if hidden)
+  populateProviderSelect(currentProviderValue);
+
+  // Allow provider from URL/storage even if it's hidden from dropdown
+  if (currentProviderValue && allProviders.includes(currentProviderValue)) {
+    // populateProviderSelect already sets the value, but ensure it's set
+    if (providerSelect.value !== currentProviderValue) {
+      providerSelect.value = currentProviderValue;
+    }
+    currentProvider = currentProviderValue;
+    if (urlProvider) {
+      saveToStorage('selected-provider', urlProvider);
+    }
+    updateURLParams({ provider: currentProvider });
+    // Update date override based on initial provider
+    const providerInstance = providerRegistry.getProvider(currentProvider);
+    updateDateOverride(providerInstance?.getMockDate());
+  }
+
+  setupSelectListener('provider-select', async (selectedProvider) => {
+    if (allProviders.includes(selectedProvider)) {
+      const previousProvider = currentProvider;
+      currentProvider = selectedProvider;
+      saveToStorage('selected-provider', selectedProvider);
+
+      // Clear config and dataSource URL params when provider changes
+      // They will be set again by updateSelectsForProvider if needed
+      updateURLParams({
+        provider: selectedProvider,
+        config: null,
+        dataSource: null,
+      });
+
+      // Update date override based on provider
+      const providerInstance = providerRegistry.getProvider(selectedProvider);
+      updateDateOverride(providerInstance?.getMockDate());
+
+      // Only repopulate if we're switching away from a hidden provider
+      // (to remove it from the dropdown) or if we're switching to a hidden provider
+      const wasHidden =
+        previousProvider && !visibleProviders.includes(previousProvider);
+      const isHidden = !visibleProviders.includes(selectedProvider);
+
+      if (wasHidden || isHidden) {
+        // Repopulate to add/remove hidden providers as needed
+        populateProviderSelect(selectedProvider);
+      }
+
+      // Update config and data source selects for the new provider
+      await updateSelectsForProvider(selectedProvider);
+    }
+  });
+  setupSelectKeyboardNavigation('provider-select');
+}
+
+// ============================================================================
+// KEYBOARD NAVIGATION
+// ============================================================================
 
 function isAnySelectorFocused(): boolean {
   const selectors = ['provider-select', 'config-select', 'data-source-select'];
@@ -401,6 +587,40 @@ export function setupSelectKeyboardNavigation(selectId: string): void {
   });
 }
 
+// ============================================================================
+// EDITOR STATE
+// ============================================================================
+
+let visualEditor: MockCard | null = null;
+let editorMode: 'yaml' | 'visual' = 'visual';
+
+// ============================================================================
+// EDITOR DOM ELEMENTS HELPERS
+// ============================================================================
+
+function getEditorElements() {
+  return {
+    panel: document.getElementById('config-editor-panel'),
+    toggleBtn: document.getElementById('config-editor-toggle-btn'),
+    closeBtn: document.getElementById('config-editor-close'),
+    applyBtn: document.getElementById('config-editor-apply'),
+    resetBtn: document.getElementById('config-editor-reset'),
+    textarea: document.getElementById(
+      'config-editor-textarea',
+    ) as HTMLTextAreaElement,
+    errorDiv: document.getElementById('config-editor-error'),
+    yamlEditor: document.getElementById('config-editor-yaml'),
+    visualEditorDiv: document.getElementById('config-editor-visual'),
+    visualContainer: document.getElementById('visual-editor-container'),
+    yamlBtn: document.getElementById('config-editor-mode-yaml'),
+    visualBtn: document.getElementById('config-editor-mode-visual'),
+  };
+}
+
+// ============================================================================
+// EDITOR UPDATE FUNCTIONS
+// ============================================================================
+
 export function updateConfigEditor() {
   const textarea = document.getElementById(
     'config-editor-textarea',
@@ -415,189 +635,36 @@ export function updateConfigEditor() {
       sortKeys: false,
     });
     textarea.value = configYaml;
+    console.log('Updated config editor');
   } catch (e) {
     console.error('Failed to serialize config:', e);
   }
 }
 
-export function setupConfigSelectListener(onRender?: () => void) {
-  setupSelectListener('config-select', async (selectedName) => {
-    if (await selectConfig(selectedName, currentProvider)) {
-      if (currentConfig) {
-        renderCards(currentConfig, currentCalendars);
-      }
-      if (onRender) {
-        onRender();
-      }
-      saveToStorage('selected-config', selectedName);
-      updateURLParams({ config: selectedName });
-    }
-  });
-  setupSelectKeyboardNavigation('config-select');
-}
-
-export function setupDataSourceSelectListener(onRender?: () => void) {
-  setupSelectListener('data-source-select', async (selectedDataSource) => {
-    saveToStorage('selected-data-source', selectedDataSource);
-    updateURLParams({ dataSource: selectedDataSource });
-    await updateCalendarsAndRender(
-      selectedDataSource,
-      currentProvider,
-      true,
-      onRender,
-    );
-  });
-  setupSelectKeyboardNavigation('data-source-select');
-}
-
-export async function updateSelectsForProvider(
-  provider: string,
-  shouldRender = false,
-  onRender?: () => void,
-) {
-  await updateConfigSelect(provider);
-  await updateDataSourceSelect(provider, shouldRender, onRender);
-}
-
-function populateProviderSelect(selectedProvider?: string | null) {
-  const providerSelect = document.getElementById(
-    'provider-select',
-  ) as HTMLSelectElement;
-  if (!providerSelect) return;
-
-  const allProviders = Object.keys(providerDataMap);
-  const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
-
-  // Include selected provider even if it's hidden
-  const providersToShow = new Set(visibleProviders);
-  if (selectedProvider && allProviders.includes(selectedProvider)) {
-    providersToShow.add(selectedProvider);
-  }
-
-  const sortedProviders = Array.from(providersToShow).sort();
-
-  providerSelect.innerHTML = sortedProviders
-    .map((p) => {
-      const label = formatSelectorLabel(p);
-      const deprecated = DEPRECATED_PROVIDERS.includes(p)
-        ? ' (Deprecated)'
-        : '';
-      return `<option value="${p}">${label}${deprecated}</option>`;
-    })
-    .join('');
-
-  // Always set the value to selectedProvider if provided and valid
-  if (selectedProvider && sortedProviders.includes(selectedProvider)) {
-    providerSelect.value = selectedProvider;
-  } else if (sortedProviders.length > 0 && !providerSelect.value) {
-    // Fallback to first provider if no valid selection
-    providerSelect.value = sortedProviders[0];
-  }
-}
-
-export async function setupProviderSelector(
-  onProviderChange?: (provider: string) => void,
-) {
-  const providerSelect = document.getElementById(
-    'provider-select',
-  ) as HTMLSelectElement;
-  if (!providerSelect) return;
-
-  const allProviders = Object.keys(providerDataMap);
-  if (allProviders.length === 0) return;
-
-  const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
-  const defaultProvider = allProviders.includes(DEFAULT_PROVIDER)
-    ? DEFAULT_PROVIDER
-    : visibleProviders[0] || allProviders[0];
-
-  // Check URL param first (highest priority)
-  const urlProvider = getFromURL('provider');
-  const currentProviderValue =
-    urlProvider || getValue('selected-provider', 'provider', defaultProvider);
-
-  // Populate select with visible providers + selected provider (if hidden)
-  populateProviderSelect(currentProviderValue);
-
-  // Allow provider from URL/storage even if it's hidden from dropdown
-  if (currentProviderValue && allProviders.includes(currentProviderValue)) {
-    // populateProviderSelect already sets the value, but ensure it's set
-    if (providerSelect.value !== currentProviderValue) {
-      providerSelect.value = currentProviderValue;
-    }
-    currentProvider = currentProviderValue;
-    if (urlProvider) {
-      saveToStorage('selected-provider', urlProvider);
-    }
-    updateURLParams({ provider: currentProvider });
-    // Update date override based on initial provider
-    const providerMeta = providerDataMap[currentProvider];
-    updateDateOverride(providerMeta?.mockDate);
-  }
-
-  setupSelectListener('provider-select', async (selectedProvider) => {
-    if (allProviders.includes(selectedProvider)) {
-      const previousProvider = currentProvider;
-      currentProvider = selectedProvider;
-      saveToStorage('selected-provider', selectedProvider);
-      updateURLParams({ provider: selectedProvider });
-
-      // Update date override based on provider
-      const providerMeta = providerDataMap[selectedProvider];
-      updateDateOverride(providerMeta?.mockDate);
-
-      // Only repopulate if we're switching away from a hidden provider
-      // (to remove it from the dropdown) or if we're switching to a hidden provider
-      const wasHidden =
-        previousProvider && !visibleProviders.includes(previousProvider);
-      const isHidden = !visibleProviders.includes(selectedProvider);
-
-      if (wasHidden || isHidden) {
-        // Repopulate to add/remove hidden providers as needed
-        populateProviderSelect(selectedProvider);
-      }
-
-      if (onProviderChange) {
-        onProviderChange(selectedProvider);
-      }
-    }
-  });
-  setupSelectKeyboardNavigation('provider-select');
-}
-
-// Visual editor state
-let visualEditor: MockCard | null = null;
-let editorMode: 'yaml' | 'visual' = 'visual';
-
 export function updateVisualEditor() {
-  if (visualEditor && currentConfig && editorMode === 'visual') {
-    const mockHass = createMockHassForEditor(
-      currentConfig,
-      currentCalendars,
-      false,
-    );
-    visualEditor.hass = mockHass;
-    visualEditor.setConfig(currentConfig);
-  }
+  if (!visualEditor || !currentConfig) return;
+
+  const mockHass = createMockHassForEditor(
+    currentConfig,
+    currentCalendars,
+    false,
+  );
+  visualEditor.hass = mockHass;
+  visualEditor.setConfig(currentConfig);
+  console.log('Updated visual editor');
 }
 
 function updateConfigEditorWithVisual() {
   updateConfigEditor();
-
-  // Also update visual editor if it exists
-  if (visualEditor && currentConfig) {
-    const mockHass = createMockHassForEditor(
-      currentConfig,
-      currentCalendars,
-      false,
-    );
-    visualEditor.hass = mockHass;
-    visualEditor.setConfig(currentConfig);
-  }
+  updateVisualEditor();
 }
 
+// ============================================================================
+// EDITOR ERROR HANDLING
+// ============================================================================
+
 function showConfigEditorError(message: string) {
-  const errorDiv = document.getElementById('config-editor-error');
+  const { errorDiv } = getEditorElements();
   if (errorDiv) {
     errorDiv.textContent = message;
     errorDiv.classList.add('visible');
@@ -605,16 +672,18 @@ function showConfigEditorError(message: string) {
 }
 
 function hideConfigEditorError() {
-  const errorDiv = document.getElementById('config-editor-error');
+  const { errorDiv } = getEditorElements();
   if (errorDiv) {
     errorDiv.classList.remove('visible');
   }
 }
 
+// ============================================================================
+// EDITOR CONFIG OPERATIONS
+// ============================================================================
+
 function applyEditedConfig() {
-  const textarea = document.getElementById(
-    'config-editor-textarea',
-  ) as HTMLTextAreaElement;
+  const { textarea } = getEditorElements();
   if (!textarea) return;
 
   const configText = textarea.value.trim();
@@ -645,55 +714,58 @@ function resetConfig() {
     if (currentConfig) {
       renderCards(currentConfig, currentCalendars);
     }
-    updateVisualEditor();
     hideConfigEditorError();
   }
 }
 
-function toggleConfigEditor() {
-  const panel = document.getElementById('config-editor-panel');
-  const toggleBtn = document.getElementById('config-editor-toggle-btn');
-  const body = document.body;
+// ============================================================================
+// EDITOR UI HELPERS
+// ============================================================================
 
-  if (!panel || !toggleBtn) return;
+function applyThemeToContainer(container: HTMLElement) {
+  const { panel } = getEditorElements();
+  const isDark =
+    panel?.classList.contains('theme-dark') ||
+    document.body.classList.contains('theme-dark');
 
-  const isVisible = panel.classList.contains('visible');
-  if (isVisible) {
-    panel.classList.remove('visible');
-    toggleBtn.textContent = 'Edit Config';
-    body.classList.remove('with-editor');
+  if (isDark) {
+    container.classList.add('theme-dark');
+    container.classList.remove('theme-light');
   } else {
-    panel.classList.add('visible');
-    toggleBtn.textContent = 'Close Editor';
-    body.classList.add('with-editor');
-    // Initialize the default editor mode (visual)
-    if (editorMode === 'visual') {
-      setupVisualEditor();
-    } else {
-      updateConfigEditorWithVisual();
-    }
+    container.classList.add('theme-light');
+    container.classList.remove('theme-dark');
   }
 }
 
-function setupVisualEditor() {
-  const container = document.getElementById('visual-editor-container');
-  if (!container) return;
-
-  // Ensure container has theme class for proper variable inheritance
-  const editorPanel = document.getElementById('config-editor-panel');
-  if (editorPanel) {
-    // Inherit theme from editor panel or body
-    if (
-      editorPanel.classList.contains('theme-dark') ||
-      document.body.classList.contains('theme-dark')
-    ) {
-      container.classList.add('theme-dark');
-      container.classList.remove('theme-light');
-    } else {
-      container.classList.add('theme-light');
-      container.classList.remove('theme-dark');
+function setupScrollIndicator(
+  element: HTMLElement,
+  className = 'scrolling',
+  timeout = 1000,
+) {
+  let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+  element.addEventListener('scroll', () => {
+    element.classList.add(className);
+    if (scrollTimeout) {
+      clearTimeout(scrollTimeout);
     }
-  }
+    scrollTimeout = setTimeout(() => {
+      element.classList.remove(className);
+    }, timeout);
+  });
+}
+
+// ============================================================================
+// VISUAL EDITOR SETUP
+// ============================================================================
+
+function setupVisualEditor() {
+  const { visualContainer } = getEditorElements();
+  if (!visualContainer) return;
+
+  // Mock HA components needed by the visual editor
+  mockHaEditorComponents();
+
+  applyThemeToContainer(visualContainer);
 
   // Wait for the editor custom element to be registered
   if (!customElements.get('calendar-week-grid-card-editor')) {
@@ -706,19 +778,9 @@ function setupVisualEditor() {
     visualEditor = document.createElement(
       'calendar-week-grid-card-editor',
     ) as MockCard;
-    container.appendChild(visualEditor);
+    visualContainer.appendChild(visualEditor);
 
-    // Add scrollbar
-    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
-    container.addEventListener('scroll', () => {
-      container.classList.add('scrolling');
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout);
-      }
-      scrollTimeout = setTimeout(() => {
-        container.classList.remove('scrolling');
-      }, 1000);
-    });
+    setupScrollIndicator(visualContainer);
 
     // Listen for config changes
     visualEditor.addEventListener('config-changed', ((e: CustomEvent) => {
@@ -734,24 +796,17 @@ function setupVisualEditor() {
     }) as EventListener);
   }
 
-  // Update editor with current config and hass
-  if (visualEditor && currentConfig) {
-    const mockHass = createMockHassForEditor(
-      currentConfig,
-      currentCalendars,
-      false,
-    );
-    visualEditor.hass = mockHass;
-    visualEditor.setConfig(currentConfig);
-  }
+  updateVisualEditor();
 }
+
+// ============================================================================
+// EDITOR MODE SWITCHING
+// ============================================================================
 
 function switchEditorMode(mode: 'yaml' | 'visual') {
   editorMode = mode;
-  const yamlEditor = document.getElementById('config-editor-yaml');
-  const visualEditorDiv = document.getElementById('config-editor-visual');
-  const yamlBtn = document.getElementById('config-editor-mode-yaml');
-  const visualBtn = document.getElementById('config-editor-mode-visual');
+  const { yamlEditor, visualEditorDiv, yamlBtn, visualBtn } =
+    getEditorElements();
 
   if (mode === 'yaml') {
     yamlEditor?.style.setProperty('display', 'flex');
@@ -772,48 +827,68 @@ function switchEditorMode(mode: 'yaml' | 'visual') {
   }
 }
 
+// ============================================================================
+// EDITOR PANEL TOGGLE
+// ============================================================================
+
+function toggleConfigEditor() {
+  const { panel, toggleBtn } = getEditorElements();
+  if (!panel || !toggleBtn) return;
+
+  const isVisible = panel.classList.contains('visible');
+  if (isVisible) {
+    panel.classList.remove('visible');
+    toggleBtn.textContent = 'Edit Config';
+    document.body.classList.remove('with-editor');
+  } else {
+    // Initialize editors lazily on first open
+    setupConfigEditor();
+
+    panel.classList.add('visible');
+    toggleBtn.textContent = 'Close Editor';
+    document.body.classList.add('with-editor');
+    // Initialize the default editor mode (visual)
+    if (editorMode === 'visual') {
+      setupVisualEditor();
+    } else {
+      updateConfigEditorWithVisual();
+    }
+  }
+}
+
+// ============================================================================
+// EDITOR INITIALIZATION
+// ============================================================================
+
 let configEditorSetup = false;
 
-export function setupConfigEditor() {
+function setupConfigEditor() {
   if (configEditorSetup) return;
   configEditorSetup = true;
 
-  // Mock HA components for visual editor
-  mockHaEditorComponents();
+  const { closeBtn, applyBtn, resetBtn, yamlBtn, visualBtn, textarea } =
+    getEditorElements();
 
-  const toggleBtn = document.getElementById('config-editor-toggle-btn');
-  const closeBtn = document.getElementById('config-editor-close');
-  const applyBtn = document.getElementById('config-editor-apply');
-  const resetBtn = document.getElementById('config-editor-reset');
-  const yamlModeBtn = document.getElementById('config-editor-mode-yaml');
-  const visualModeBtn = document.getElementById('config-editor-mode-visual');
-
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', toggleConfigEditor);
-  }
-
+  // Setup button event listeners (toggle button is set up separately)
   if (closeBtn) {
     closeBtn.addEventListener('click', toggleConfigEditor);
   }
-
   if (applyBtn) {
     applyBtn.addEventListener('click', applyEditedConfig);
   }
-
   if (resetBtn) {
     resetBtn.addEventListener('click', resetConfig);
   }
-
-  if (yamlModeBtn) {
-    yamlModeBtn.addEventListener('click', () => switchEditorMode('yaml'));
+  if (yamlBtn) {
+    yamlBtn.addEventListener('click', () => switchEditorMode('yaml'));
+  }
+  if (visualBtn) {
+    visualBtn.addEventListener('click', () => switchEditorMode('visual'));
   }
 
-  if (visualModeBtn) {
-    visualModeBtn.addEventListener('click', () => switchEditorMode('visual'));
-  }
-
-  const textarea = document.getElementById('config-editor-textarea');
+  // Setup textarea event listeners
   if (textarea) {
+    // Keyboard shortcut: Ctrl/Cmd + Enter to apply
     textarea.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
@@ -821,17 +896,10 @@ export function setupConfigEditor() {
       }
     });
 
-    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
-    textarea.addEventListener('scroll', () => {
-      textarea.classList.add('scrolling');
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout);
-      }
-      scrollTimeout = setTimeout(() => {
-        textarea.classList.remove('scrolling');
-      }, 1000);
-    });
+    // Scroll indicator
+    setupScrollIndicator(textarea);
 
+    // Auto-apply on input (debounced)
     let autoApplyTimeout: ReturnType<typeof setTimeout> | null = null;
     textarea.addEventListener('input', () => {
       if (autoApplyTimeout) {
@@ -844,91 +912,11 @@ export function setupConfigEditor() {
   }
 }
 
-export async function waitForCustomElement(
-  maxAttempts = 100,
-): Promise<boolean> {
-  for (let i = 0; i < maxAttempts; i++) {
-    if (customElements.get('calendar-week-grid-card')) return true;
-    await new Promise((resolve) => setTimeout(resolve, 50));
+// Setup toggle button listener early so it works before editor is initialized
+export function setupEditorToggleButton() {
+  const { toggleBtn } = getEditorElements();
+  if (toggleBtn && !toggleBtn.hasAttribute('data-listener-attached')) {
+    toggleBtn.setAttribute('data-listener-attached', 'true');
+    toggleBtn.addEventListener('click', toggleConfigEditor);
   }
-  return false;
-}
-
-export async function initializeCards(
-  provider: string,
-  defaultDataSource: string,
-  includeEditor: boolean,
-) {
-  const providerData = getProviderData(provider);
-  if (!providerData) return;
-
-  const savedDataSource = getValue('selected-data-source', 'dataSource');
-  const fallbackDataSource = providerData.dataSources.includes(
-    defaultDataSource,
-  )
-    ? defaultDataSource
-    : providerData.dataSources[0] || '';
-  const initialDataSource =
-    savedDataSource && providerData.dataSources.includes(savedDataSource)
-      ? savedDataSource
-      : fallbackDataSource;
-
-  if (initialDataSource) {
-    await updateCalendars(initialDataSource, provider);
-  }
-
-  if (currentConfig && !originalConfig) {
-    originalConfig = JSON.parse(JSON.stringify(currentConfig));
-  }
-
-  if (includeEditor) {
-    updateConfigEditorWithVisual();
-    updateVisualEditor();
-  }
-
-  renderCurrentCards();
-}
-
-export async function initializeProviderData(
-  availableProviders?: string[],
-): Promise<string> {
-  // Initialize provider data structure with metadata only (no file loading)
-  const metadata = getProviderMetadata();
-  providerDataMap = {};
-  for (const [provider, meta] of Object.entries(metadata)) {
-    // Filter providers based on availableProviders if provided
-    if (availableProviders && !availableProviders.includes(provider)) {
-      continue;
-    }
-    providerDataMap[provider] = {
-      calendars: {},
-      configs: [],
-      dataSources: meta.dataSources,
-      mockDate: meta.mockDate,
-    };
-  }
-
-  const allProviders = Object.keys(providerDataMap);
-  const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
-  const defaultProvider = allProviders.includes(DEFAULT_PROVIDER)
-    ? DEFAULT_PROVIDER
-    : visibleProviders[0] || allProviders[0];
-
-  // Check URL param first (highest priority)
-  const urlProvider = getFromURL('provider');
-  const selectedProvider =
-    urlProvider || getValue('selected-provider', 'provider', defaultProvider);
-
-  if (selectedProvider && allProviders.includes(selectedProvider)) {
-    currentProvider = selectedProvider;
-    if (urlProvider) {
-      saveToStorage('selected-provider', urlProvider);
-    }
-    updateURLParams({ provider: currentProvider });
-    // Update date override based on initial provider
-    const providerMeta = providerDataMap[currentProvider];
-    updateDateOverride(providerMeta?.mockDate);
-  }
-
-  return currentProvider;
 }

@@ -4,8 +4,6 @@ import {
   selectConfig,
   updateDataSourceSelect,
   setupDataSourceSelectListener,
-  waitForCustomElement,
-  initializeCards,
 } from '../demo/common';
 import { setupBrowserEnv } from '../utils/browser';
 import { loadIcons } from '../utils/icons';
@@ -23,20 +21,14 @@ async function main() {
   setupBrowserEnv(haTheme, haIcons);
 
   // Initialize provider data
-  const currentProvider = await initializeProviderData(['yasno_api']);
+  const currentProvider = initializeProviderData(['yasno_api']);
 
   // Select a specific config for the schedule page
   await selectConfig('google_calendar_separated', currentProvider);
 
   // Setup data source selector
-  await updateDataSourceSelect(currentProvider, false);
+  await updateDataSourceSelect(currentProvider);
   setupDataSourceSelectListener();
-
-  // Wait for custom element to be registered
-  if (await waitForCustomElement()) {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    await initializeCards(currentProvider, '1.1', false);
-  }
 }
 
 main().catch(console.error);

@@ -23,27 +23,31 @@ const DATA_SOURCE_MONDAY_INDEX: Record<string, number> = {
 };
 
 /**
- * Yasno data provider (handles yasno_image, yasno_v1, yasno_v2, yasno_v3)
+ * Yasno data provider
  */
 export class YasnoProvider extends BaseProvider {
   readonly name: string;
   readonly mockDate?: Date = new Date(MOCK_DATE_STR);
 
-  private configPaths: Record<string, string> = {};
   private calendarPaths: Record<string, string> = {};
   private calendarsCache: Record<string, YasnoCalendarData> = {};
-  private loadedCalendars: Set<string> = new Set();
   private dataSourcesCache: string[] | null = null;
 
   constructor(
     name: string,
     configPaths: Record<string, string>,
     calendarPaths: Record<string, string>,
+    options?: {
+      defaultConfig?: string;
+      defaultDataSource?: string;
+    },
   ) {
     super();
     this.name = name;
     this.configPaths = configPaths;
     this.calendarPaths = calendarPaths;
+    this.defaultConfig = options?.defaultConfig;
+    this.defaultDataSource = options?.defaultDataSource;
   }
 
   getDataSources(): string[] {
@@ -63,52 +67,16 @@ export class YasnoProvider extends BaseProvider {
     return this.dataSourcesCache;
   }
 
-  getConfigNames(): string[] {
-    return Object.keys(this.configPaths)
-      .map((path) => this.extractConfigName(path))
-      .filter(Boolean)
-      .sort();
-  }
-
   async loadCalendars(dataSource: string): Promise<Calendar[]> {
     await this.loadYasnoCalendar(dataSource);
     return this.getYasnoCalendars(dataSource);
-  }
-
-  async loadConfigContent(configName: string): Promise<string | null> {
-    // Check cache
-    if (this.configCache[configName]) {
-      return this.configCache[configName];
-    }
-
-    // Find file path
-    const filePath = Object.keys(this.configPaths).find(
-      (path) => this.extractConfigName(path) === configName,
-    );
-
-    if (!filePath) {
-      console.warn(`Config file not found for ${configName} in ${this.name}`);
-      return null;
-    }
-
-    try {
-      const content = await this.loadYamlFile(this.configPaths[filePath]);
-      this.configCache[configName] = content;
-      return content;
-    } catch (error) {
-      console.warn(
-        `Failed to load config ${configName} from ${this.name}:`,
-        error,
-      );
-      return null;
-    }
   }
 
   /**
    * Load a single calendar data source
    */
   private async loadYasnoCalendar(dataSource: string): Promise<void> {
-    if (this.loadedCalendars.has(dataSource)) {
+    if (this.calendarsCache[dataSource]) {
       return;
     }
 
@@ -133,7 +101,6 @@ export class YasnoProvider extends BaseProvider {
         planned: planned as PlannedData,
         probable: probable as ProbableData,
       };
-      this.loadedCalendars.add(dataSource);
     } catch (error) {
       console.warn(`Failed to load calendar for ${dataSource}:`, error);
       throw error;

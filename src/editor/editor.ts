@@ -107,20 +107,18 @@ export class CalendarWeekGridCardEditor extends LitElement {
     if (!this._config) {
       return;
     }
-    const newConfig = ConfigManager.setValue(this._config, path, value);
-    this._fireConfigChanged(newConfig);
+    this._config = ConfigManager.setValue(this._config, path, value);
+    this._fireConfigChanged();
   }
 
-  private _fireConfigChanged(config: CardConfig): void {
+  private _fireConfigChanged(): void {
     if (this._isInitializing) {
-      this._config = config;
       return;
     }
 
-    this._config = config;
     this.dispatchEvent(
       new CustomEvent('config-changed', {
-        detail: { config },
+        detail: { config: this._config },
       }),
     );
   }

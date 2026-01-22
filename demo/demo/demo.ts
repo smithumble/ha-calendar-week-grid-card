@@ -5,15 +5,12 @@ import { loadTheme } from '../utils/theme';
 import {
   setStoragePrefix,
   initializeProviderData,
-  setupConfigEditor,
   setupGlobalKeyboardNavigation,
   setupProviderSelector,
   updateSelectsForProvider,
   setupConfigSelectListener,
   setupDataSourceSelectListener,
-  updateVisualEditor,
-  waitForCustomElement,
-  initializeCards,
+  setupEditorToggleButton,
 } from './common';
 
 const AVAILABLE_PROVIDERS_DEV = providerRegistry.getAllProviderNames();
@@ -38,39 +35,21 @@ async function main() {
   setupBrowserEnv(haTheme, haIcons);
 
   // Initialize provider data
-  const currentProvider = await initializeProviderData(AVAILABLE_PROVIDERS);
+  const currentProvider = initializeProviderData(AVAILABLE_PROVIDERS);
 
-  // Setup config editor early
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupConfigEditor);
-  } else {
-    setupConfigEditor();
-  }
+  // Setup editor toggle button
+  setupEditorToggleButton();
 
   // Setup global keyboard navigation
   setupGlobalKeyboardNavigation();
 
   // Setup provider selector
-  await setupProviderSelector();
+  setupProviderSelector();
 
   // Setup selects for current provider
-  await updateSelectsForProvider(currentProvider, false);
-  setupConfigSelectListener(updateVisualEditor);
+  await updateSelectsForProvider(currentProvider);
+  setupConfigSelectListener();
   setupDataSourceSelectListener();
-
-  // Wait for custom element to be registered
-  if (await waitForCustomElement()) {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    await initializeCards(currentProvider, 'yasno_1', true);
-
-    // Focus config selector by default
-    const configSelect = document.getElementById(
-      'config-select',
-    ) as HTMLSelectElement;
-    if (configSelect) {
-      configSelect.focus();
-    }
-  }
 }
 
 main().catch(console.error);

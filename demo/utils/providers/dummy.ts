@@ -10,54 +10,24 @@ export class DummyProvider extends BaseProvider {
   readonly name = 'dummy';
   readonly mockDate = new Date(MOCK_DATE_STR);
 
-  private configPaths: Record<string, string> = {};
-
-  constructor(configPaths: Record<string, string>) {
+  constructor(
+    configPaths: Record<string, string>,
+    options?: {
+      defaultConfig?: string;
+      defaultDataSource?: string;
+    },
+  ) {
     super();
     this.configPaths = configPaths;
+    this.defaultConfig = options?.defaultConfig;
+    this.defaultDataSource = options?.defaultDataSource;
   }
 
   getDataSources(): string[] {
     return ['data_1'];
   }
 
-  getConfigNames(): string[] {
-    return Object.keys(this.configPaths)
-      .map((path) => this.extractConfigName(path))
-      .filter(Boolean)
-      .sort();
-  }
-
   async loadCalendars(): Promise<Calendar[]> {
     return getDummyCalendars();
-  }
-
-  async loadConfigContent(configName: string): Promise<string | null> {
-    // Check cache
-    if (this.configCache[configName]) {
-      return this.configCache[configName];
-    }
-
-    // Find file path
-    const filePath = Object.keys(this.configPaths).find(
-      (path) => this.extractConfigName(path) === configName,
-    );
-
-    if (!filePath) {
-      console.warn(`Config file not found for ${configName} in ${this.name}`);
-      return null;
-    }
-
-    try {
-      const content = await this.loadYamlFile(this.configPaths[filePath]);
-      this.configCache[configName] = content;
-      return content;
-    } catch (error) {
-      console.warn(
-        `Failed to load config ${configName} from ${this.name}:`,
-        error,
-      );
-      return null;
-    }
   }
 }

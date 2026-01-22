@@ -1,17 +1,14 @@
 import type { CardConfig } from '../../../src/types';
 import type { Calendar } from '../data';
 
-export interface ProviderMetadata {
-  name: string;
-  dataSources: string[];
-  mockDate?: Date;
-}
-
 /**
  * Base class for data providers
  */
 export abstract class BaseProvider {
   protected configCache: Record<string, string> = {};
+  protected configPaths: Record<string, string> = {};
+  protected defaultConfig?: string;
+  protected defaultDataSource?: string;
 
   abstract readonly name: string;
   abstract readonly mockDate?: Date;
@@ -24,7 +21,44 @@ export abstract class BaseProvider {
   /**
    * Get available config names
    */
-  abstract getConfigNames(): string[];
+  getConfigNames(): string[] {
+    return Object.keys(this.configPaths)
+      .map((path) => this.extractConfigName(path))
+      .filter(Boolean)
+      .sort();
+  }
+
+  /**
+   * Get default config name for this provider
+   */
+  getDefaultConfig(): string | undefined {
+    const configs = this.getConfigNames();
+    if (this.defaultConfig && configs.includes(this.defaultConfig)) {
+      return this.defaultConfig;
+    }
+    return configs[0];
+  }
+
+  /**
+   * Get default data source for this provider
+   */
+  getDefaultDataSource(): string | undefined {
+    const dataSources = this.getDataSources();
+    if (
+      this.defaultDataSource &&
+      dataSources.includes(this.defaultDataSource)
+    ) {
+      return this.defaultDataSource;
+    }
+    return dataSources[0];
+  }
+
+  /**
+   * Get mock date for this provider
+   */
+  getMockDate(): Date | undefined {
+    return this.mockDate;
+  }
 
   /**
    * Load calendars for a specific data source
@@ -34,17 +68,33 @@ export abstract class BaseProvider {
   /**
    * Load a single config by name
    */
-  abstract loadConfigContent(configName: string): Promise<string | null>;
+  async loadConfigContent(configName: string): Promise<string | null> {
+    // Check cache
+    if (this.configCache[configName]) {
+      return this.configCache[configName];
+    }
 
-  /**
-   * Get provider metadata
-   */
-  getMetadata(): ProviderMetadata {
-    return {
-      name: this.name,
-      dataSources: this.getDataSources(),
-      mockDate: this.mockDate,
-    };
+    // Find file path
+    const filePath = Object.keys(this.configPaths).find(
+      (path) => this.extractConfigName(path) === configName,
+    );
+
+    if (!filePath) {
+      console.warn(`Config file not found for ${configName} in ${this.name}`);
+      return null;
+    }
+
+    try {
+      const content = await this.loadYamlFile(this.configPaths[filePath]);
+      this.configCache[configName] = content;
+      return content;
+    } catch (error) {
+      console.warn(
+        `Failed to load config ${configName} from ${this.name}:`,
+        error,
+      );
+      return null;
+    }
   }
 
   /**

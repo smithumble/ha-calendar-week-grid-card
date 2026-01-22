@@ -54,7 +54,11 @@ export class ProviderRegistry {
     const yasnoCalendarPaths = getYasnoCalendarPaths();
 
     // Register dummy provider
-    this.registerProvider(new DummyProvider(getConfigPaths('dummy')));
+    this.registerProvider(
+      new DummyProvider( // dummy provider
+        getConfigPaths('dummy'), // dummy configs
+      ),
+    );
 
     // Register yasno providers
     this.registerProvider(
@@ -62,6 +66,10 @@ export class ProviderRegistry {
         'yasno_image',
         getConfigPaths('yasno_image'),
         yasnoCalendarPaths,
+        {
+          defaultConfig: 'image',
+          defaultDataSource: 'yasno_1',
+        },
       ),
     );
 
@@ -70,6 +78,10 @@ export class ProviderRegistry {
         'yasno_v1',
         getConfigPaths('yasno_v1'),
         yasnoCalendarPaths,
+        {
+          defaultConfig: 'classic',
+          defaultDataSource: 'yasno_1',
+        },
       ),
     );
 
@@ -78,6 +90,10 @@ export class ProviderRegistry {
         'yasno_v2',
         getConfigPaths('yasno_v2'),
         yasnoCalendarPaths,
+        {
+          defaultConfig: 'google_calendar_separated',
+          defaultDataSource: 'yasno_1',
+        },
       ),
     );
 
@@ -86,11 +102,24 @@ export class ProviderRegistry {
         'yasno_v3',
         getConfigPaths('yasno_v3'),
         yasnoCalendarPaths,
+        {
+          defaultConfig: 'google_calendar_separated',
+          defaultDataSource: 'yasno_1',
+        },
       ),
     );
 
     // Register yasno API provider (uses yasno_v3 configs)
-    this.registerProvider(new YasnoApiProvider(getConfigPaths('yasno_v3')));
+    this.registerProvider(
+      new YasnoApiProvider(
+        getConfigPaths('yasno_v3'), // yasno_v3 configs
+        {
+          defaultConfig: 'google_calendar_separated',
+          defaultDataSource: 'yasno_1',
+          cacheTtlMinutes: 5,
+        },
+      ),
+    );
   }
 
   /**
@@ -112,22 +141,6 @@ export class ProviderRegistry {
    */
   getAllProviderNames(): string[] {
     return Array.from(this.providers.keys());
-  }
-
-  /**
-   * Get metadata for all providers
-   */
-  getAllMetadata(): Record<string, ReturnType<BaseProvider['getMetadata']>> {
-    const metadata: Record<
-      string,
-      ReturnType<BaseProvider['getMetadata']>
-    > = {};
-
-    for (const [name, provider] of this.providers) {
-      metadata[name] = provider.getMetadata();
-    }
-
-    return metadata;
   }
 }
 

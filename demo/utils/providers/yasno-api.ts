@@ -1,3 +1,4 @@
+import { getCached, setCached } from '../cache';
 import type { Calendar } from '../data';
 import {
   parseYasnoData,
@@ -43,29 +44,28 @@ const DATA_SOURCES = [
 export class YasnoApiProvider extends BaseProvider {
   readonly name = 'yasno_api';
   readonly mockDate?: Date;
+  private cacheTtlMs: number;
 
-  private configPaths: Record<string, string> = {};
-  private dataSourcesCache: string[] | null = null;
-
-  constructor(configPaths: Record<string, string> = {}) {
+  constructor(
+    configPaths: Record<string, string> = {},
+    options?: {
+      defaultConfig?: string;
+      defaultDataSource?: string;
+      cacheTtlMinutes?: number;
+    },
+  ) {
     super();
     this.configPaths = configPaths;
+    this.defaultConfig = options?.defaultConfig;
+    this.defaultDataSource = options?.defaultDataSource;
+    this.cacheTtlMs =
+      options?.cacheTtlMinutes !== undefined
+        ? options.cacheTtlMinutes * 60 * 1000
+        : 0; // Default: disabled
   }
 
   getDataSources(): string[] {
-    if (this.dataSourcesCache) {
-      return this.dataSourcesCache;
-    }
-
-    this.dataSourcesCache = [...DATA_SOURCES];
-    return this.dataSourcesCache;
-  }
-
-  getConfigNames(): string[] {
-    return Object.keys(this.configPaths)
-      .map((path) => this.extractConfigName(path))
-      .filter(Boolean)
-      .sort();
+    return DATA_SOURCES;
   }
 
   async loadCalendars(dataSource: string): Promise<Calendar[]> {
@@ -98,60 +98,59 @@ export class YasnoApiProvider extends BaseProvider {
     }
   }
 
-  async loadConfigContent(configName: string): Promise<string | null> {
-    // Check cache
-    if (this.configCache[configName]) {
-      return this.configCache[configName];
+  /**
+   * Fetch data with caching support
+   */
+  private async fetchWithCache<T>(
+    cacheKey: string,
+    fetchFn: () => Promise<T>,
+  ): Promise<T> {
+    // Check cache first if caching is enabled
+    if (this.cacheTtlMs > 0) {
+      const cached = getCached<T>(cacheKey, this.cacheTtlMs);
+      if (cached) {
+        return cached;
+      }
     }
 
-    // Find file path
-    const filePath = Object.keys(this.configPaths).find(
-      (path) => this.extractConfigName(path) === configName,
-    );
+    // Fetch from API
+    const data = await fetchFn();
 
-    if (!filePath) {
-      console.warn(`Config file not found for ${configName} in ${this.name}`);
-      return null;
+    // Cache the result if caching is enabled
+    if (this.cacheTtlMs > 0) {
+      setCached(cacheKey, data, this.cacheTtlMs);
     }
 
-    try {
-      const content = await this.loadYamlFile(this.configPaths[filePath]);
-      this.configCache[configName] = content;
-      return content;
-    } catch (error) {
-      console.warn(
-        `Failed to load config ${configName} from ${this.name}:`,
-        error,
-      );
-      return null;
-    }
+    return data;
   }
 
   /**
    * Fetch planned outages from API
    */
   private async fetchPlannedOutages(): Promise<PlannedData> {
-    const url = PLANNED_OUTAGES_ENDPOINT.replace(
-      '{region_id}',
-      REGION_ID,
-    ).replace('{dso_id}', DSO_ID);
-    const proxiedUrl = CORS_PROXY
-      ? `${CORS_PROXY}${encodeURIComponent(url)}`
-      : url;
-    return this.fetchResource(proxiedUrl, (r) => r.json(), 'planned outages');
+    const cacheKey = `yasno_cache_planned_${REGION_ID}_${DSO_ID}`;
+    let url = PLANNED_OUTAGES_ENDPOINT;
+    url = url.replace('{region_id}', REGION_ID);
+    url = url.replace('{dso_id}', DSO_ID);
+    url = `${CORS_PROXY}${encodeURIComponent(url)}`;
+
+    return this.fetchWithCache(cacheKey, () =>
+      this.fetchResource(url, (r) => r.json(), 'planned outages'),
+    );
   }
 
   /**
    * Fetch probable outages from API
    */
   private async fetchProbableOutages(): Promise<ProbableData> {
-    const url = PROBABLE_OUTAGES_ENDPOINT.replace(
-      '{region_id}',
-      REGION_ID,
-    ).replace('{dso_id}', DSO_ID);
-    const proxiedUrl = CORS_PROXY
-      ? `${CORS_PROXY}${encodeURIComponent(url)}`
-      : url;
-    return this.fetchResource(proxiedUrl, (r) => r.json(), 'probable outages');
+    const cacheKey = `yasno_cache_probable_${REGION_ID}_${DSO_ID}`;
+    let url = PROBABLE_OUTAGES_ENDPOINT;
+    url = url.replace('{region_id}', REGION_ID);
+    url = url.replace('{dso_id}', DSO_ID);
+    url = `${CORS_PROXY}${encodeURIComponent(url)}`;
+
+    return this.fetchWithCache(cacheKey, () =>
+      this.fetchResource(url, (r) => r.json(), 'probable outages'),
+    );
   }
 }
