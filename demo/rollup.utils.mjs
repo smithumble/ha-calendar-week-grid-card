@@ -1,4 +1,4 @@
-import { existsSync, copyFileSync, mkdirSync } from 'fs';
+import { existsSync } from 'fs';
 import { resolve, relative, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { green, greenBright, red, redBright, bold } from 'colorette';

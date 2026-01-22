@@ -2,8 +2,8 @@ import { resolve, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 import commonjs from '@rollup/plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
+import replace from '@rollup/plugin-replace';
 import typescript from '@rollup/plugin-typescript';
-import postcss from 'rollup-plugin-postcss';
 import copy from 'rollup-plugin-copy';
 import cardConfig from '../rollup.config.mjs';
 import { assetsManifest, watchFiles } from './rollup.utils.mjs';
@@ -11,6 +11,11 @@ import { assetsManifest, watchFiles } from './rollup.utils.mjs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = resolve(__dirname, '..');
+
+const ROLLUP_WATCH = !!process.env.ROLLUP_WATCH;
+const NODE_ENV = process.env.NODE_ENV;
+const DEFAULT_ENV = ROLLUP_WATCH ? 'development' : 'production';
+const environment = NODE_ENV || DEFAULT_ENV;
 
 const demoConfig = {
   input: {
@@ -34,6 +39,10 @@ const demoConfig = {
     buildDelay: 100,
   },
   plugins: [
+    replace({
+      'process.env.NODE_ENV': JSON.stringify(environment),
+      preventAssignment: true,
+    }),
     watchFiles({
       targets: [
         'demo/', // demo files and assets

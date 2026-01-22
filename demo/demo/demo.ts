@@ -1,3 +1,7 @@
+import { setupBrowserEnv } from '../utils/browser';
+import { loadIcons } from '../utils/icons';
+import { providerRegistry } from '../utils/registry';
+import { loadTheme } from '../utils/theme';
 import {
   setStoragePrefix,
   initializeProviderData,
@@ -11,9 +15,16 @@ import {
   waitForCustomElement,
   initializeCards,
 } from './common';
-import { setupBrowserEnv } from '../utils/browser';
-import { loadIcons } from '../utils/icons';
-import { loadTheme } from '../utils/theme';
+
+const AVAILABLE_PROVIDERS_DEV = providerRegistry.getAllProviderNames();
+const AVAILABLE_PROVIDERS_PROD = ['yasno_v3'];
+
+// Available providers based on build mode
+// For dev build - all providers, for prod build - only yasno_v3
+export const AVAILABLE_PROVIDERS =
+  process.env.NODE_ENV === 'development'
+    ? AVAILABLE_PROVIDERS_DEV
+    : AVAILABLE_PROVIDERS_PROD;
 
 async function main() {
   // Set storage prefix for demo page
@@ -27,7 +38,7 @@ async function main() {
   setupBrowserEnv(haTheme, haIcons);
 
   // Initialize provider data
-  const currentProvider = await initializeProviderData();
+  const currentProvider = await initializeProviderData(AVAILABLE_PROVIDERS);
 
   // Setup config editor early
   if (document.readyState === 'loading') {

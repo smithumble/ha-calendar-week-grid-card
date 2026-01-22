@@ -40,5 +40,13 @@ export default defineConfig(
       'import/no-duplicates': 'error',
     },
   },
+  {
+    files: ['**/*.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
   prettier,
 );

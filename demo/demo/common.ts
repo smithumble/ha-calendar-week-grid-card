@@ -25,7 +25,7 @@ export const DEFAULT_CONFIG = 'google_calendar_separated';
 export const DEFAULT_DATA_SOURCE = 'yasno_1';
 
 export const DEPRECATED_PROVIDERS = ['yasno_v1', 'yasno_v2'];
-export const HIDDEN_PROVIDERS = ['yasno_image', 'yasno_api'];
+export const HIDDEN_PROVIDERS = ['yasno_image'];
 
 // Storage prefix
 let STORAGE_PREFIX = 'calendar-week-grid-card-';
@@ -889,11 +889,17 @@ export async function initializeCards(
   renderCurrentCards();
 }
 
-export async function initializeProviderData(): Promise<string> {
+export async function initializeProviderData(
+  availableProviders?: string[],
+): Promise<string> {
   // Initialize provider data structure with metadata only (no file loading)
   const metadata = getProviderMetadata();
   providerDataMap = {};
   for (const [provider, meta] of Object.entries(metadata)) {
+    // Filter providers based on availableProviders if provided
+    if (availableProviders && !availableProviders.includes(provider)) {
+      continue;
+    }
     providerDataMap[provider] = {
       calendars: {},
       configs: [],

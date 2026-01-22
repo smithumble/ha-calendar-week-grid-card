@@ -23,7 +23,7 @@ async function main() {
   setupBrowserEnv(haTheme, haIcons);
 
   // Initialize provider data
-  const currentProvider = await initializeProviderData();
+  const currentProvider = await initializeProviderData(['yasno_api']);
 
   // Select a specific config for the schedule page
   await selectConfig('google_calendar_separated', currentProvider);
