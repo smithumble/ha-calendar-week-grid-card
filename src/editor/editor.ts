@@ -544,6 +544,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
         type="${type ?? 'text'}"
         .value="${value}"
         @change="${this._valueChanged}"
+        @keyup="${this._valueChanged}"
       ></ha-textfield>
     `;
   }
