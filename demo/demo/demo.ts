@@ -1,16 +1,16 @@
 import { initializeProviderData } from './common';
-import { setStoragePrefix } from './utils/storage';
+import { setupBrowserEnv } from './utils/browser';
+import { setupEditorToggleButton } from './utils/editor';
+import { loadIcons } from './utils/icons';
 import { setupGlobalKeyboardNavigation } from './utils/keyboard';
+import { providerRegistry } from './utils/registry';
 import {
   setupProviderSelector,
   updateSelectsForProvider,
   setupConfigSelectListener,
   setupDataSourceSelectListener,
 } from './utils/selects';
-import { setupEditorToggleButton } from './utils/editor';
-import { setupBrowserEnv } from './utils/browser';
-import { loadIcons } from './utils/icons';
-import { providerRegistry } from './utils/registry';
+import { setStoragePrefix } from './utils/storage';
 import { loadTheme } from './utils/theme';
 
 const AVAILABLE_PROVIDERS_DEV = providerRegistry.getAllProviderNames();

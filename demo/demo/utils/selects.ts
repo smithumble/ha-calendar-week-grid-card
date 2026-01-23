@@ -3,13 +3,13 @@
 // ============================================================================
 
 import { updateDateOverride } from './browser';
-import { updateConfigEditorWithVisual } from './editor';
 import {
   DEFAULT_PROVIDER,
   DEPRECATED_PROVIDERS,
   HIDDEN_PROVIDERS,
 } from './constants';
 import { getAvailableConfigNames, getVisibleProviders } from './data';
+import { updateConfigEditorWithVisual } from './editor';
 import { setupSelectKeyboardNavigation } from './keyboard';
 import { providerRegistry } from './registry';
 import {

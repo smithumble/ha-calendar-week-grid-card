@@ -1,12 +1,12 @@
 import { initializeProviderData } from '../demo/common';
-import { setStoragePrefix } from '../demo/utils/storage';
-import { selectConfig } from '../demo/utils/state';
+import { setupBrowserEnv } from '../demo/utils/browser';
+import { loadIcons } from '../demo/utils/icons';
 import {
   updateDataSourceSelect,
   setupDataSourceSelectListener,
 } from '../demo/utils/selects';
-import { setupBrowserEnv } from '../demo/utils/browser';
-import { loadIcons } from '../demo/utils/icons';
+import { selectConfig } from '../demo/utils/state';
+import { setStoragePrefix } from '../demo/utils/storage';
 import { loadTheme } from '../demo/utils/theme';
 
 async function main() {

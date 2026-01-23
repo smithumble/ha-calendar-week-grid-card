@@ -64,7 +64,6 @@ export function updateConfigEditor() {
       sortKeys: false,
     });
     textarea.value = configYaml;
-    console.log('Updated config editor');
   } catch (e) {
     console.error('Failed to serialize config:', e);
   }
@@ -81,7 +80,6 @@ export function updateVisualEditor() {
   );
   visualEditor.hass = mockHass;
   visualEditor.setConfig(config);
-  console.log('Updated visual editor');
 }
 
 export function updateConfigEditorWithVisual() {

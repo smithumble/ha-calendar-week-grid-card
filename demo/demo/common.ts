@@ -6,13 +6,13 @@ import { updateDateOverride } from './utils/browser';
 import { DEFAULT_PROVIDER, HIDDEN_PROVIDERS } from './utils/constants';
 import { getVisibleProviders } from './utils/data';
 import { providerRegistry } from './utils/registry';
+import { getCurrentProvider, setCurrentProvider } from './utils/state';
 import {
   getValue,
   getFromURL,
   saveToStorage,
   updateURLParams,
 } from './utils/storage';
-import { getCurrentProvider, setCurrentProvider } from './utils/state';
 
 // ============================================================================
 // PROVIDER INITIALIZATION

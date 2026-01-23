@@ -142,11 +142,7 @@ const scheduleConfig = {
   },
   context: 'window',
   watch: {
-    include: [
-      'demo/schedule/**',
-      'demo/demo/**',
-      'src/configs/**',
-    ],
+    include: ['demo/schedule/**', 'demo/demo/**', 'src/configs/**'],
     clearScreen: false,
   },
   plugins: [
