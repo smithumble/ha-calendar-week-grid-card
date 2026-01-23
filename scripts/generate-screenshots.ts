@@ -6,9 +6,10 @@ import { createServer as createViteServer, ViteDevServer } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, '../');
 
 // Constants
-const OUTPUT_DIR = path.resolve(__dirname, '../media/images');
+const OUTPUT_DIR = path.resolve(projectRoot, 'media/images');
 const VIEWPORT_WIDTH = 1350;
 const VIEWPORT_HEIGHT = 800;
 const DEVICE_SCALE_FACTOR = 2;
@@ -184,7 +185,7 @@ async function createDemoServer(): Promise<{
   port: number;
 }> {
   const vite = await createViteServer({
-    configFile: path.resolve(__dirname, '../demo/vite.config.ts'),
+    configFile: path.resolve(projectRoot, 'demo/vite.config.ts'),
     server: {
       port: DEFAULT_SERVER_PORT,
       strictPort: false, // Allow finding an available port if default is in use
