@@ -68,11 +68,13 @@ type: module
 | `filter`                | string        | No       | Global filter text for event summary.                                                                                                                        |
 | `icons_container`       | string        | No       | Where to render icons: `cell` (in the cell) or `event` (in event blocks). Default: `cell`.                                                                   |
 | `icons_mode`            | string        | No       | Which events show icons: `top` (only main event) or `all` (all events). Default: `top`.                                                                      |
-| `event_icon`            | string        | No       | Default icon for events when entity doesn't have its own icon. Default: `mdi:check-circle`.                                                                  |
-| `blank_icon`            | string        | No       | Icon for cells with no events.                                                                                                                               |
+| `event`                 | object        | No       | Default event configuration with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                                               |
+| `blank_event`           | object        | No       | Configuration for cells with no events with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                                      |
+| `blank_all_day_event`   | object        | No       | Configuration for all-day cells with no events with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                             |
 | `all_day`               | string        | No       | Where to display all-day events: `grid` (in the grid), `row` (in a separate row), or `both` (in both the grid and a separate row). Default: `grid`.          |
-| `all_day_icon`          | string        | No       | Icon for all-day events. If not specified, uses `blank_icon` for all-day cells.                                                                              |
 | `all_day_label`         | string        | No       | Label text for the all-day row in the time column. Default: empty string.                                                                                    |
+| `theme_variables`       | object        | No       | Theme variables definition for the visual editor. See [Theme Variables](#theme-variables).                                                                 |
+| `theme_values_examples` | array         | No       | Example theme values for the visual editor. See [Theme Variables](#theme-variables).                                                                         |
 | `week_start`            | string        | No       | Day of the week to start the calendar: `today`, `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, or `saturday`. Default: `today`.           |
 | `days`                  | number        | No       | Number of days to display. Default: `7`.                                                                                                                     |
 | `theme`                 | string        | No       | Theme mode: `dark`, `light`, or `auto` (default). `auto` automatically detects the theme from Home Assistant. `dark` and `light` force the respective theme. |
@@ -212,18 +214,86 @@ time_range: true
 # Results: "00 - 01", "09 - 10", "15 - 16"
 ```
 
+### Event Configuration
+
+The `event`, `blank_event`, and `blank_all_day_event` options allow you to configure default event styling and icons.
+
+| Name                 | Type   | Description                                                                                    |
+| -------------------- | ------ | ---------------------------------------------------------------------------------------------- |
+| `icon`               | string | Icon for the event type.                                                                      |
+| `theme_values`       | object | Theme values to apply. These can reference variables defined in `theme_variables`.          |
+
+#### Examples
+
+```yaml
+# Default event configuration
+event:
+  icon: mdi:check-circle
+  theme_values:
+    color: var(--primary-color)
+    opacity: 0.2
+
+# Blank event (cells with no events)
+blank_event:
+  icon: mdi:checkbox-blank-circle-outline
+  theme_values:
+    icon-opacity: 0.3
+    opacity: 0
+    border-opacity: 0.3
+
+# Blank all-day event
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
+```
+
+### Theme Variables
+
+The `theme_variables` and `theme_values_examples` options are used by the visual editor to provide a user-friendly interface for customizing event appearance.
+
+#### Theme Variables
+
+Define custom variables that can be used in `theme_values`. Each variable can have a `name` and `description` for the editor.
+
+```yaml
+theme_variables:
+  color:
+    name: Event Color
+    description: The color of the event.
+  opacity:
+    name: Opacity
+    description: The opacity of the event background (0.1 to 1.0).
+  border-style:
+    name: Border Style
+    description: The border style of the event (solid, dashed, dotted, double).
+```
+
+#### Theme Values Examples
+
+Provide example configurations that the visual editor can use as presets.
+
+```yaml
+theme_values_examples:
+  - color: var(--error-color)
+    opacity: 0.1
+    border-style: solid
+  - color: var(--warning-color)
+    opacity: 0.1
+    border-style: dashed
+```
+
 ### Entity Configuration
 
-| Name     | Type   | Required | Description                                                                   |
-| -------- | ------ | -------- | ----------------------------------------------------------------------------- |
-| `name`   | string | No       | Friendly name for the entity.                                                 |
-| `entity` | string | **Yes**  | The entity_id of the calendar.                                                |
-| `filter` | string | No       | Filter text for events.                                                       |
-| `icon`   | string | No       | Icon for the entity.                                                          |
-| `type`   | string | No       | Type identifier for the entity.                                               |
-| `under`  | array  | No       | Events to render underneath this one. See [Event Layering](#event-layering).  |
-| `over`   | array  | No       | Events to render on top of this one. See [Event Layering](#event-layering).   |
-| `hide`   | array  | No       | Events to hide when this event is present. See [Event Hiding](#event-hiding). |
+| Name            | Type   | Required | Description                                                                   |
+| --------------- | ------ | -------- | ----------------------------------------------------------------------------- |
+| `name`          | string | No       | Friendly name for the entity.                                                 |
+| `entity`        | string | **Yes**  | The entity_id of the calendar.                                                |
+| `filter`        | string | No       | Filter text for events.                                                       |
+| `icon`          | string | No       | Icon for the entity.                                                          |
+| `type`          | string | No       | Type identifier for the entity.                                               |
+| `theme_values`  | object | No       | Theme values to apply. These can reference variables defined in `theme_variables`. |
+| `under`         | array  | No       | Events to render underneath this one. See [Event Layering](#event-layering).  |
+| `over`           | array  | No       | Events to render on top of this one. See [Event Layering](#event-layering).   |
+| `hide`           | array  | No       | Events to hide when this event is present. See [Event Hiding](#event-hiding). |
 
 ### Data Attributes
 
