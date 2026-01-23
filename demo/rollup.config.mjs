@@ -1,4 +1,4 @@
-import { resolve, dirname, basename } from 'path';
+import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import commonjs from '@rollup/plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
@@ -6,7 +6,7 @@ import replace from '@rollup/plugin-replace';
 import typescript from '@rollup/plugin-typescript';
 import copy from 'rollup-plugin-copy';
 import cardConfig from '../rollup.config.mjs';
-import { assetsManifest, watchFiles } from './rollup.utils.mjs';
+import { assetsManifest, watchFiles, createEntryFileNames } from './rollup.utils.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -25,10 +25,19 @@ const demoConfig = {
   output: {
     dir: '.',
     format: 'es',
-    entryFileNames: (chunkInfo) => {
-      const folderName = basename(dirname(chunkInfo.facadeModuleId || ''));
-      return `dist/${folderName}/[name].js`;
-    },
+    entryFileNames: createEntryFileNames(
+      [
+        {
+          src: 'demo/demo/demo.ts',
+          dest: 'dist/demo/demo.js',
+        },
+        {
+          src: 'demo/schedule/schedule.ts',
+          dest: 'dist/schedule/schedule.js',
+        },
+      ],
+      'dist/[name].js',
+    ),
     chunkFileNames: 'dist/demo/chunk-[name].js',
     assetFileNames: 'dist/demo/[name][extname]',
   },
