@@ -30,7 +30,7 @@ const demoConfig = {
   },
   context: 'window',
   watch: {
-    include: ['demo/demo/**', 'demo/assets/**', 'src/configs/**'],
+    include: ['demo/demo/**', 'src/configs/**'],
     clearScreen: false,
   },
   plugins: [
@@ -62,11 +62,11 @@ const demoConfig = {
     copy({
       targets: [
         {
-          src: 'demo/assets/data',
+          src: 'demo/demo/assets/data',
           dest: 'dist/demo/assets',
         },
         {
-          src: 'demo/assets/themes',
+          src: 'demo/demo/assets/themes',
           dest: 'dist/demo/assets',
         },
         {
@@ -145,7 +145,6 @@ const scheduleConfig = {
     include: [
       'demo/schedule/**',
       'demo/demo/**',
-      'demo/assets/**',
       'src/configs/**',
     ],
     clearScreen: false,
