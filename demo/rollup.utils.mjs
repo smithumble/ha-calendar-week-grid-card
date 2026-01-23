@@ -79,22 +79,6 @@ export const watchFiles = (options) => ({
   },
 });
 
-// Create entryFileNames function with explicit mapping
-export const createEntryFileNames = (targets, defaultFileNames) => {
-  return (chunkInfo) => {
-    const inputPath = chunkInfo.facadeModuleId || '';
-
-    // Explicit mapping: input file path -> output file path
-    const mapping = targets.find((entry) => resolve(projectRoot, entry.src) === inputPath);
-    if (mapping) {
-      return mapping.dest;
-    }
-
-    // Fallback for any other entries
-    return defaultFileNames;
-  };
-};
-
 // Create a rollup plugin to generate asset manifest as virtual module
 export const assetsManifest = (options) => ({
   name: 'asset-manifest',

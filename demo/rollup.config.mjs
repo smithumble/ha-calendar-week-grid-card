@@ -6,7 +6,7 @@ import replace from '@rollup/plugin-replace';
 import typescript from '@rollup/plugin-typescript';
 import copy from 'rollup-plugin-copy';
 import cardConfig from '../rollup.config.mjs';
-import { assetsManifest, watchFiles, createEntryFileNames } from './rollup.utils.mjs';
+import { assetsManifest, watchFiles } from './rollup.utils.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,32 +20,18 @@ const environment = NODE_ENV || DEFAULT_ENV;
 const demoConfig = {
   input: {
     demo: resolve(projectRoot, 'demo/demo/demo.ts'),
-    schedule: resolve(projectRoot, 'demo/schedule/schedule.ts'),
   },
   output: {
-    dir: '.',
+    dir: 'dist/demo',
     format: 'es',
-    entryFileNames: createEntryFileNames(
-      [
-        {
-          src: 'demo/demo/demo.ts',
-          dest: 'dist/demo/demo.js',
-        },
-        {
-          src: 'demo/schedule/schedule.ts',
-          dest: 'dist/schedule/schedule.js',
-        },
-      ],
-      'dist/[name].js',
-    ),
-    chunkFileNames: 'dist/demo/chunk-[name].js',
-    assetFileNames: 'dist/demo/[name][extname]',
+    entryFileNames: '[name].js',
+    chunkFileNames: '[name].js',
+    assetFileNames: '[name][extname]',
   },
   context: 'window',
   watch: {
-    include: ['demo/**', 'src/configs/**'],
+    include: ['demo/demo/**', 'demo/assets/**', 'src/configs/**'],
     clearScreen: false,
-    buildDelay: 100,
   },
   plugins: [
     replace({
@@ -113,15 +99,6 @@ const demoConfig = {
           src: 'demo/demo/demo.css',
           dest: 'dist/demo',
         },
-        {
-          src: 'demo/schedule/schedule.html',
-          dest: 'dist/schedule',
-          rename: 'index.html',
-        },
-        {
-          src: 'demo/schedule/schedule.css',
-          dest: 'dist/schedule',
-        },
       ],
       hook: 'buildStart',
       copySync: true,
@@ -152,4 +129,78 @@ const demoConfig = {
   ],
 };
 
-export default [cardConfig, demoConfig];
+const scheduleConfig = {
+  input: {
+    schedule: resolve(projectRoot, 'demo/schedule/schedule.ts'),
+  },
+  output: {
+    dir: 'dist/schedule',
+    format: 'es',
+    entryFileNames: '[name].js',
+    chunkFileNames: '[name].js',
+    assetFileNames: '[name][extname]',
+  },
+  context: 'window',
+  watch: {
+    include: [
+      'demo/schedule/**',
+      'demo/demo/**',
+      'demo/assets/**',
+      'src/configs/**',
+    ],
+    clearScreen: false,
+  },
+  plugins: [
+    replace({
+      'process.env.NODE_ENV': JSON.stringify(environment),
+      preventAssignment: true,
+    }),
+    watchFiles({
+      targets: [
+        'demo/', // demo files and assets
+        'src/configs', // card configs
+      ],
+      verbose: true,
+    }),
+    copy({
+      targets: [
+        {
+          src: 'demo/schedule/schedule.html',
+          dest: 'dist/schedule',
+          rename: 'index.html',
+        },
+        {
+          src: 'demo/schedule/schedule.css',
+          dest: 'dist/schedule',
+        },
+      ],
+      hook: 'buildStart',
+      copySync: true,
+      copyOnce: false,
+      verbose: true,
+    }),
+    assetsManifest({
+      targets: [
+        'dist/demo/assets/data', // providers data
+        'dist/demo/assets/themes', // ha themes
+      ],
+      relativeTo: 'dist',
+      absolute: true,
+      verbose: true,
+    }),
+    typescript({
+      tsconfig: resolve(projectRoot, 'demo/tsconfig.json'),
+      rootDir: projectRoot,
+      compilerOptions: {
+        outDir: resolve(projectRoot, 'dist/schedule'),
+      },
+    }),
+    nodeResolve({
+      browser: true,
+      preferBuiltins: false,
+    }),
+    commonjs(),
+  ],
+};
+
+export default [cardConfig, demoConfig, scheduleConfig];
