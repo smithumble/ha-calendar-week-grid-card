@@ -1,13 +1,13 @@
+import { initializeProviderData } from '../demo/common';
+import { setStoragePrefix } from '../demo/utils/storage';
+import { selectConfig } from '../demo/utils/state';
 import {
-  setStoragePrefix,
-  initializeProviderData,
-  selectConfig,
   updateDataSourceSelect,
   setupDataSourceSelectListener,
-} from '../demo/common';
-import { setupBrowserEnv } from '../utils/browser';
-import { loadIcons } from '../utils/icons';
-import { loadTheme } from '../utils/theme';
+} from '../demo/utils/selects';
+import { setupBrowserEnv } from '../demo/utils/browser';
+import { loadIcons } from '../demo/utils/icons';
+import { loadTheme } from '../demo/utils/theme';
 
 async function main() {
   // Set storage prefix for schedule page

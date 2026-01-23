@@ -5,7 +5,7 @@
 
 import type { HomeAssistant } from 'custom-card-helpers';
 import type { HassEntities } from 'home-assistant-js-websocket';
-import type { CardConfig } from '../../src/types';
+import type { CardConfig } from '../../../src/types';
 import type { Calendar } from './data';
 
 /**

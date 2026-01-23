@@ -1,4 +1,4 @@
-import type { CalendarEvent } from '../../../src/types';
+import type { CalendarEvent } from '../../../../src/types';
 import type { Calendar } from '../data';
 import { MOCK_DATE_STR, toTimeZoneISOString, getDateString } from '../datetime';
 

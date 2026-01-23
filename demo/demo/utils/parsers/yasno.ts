@@ -1,4 +1,4 @@
-import type { CalendarEvent } from '../../../src/types';
+import type { CalendarEvent } from '../../../../src/types';
 import { Calendar } from '../data';
 import {
   toTimeZoneISOString,

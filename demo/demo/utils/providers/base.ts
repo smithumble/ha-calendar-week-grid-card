@@ -1,4 +1,4 @@
-import type { CardConfig } from '../../../src/types';
+import type { CardConfig } from '../../../../src/types';
 import type { Calendar } from '../data';
 
 /**

@@ -1,17 +1,17 @@
-import { setupBrowserEnv } from '../utils/browser';
-import { loadIcons } from '../utils/icons';
-import { providerRegistry } from '../utils/registry';
-import { loadTheme } from '../utils/theme';
+import { initializeProviderData } from './common';
+import { setStoragePrefix } from './utils/storage';
+import { setupGlobalKeyboardNavigation } from './utils/keyboard';
 import {
-  setStoragePrefix,
-  initializeProviderData,
-  setupGlobalKeyboardNavigation,
   setupProviderSelector,
   updateSelectsForProvider,
   setupConfigSelectListener,
   setupDataSourceSelectListener,
-  setupEditorToggleButton,
-} from './common';
+} from './utils/selects';
+import { setupEditorToggleButton } from './utils/editor';
+import { setupBrowserEnv } from './utils/browser';
+import { loadIcons } from './utils/icons';
+import { providerRegistry } from './utils/registry';
+import { loadTheme } from './utils/theme';
 
 const AVAILABLE_PROVIDERS_DEV = providerRegistry.getAllProviderNames();
 const AVAILABLE_PROVIDERS_PROD = ['yasno_v3'];
