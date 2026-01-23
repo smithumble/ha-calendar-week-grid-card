@@ -10,17 +10,22 @@ body {
   padding: 0;
   padding-top: 60px;
   font-family: 'Roboto', sans-serif;
-  display: flex;
-  flex-direction: row;
   width: 100vw;
   max-width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
   transition:
     padding-right 0.3s,
-    flex-direction 0.3s,
     padding-top 0.3s;
   background-color: var(--primary-background-color, rgb(40, 40, 40));
+}
+
+#cards-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  box-sizing: border-box;
 }
 
 /* Navbar */

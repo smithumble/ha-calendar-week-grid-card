@@ -1,12 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { PNG } from 'pngjs';
 import puppeteer, { Browser, Page } from 'puppeteer';
 import { createServer as createViteServer, ViteDevServer } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.resolve(__dirname, '../');
+const projectRoot = path.resolve(__dirname, '../../');
 
 // Constants
 const OUTPUT_DIR = path.resolve(projectRoot, 'media/images');
@@ -216,7 +217,12 @@ async function createDemoServer(): Promise<{
  * Setup page with initial viewport
  */
 async function setupPage(page: Page): Promise<void> {
-  page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
+  page.on('console', (msg) => {
+    const text = msg.text();
+    if (text.includes('[vite]')) return;
+    console.log('PAGE LOG:', text);
+  });
+
   await page.setViewport({
     width: VIEWPORT_WIDTH,
     height: VIEWPORT_HEIGHT,
@@ -225,17 +231,82 @@ async function setupPage(page: Page): Promise<void> {
 }
 
 /**
- * Navigate to demo page with URL parameters
+ * Navigate to screenshot page with URL parameters
  */
-async function navigateToDemoPage(
+async function navigateToScreenshotPage(
   page: Page,
   provider: string,
   configName: string,
   dataSource: string,
   serverPort: number,
 ): Promise<void> {
-  const url = `http://localhost:${serverPort}/demo/?provider=${encodeURIComponent(provider)}&config=${encodeURIComponent(configName)}&dataSource=${encodeURIComponent(dataSource)}`;
+  const url = `http://localhost:${serverPort}/screenshot/?provider=${encodeURIComponent(provider)}&config=${encodeURIComponent(configName)}&dataSource=${encodeURIComponent(dataSource)}`;
   await page.goto(url, { waitUntil: 'networkidle0' });
+}
+
+/**
+ * Wait for all stylesheets to be loaded
+ */
+async function waitForStylesheets(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    return Promise.all(
+      Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map(
+        (link) => {
+          return new Promise<void>((resolve) => {
+            const linkEl = link as HTMLLinkElement;
+            if (linkEl.sheet) {
+              // Stylesheet already loaded
+              resolve();
+            } else {
+              // Wait for load or error
+              linkEl.addEventListener('load', () => resolve(), { once: true });
+              linkEl.addEventListener('error', () => resolve(), { once: true });
+              // Timeout after 5 seconds
+              setTimeout(() => resolve(), 5000);
+            }
+          });
+        },
+      ),
+    );
+  });
+}
+
+/**
+ * Wait for fonts to be loaded
+ */
+async function waitForFonts(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+  });
+}
+
+/**
+ * Inject CSS to stabilize rendering (disable animations, force consistent fonts/shapes)
+ */
+async function stabilizeRendering(page: Page): Promise<void> {
+  await page.addStyleTag({
+    content: `
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        caret-color: transparent !important;
+      }
+      
+      /* Force consistent font rendering */
+      body {
+        -webkit-font-smoothing: antialiased !important;
+        -moz-osx-font-smoothing: grayscale !important;
+        text-rendering: geometricPrecision !important;
+      }
+
+      /* Force consistent shape rendering */
+      svg {
+        shape-rendering: geometricPrecision !important;
+      }
+    `,
+  });
 }
 
 /**
@@ -246,6 +317,12 @@ async function waitForCards(page: Page): Promise<void> {
   await page.waitForFunction(() =>
     customElements.get('calendar-week-grid-card'),
   );
+
+  // Wait for stylesheets to load
+  await waitForStylesheets(page);
+
+  // Wait for fonts to load
+  await waitForFonts(page);
 
   // Wait for cards to be rendered in both containers
   await page.waitForFunction(
@@ -260,49 +337,69 @@ async function waitForCards(page: Page): Promise<void> {
     { timeout: 10000 },
   );
 
-  // Wait a bit more for any animations or final rendering
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  // Wait for styles to be applied and any animations to complete
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 }
 
 /**
- * Resize viewport to fit content and take screenshot
+ * Strip metadata from PNG file to ensure consistent output
+ */
+function stripPngMetadata(imagePath: string): void {
+  try {
+    const buffer = fs.readFileSync(imagePath);
+    const png = PNG.sync.read(buffer);
+
+    // Create a new PNG without metadata
+    const cleanPng = new PNG({
+      width: png.width,
+      height: png.height,
+      colorType: png.colorType,
+      inputHasAlpha: png.alpha,
+    });
+
+    // Copy pixel data
+    png.data.copy(cleanPng.data);
+
+    // Write back without metadata
+    const cleanBuffer = PNG.sync.write(cleanPng, {
+      deflateLevel: 6,
+      deflateStrategy: 0,
+      filterType: -1, // Auto
+    });
+
+    fs.writeFileSync(imagePath, cleanBuffer);
+  } catch (error) {
+    console.warn(`Warning: Failed to strip metadata from ${imagePath}:`, error);
+    // Continue even if metadata stripping fails
+  }
+}
+
+/**
+ * Capture full page screenshot
  */
 async function captureScreenshot(
   page: Page,
   screenshotConfig: ScreenshotConfig,
 ): Promise<void> {
-  // Hide navbar and editor panel for cleaner screenshots
-  await page.evaluate(() => {
-    const navbar = document.querySelector('.navbar');
-    const editorPanel = document.querySelector('.config-editor-panel');
-    if (navbar) (navbar as HTMLElement).style.display = 'none';
-    if (editorPanel) (editorPanel as HTMLElement).style.display = 'none';
-  });
-
-  // Get the body to measure its actual height
-  const body = await page.$('body');
-  if (!body) {
-    throw new Error('Body element not found');
-  }
-
-  // Get the actual height of the body (which contains both side-by-side containers)
-  // Since containers are side-by-side, body height is the max of the two
-  const bodyBox = await body.boundingBox();
-  if (!bodyBox) {
-    throw new Error('Could not get body bounding box');
-  }
-
-  // Use the body height, which is the maximum of the two side-by-side containers
+  // Set viewport for consistent screenshot dimensions
   await page.setViewport({
     width: VIEWPORT_WIDTH,
-    height: Math.ceil(bodyBox.height),
+    height: VIEWPORT_HEIGHT,
     deviceScaleFactor: DEVICE_SCALE_FACTOR,
   });
 
   const screenshotFilename = getScreenshotFilename(screenshotConfig);
   const imagePath = getScreenshotPath(screenshotConfig);
 
-  await body.screenshot({ path: imagePath });
+  // Take full page screenshot
+  await page.screenshot({
+    path: imagePath,
+    fullPage: true,
+  });
+
+  // Strip metadata to ensure consistent files
+  stripPngMetadata(imagePath);
+
   console.log(`Generated ${screenshotFilename}`);
 }
 
@@ -319,13 +416,14 @@ async function renderScreenshot(
 
   try {
     await setupPage(page);
-    await navigateToDemoPage(
+    await navigateToScreenshotPage(
       page,
       provider,
       configName,
       dataSource,
       serverPort,
     );
+    await stabilizeRendering(page);
     await waitForCards(page);
     await captureScreenshot(page, screenshotConfig);
   } finally {
@@ -405,14 +503,27 @@ async function main(): Promise<void> {
   const configsToProcess = filterConfigs(configs, args.provider, args.name);
   validateConfigs(configsToProcess, args.provider, args.name);
 
-  // Start Vite server for demo page
+  // Start Vite server for screenshot page
   console.log('Starting Vite server...');
   const { vite, port } = await createDemoServer();
   console.log(`Vite server running on http://localhost:${port}`);
 
+  const browserArgs = [
+    '--no-sandbox',
+    '--disable-gpu',
+    '--font-render-hinting=none',
+    '--disable-font-subpixel-positioning',
+    '--disable-lcd-text',
+    '--force-color-profile=srgb',
+    '--disable-web-security',
+    '--disable-features=FontSourceCodeProForPowerline,IsolateOrigins,site-per-process',
+    '--disable-software-rasterizer',
+  ];
+
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-gpu'],
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+    args: browserArgs,
   });
 
   try {

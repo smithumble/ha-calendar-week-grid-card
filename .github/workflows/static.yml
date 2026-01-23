@@ -42,6 +42,8 @@ jobs:
         run: npm run build
       - name: Build demo
         run: npm run demo:build
+      - name: Build schedule
+        run: npm run schedule:build
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

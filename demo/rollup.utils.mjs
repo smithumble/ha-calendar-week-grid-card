@@ -2,11 +2,18 @@ import { existsSync } from 'fs';
 import { resolve, relative, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { green, greenBright, red, redBright, bold } from 'colorette';
-import glob from 'glob';
+import { globSync } from 'glob';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const projectRoot = resolve(__dirname, '..');
+
+export const PROJECT_ROOT = resolve(__dirname, '..');
+
+const ROLLUP_WATCH = !!process.env.ROLLUP_WATCH;
+const NODE_ENV = process.env.NODE_ENV;
+const DEFAULT_ENV = ROLLUP_WATCH ? 'development' : 'production';
+
+export const ENVIRONMENT = NODE_ENV || DEFAULT_ENV;
 
 // Get all file paths from a source path
 export const getFilesPaths = (srcPath) => {
@@ -14,12 +21,12 @@ export const getFilesPaths = (srcPath) => {
     if (!existsSync(srcPath)) {
       return [];
     }
-    return glob.sync(resolve(srcPath, '**/*'), {
+    return globSync(resolve(srcPath, '**/*'), {
       absolute: true,
       nodir: true,
     });
   } catch (error) {
-    const relativePath = relative(projectRoot, srcPath);
+    const relativePath = relative(PROJECT_ROOT, srcPath);
     console.warn(
       red('failed to get files from'),
       red(`${redBright(bold(relativePath))}:`),
@@ -40,8 +47,8 @@ export const watchFiles = (options) => ({
     const failedPaths = [];
 
     for (const target of targetList) {
-      const sourcePath = resolve(projectRoot, target);
-      const relativePath = relative(projectRoot, sourcePath);
+      const sourcePath = resolve(PROJECT_ROOT, target);
+      const relativePath = relative(PROJECT_ROOT, sourcePath);
 
       try {
         if (existsSync(sourcePath)) {
@@ -94,11 +101,11 @@ export const assetsManifest = (options) => ({
     if (id === 'virtual:asset-manifest') {
       const { targets, relativeTo, absolute = false, verbose = true } = options;
       const targetList = Array.isArray(targets) ? targets : [targets];
-      const resolvedRelativeTo = resolve(projectRoot, relativeTo);
+      const resolvedRelativeTo = resolve(PROJECT_ROOT, relativeTo);
       const manifest = [];
 
       for (const target of targetList) {
-        const targetPath = resolve(projectRoot, target);
+        const targetPath = resolve(PROJECT_ROOT, target);
         const allFiles = getFilesPaths(targetPath);
 
         for (const file of allFiles) {

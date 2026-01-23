@@ -12,20 +12,20 @@
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%234CAF50' d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z'/></svg>"
     />
     <link rel="stylesheet" href="../demo/common.css" />
-    <link rel="stylesheet" href="../schedule/schedule.css" />
+    <link rel="stylesheet" href="./screenshot.css" />
   </head>
   <body>
-    <div class="navbar theme-dark">
-      <div class="data-source-selector">
-        <select id="data-source-select"></select>
-      </div>
-    </div>
     <div id="cards-container">
       <div class="theme-container theme-dark">
+        <div class="theme-label">Dark</div>
         <div id="card-container-dark"></div>
+      </div>
+      <div class="theme-container theme-light">
+        <div class="theme-label">Light</div>
+        <div id="card-container-light"></div>
       </div>
     </div>
     <script type="module" src="../calendar-week-grid-card.js"></script>
-    <script type="module" src="../schedule/schedule.js"></script>
+    <script type="module" src="./screenshot.js"></script>
   </body>
 </html>

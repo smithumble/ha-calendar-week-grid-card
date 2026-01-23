@@ -5,10 +5,11 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const README_PATH = path.resolve(__dirname, '../README.md');
-const DATA_DIR = path.resolve(__dirname, '../dist/demo/assets/data');
+const PROJECT_ROOT = path.resolve(__dirname, '../../');
+const README_PATH = path.resolve(PROJECT_ROOT, 'README.md');
+const DATA_DIR = path.resolve(PROJECT_ROOT, 'dist/demo/assets/data');
 
-function updateReadme(): void {
+function updateReadmeConfigs(): void {
   let readmeContent = fs.readFileSync(README_PATH, 'utf8');
 
   // Scan all providers in data directory
@@ -58,11 +59,7 @@ function updateReadme(): void {
 
                 const newBlock = `${startMarker}\n\n${codeBlock}\n\n${endMarker}`;
                 readmeContent = readmeContent.replace(regex, newBlock);
-                console.log(`Updated config for ${fullConfigName}`);
-              } else {
-                console.log(
-                  `Marker for ${fullConfigName} not found in README.md (Skipping)`,
-                );
+                console.log(`Updated README.md config for ${fullConfigName}`);
               }
             }
           }
@@ -72,7 +69,7 @@ function updateReadme(): void {
   }
 
   fs.writeFileSync(README_PATH, readmeContent, 'utf8');
-  console.log('README.md updated successfully.');
+  console.log('README.md configs updated successfully.');
 }
 
-updateReadme();
+updateReadmeConfigs();

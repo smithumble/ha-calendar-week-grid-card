@@ -12,21 +12,29 @@ body {
   padding-top: 60px;
   overflow-x: hidden;
   font-family: 'Roboto', sans-serif;
-  display: flex;
-  flex-direction: row;
   width: 100vw;
   max-width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
   transition:
     padding-right 0.3s,
-    flex-direction 0.3s,
     padding-top 0.3s;
   background-color: var(--primary-background-color, rgb(40, 40, 40));
 }
 
+#cards-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  box-sizing: border-box;
+}
+
 body.with-editor {
   padding-right: 700px;
+}
+
+body.with-editor #cards-container {
   flex-direction: column;
 }
 
@@ -435,7 +443,7 @@ body.with-editor .theme-container {
   top: 20px;
   left: 20px;
   font-size: 24px;
-  opacity: 0.5;
+  opacity: 0.8;
   font-weight: bold;
   color: var(--primary-text-color);
 }
@@ -457,8 +465,11 @@ body.with-editor .theme-label {
 /* Responsive: Vertical layout for smaller screens */
 @media (max-width: 1000px) {
   body {
-    flex-direction: column;
     padding-top: 190px;
+  }
+
+  #cards-container {
+    flex-direction: column;
   }
 
   .navbar {
@@ -492,7 +503,7 @@ body.with-editor .theme-label {
 
 /* Responsive: Vertical layout for smaller screens */
 @media (max-width: 1300px) {
-  body {
+  #cards-container {
     flex-direction: column;
   }
 

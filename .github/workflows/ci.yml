@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -36,7 +36,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -44,38 +44,6 @@ jobs:
 
       - name: Check formatting
         run: npm run format:check
-
-  screenshots:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate screenshots
-        run: npm run generate-screenshots:force
-
-      - name: Check for changes
-        id: git-check
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "Files changed after generating screenshots:"
-            git status --porcelain
-            exit 1
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-            echo "No files changed"
-          fi
 
   readme:
     runs-on: ubuntu-latest
@@ -87,7 +55,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -98,13 +66,38 @@ jobs:
 
       - name: Check for changes
         id: git-check
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "Files changed after updating README:"
-            git status --porcelain
-            exit 1
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-            echo "No files changed"
-          fi
+        run: npm run git:check:readme
+
+  screenshots:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate screenshots
+        run: npm run screenshots:generate:docker
+
+      - name: Compare screenshots
+        id: screenshots-compare
+        run: npm run screenshots:compare
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: |
+            media/images/
+          retention-days: 2

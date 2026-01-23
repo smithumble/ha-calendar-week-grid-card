@@ -1,0 +1,59 @@
+/* Base Styles */
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  width: 100vw;
+  max-width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background-color: var(--primary-background-color, rgb(40, 40, 40));
+}
+
+#cards-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.theme-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  background-color: var(--primary-background-color, rgb(40, 40, 40));
+  color: var(--primary-text-color);
+  position: relative;
+  min-width: 350px;
+  overflow: hidden;
+  padding: 80px 20px;
+}
+
+#card-container-light,
+#card-container-dark {
+  width: 100%;
+  max-width: 440px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-content: center;
+}
+
+.theme-label {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 24px;
+  opacity: 0.8;
+  font-weight: bold;
+  color: var(--primary-text-color);
+}

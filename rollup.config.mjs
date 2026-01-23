@@ -8,7 +8,7 @@ import yaml from '@rollup/plugin-yaml';
 
 const dev = process.env.ROLLUP_WATCH;
 
-export default {
+export const cardConfig = {
   input: 'src/card.ts',
   output: {
     dir: 'dist',
@@ -40,3 +40,5 @@ export default {
     !dev && terser(),
   ].filter(Boolean),
 };
+
+export default [cardConfig];

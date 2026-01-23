@@ -101,8 +101,7 @@ export interface CalendarEvent {
 export interface RawEvent extends CalendarEvent, Partial<EntityConfig> {}
 
 export interface Event
-  extends Omit<CalendarEvent, 'start' | 'end'>,
-    Partial<EntityConfig> {
+  extends Omit<CalendarEvent, 'start' | 'end'>, Partial<EntityConfig> {
   start: Date; // override with Date object
   end: Date; // override with Date object
   isAllDay?: boolean;
