@@ -2,7 +2,7 @@
 
 A custom Home Assistant card that displays calendar events in a week grid format. Check out the **[Demo](https://smithumble.github.io/ha-calendar-week-grid-card/)**
 
-![Calendar Week Grid Card Screenshot](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/image.png)
+![Calendar Week Grid Card Screenshot](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/f9ac23e85e27f3eb3ff6ac7acd3bae588dd3afa7/media/images/image.png)
 
 ## Installation
 
@@ -351,7 +351,7 @@ Each item in `hide` can be:
 
 ### Basic
 
-![Calendar Week Grid Card Example: Basic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/basic.png)
+![Calendar Week Grid Card Example: Basic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/91c0a989161624b2692687f3f0fff307f920d672/media/images/basic.png)
 
 <!-- CONFIG:yasno_v3/basic -->
 
@@ -384,7 +384,7 @@ entities:
 
 ### Simple
 
-![Calendar Week Grid Card Example: Simple](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/simple.png)
+![Calendar Week Grid Card Example: Simple](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/91c0a989161624b2692687f3f0fff307f920d672/media/images/simple.png)
 
 <!-- CONFIG:yasno_v3/simple -->
 
@@ -497,7 +497,7 @@ css: |
 
 ### Simple Colored
 
-![Calendar Week Grid Card Example: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/simple_colored.png)
+![Calendar Week Grid Card Example: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/91c0a989161624b2692687f3f0fff307f920d672/media/images/simple_colored.png)
 
 <!-- CONFIG:yasno_v3/simple_colored -->
 
@@ -624,7 +624,7 @@ css: |
 
 ### Classic
 
-![Calendar Week Grid Card Example: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/classic.png)
+![Calendar Week Grid Card Example: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/91c0a989161624b2692687f3f0fff307f920d672/media/images/classic.png)
 
 <!-- CONFIG:yasno_v3/classic -->
 
@@ -735,7 +735,7 @@ css: |
 
 ### Neon
 
-![Calendar Week Grid Card Example: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/neon.png)
+![Calendar Week Grid Card Example: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/91c0a989161624b2692687f3f0fff307f920d672/media/images/neon.png)
 
 <!-- CONFIG:yasno_v3/neon -->
 
@@ -856,7 +856,7 @@ css: |
 
 ### Soft UI
 
-![Calendar Week Grid Card Example: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/soft_ui.png)
+![Calendar Week Grid Card Example: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/91c0a989161624b2692687f3f0fff307f920d672/media/images/soft_ui.png)
 
 <!-- CONFIG:yasno_v3/soft_ui -->
 
@@ -983,7 +983,7 @@ css: |
 
 ### Yasno Legacy
 
-![Calendar Week Grid Card Example: Yasno Legacy](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/yasno_legacy.png)
+![Calendar Week Grid Card Example: Yasno Legacy](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/91c0a989161624b2692687f3f0fff307f920d672/media/images/yasno_legacy.png)
 
 <!-- CONFIG:yasno_v3/yasno_legacy -->
 
@@ -1117,7 +1117,7 @@ css: |
 
 ### Google Calendar
 
-![Calendar Week Grid Card Example: Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/google_calendar.png)
+![Calendar Week Grid Card Example: Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/91c0a989161624b2692687f3f0fff307f920d672/media/images/google_calendar.png)
 
 <!-- CONFIG:yasno_v3/google_calendar -->
 
@@ -1377,7 +1377,7 @@ css: |
 
 ### Google Calendar Separated
 
-![Calendar Week Grid Card Example: Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/google_calendar_separated.png)
+![Calendar Week Grid Card Example: Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/91c0a989161624b2692687f3f0fff307f920d672/media/images/google_calendar_separated.png)
 
 <!-- CONFIG:yasno_v3/google_calendar_separated -->
 
@@ -1647,7 +1647,7 @@ css: |
 
 ### Google Calendar Original
 
-![Calendar Week Grid Card Example: Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/google_calendar_original.png)
+![Calendar Week Grid Card Example: Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/91c0a989161624b2692687f3f0fff307f920d672/media/images/google_calendar_original.png)
 
 <!-- CONFIG:yasno_v3/google_calendar_original -->
 
@@ -1870,7 +1870,7 @@ css: |
 
 ### Google Calendar Original Separated
 
-![Calendar Week Grid Card Example: Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/google_calendar_original_separated.png)
+![Calendar Week Grid Card Example: Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/91c0a989161624b2692687f3f0fff307f920d672/media/images/google_calendar_original_separated.png)
 
 <!-- CONFIG:yasno_v3/google_calendar_original_separated -->
 
