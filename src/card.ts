@@ -1,4 +1,3 @@
-import { HomeAssistant } from 'custom-card-helpers';
 import {
   CSSResultGroup,
   LitElement,
@@ -18,6 +17,7 @@ import {
 import { CalendarWeekGridCardEditor } from './editor/editor';
 import styles from './styles.css';
 import type {
+  HomeAssistant,
   CardConfig,
   Event,
   DayInfo,
@@ -637,7 +637,7 @@ export class CalendarWeekGridCard extends LitElement {
   private getDays(): DayInfo[] {
     const daysCount = this.config?.days ?? 7;
     const weekStart = this.config?.week_start || 'today';
-    const lang = this.config?.language || this.hass?.language || 'en';
+    const lang: string = this.config?.language || this.hass?.language || 'en';
     const primaryFormat = this.config?.primary_date_format;
     const secondaryFormat = this.config?.secondary_date_format;
 
@@ -655,7 +655,7 @@ export class CalendarWeekGridCard extends LitElement {
     const timeFormat = this.config?.time_format;
     const showRange = this.config?.time_range || false;
     const nextHour = (hour + 1) % 24;
-    const lang = this.config?.language || this.hass?.language || 'en';
+    const lang: string = this.config?.language || this.hass?.language || 'en';
 
     const hourLabel = formatHour(hour, timeFormat, lang);
 

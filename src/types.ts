@@ -1,3 +1,53 @@
+// Minimal type definitions (replaces custom-card-helpers and home-assistant-js-websocket dependencies)
+
+export interface HassEntity {
+  entity_id: string;
+  state: string;
+  last_changed?: string;
+  last_updated?: string;
+  attributes?: {
+    friendly_name?: string;
+    [key: string]: unknown;
+  };
+  context?: {
+    id: string;
+    user_id: string | null;
+    parent_id: string | null;
+  };
+}
+
+export type HassEntities = Record<string, HassEntity>;
+
+export interface HassConfig {
+  time_zone?: string;
+  [key: string]: unknown;
+}
+
+export interface EntityRegistryEntry {
+  device_id?: string;
+  [key: string]: unknown;
+}
+
+export interface DeviceRegistryEntry {
+  name?: string;
+  name_by_user?: string;
+  [key: string]: unknown;
+}
+
+export interface HomeAssistant {
+  states: HassEntities;
+  config: HassConfig;
+  entities: Record<string, EntityRegistryEntry>;
+  devices: Record<string, DeviceRegistryEntry>;
+  language?: string;
+  callApi: <T>(
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+    path: string,
+    parameters?: { [key: string]: unknown },
+  ) => Promise<T>;
+  [key: string]: unknown; // Allow other properties for compatibility
+}
+
 export interface CustomCard {
   type: string;
   name: string;

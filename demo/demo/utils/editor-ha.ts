@@ -3,9 +3,11 @@
  * Creates mock Home Assistant components and provides editor setup
  */
 
-import type { HomeAssistant } from 'custom-card-helpers';
-import type { HassEntities } from 'home-assistant-js-websocket';
-import type { CardConfig } from '../../../src/types';
+import type {
+  HomeAssistant,
+  HassEntities,
+  CardConfig,
+} from '../../../src/types';
 import type { Calendar } from './data';
 
 /**

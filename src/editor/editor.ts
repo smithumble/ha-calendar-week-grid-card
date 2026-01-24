@@ -3,10 +3,10 @@
  * Provides a visual configuration interface using native Home Assistant elements
  */
 
-import type { HomeAssistant } from 'custom-card-helpers';
 import { LitElement, TemplateResult, html, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import type {
+  HomeAssistant,
   CardConfig,
   DefaultEventConfig,
   EntityConfig,

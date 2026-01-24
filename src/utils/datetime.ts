@@ -1,5 +1,4 @@
-import type { HomeAssistant } from 'custom-card-helpers';
-import type { DayInfo } from '../types';
+import type { HomeAssistant, DayInfo } from '../types';
 
 /**
  * Convert a date to Home Assistant timezone
