@@ -1,3 +1,4 @@
+import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -9,8 +10,28 @@ const PROJECT_ROOT = path.resolve(__dirname, '../../');
 const README_PATH = path.resolve(PROJECT_ROOT, 'README.md');
 const DATA_DIR = path.resolve(PROJECT_ROOT, 'dist/demo/assets/data');
 
+function getCurrentCommitSha(): string {
+  try {
+    return execSync('git rev-parse HEAD', {
+      cwd: PROJECT_ROOT,
+      encoding: 'utf8',
+    }).trim();
+  } catch {
+    console.warn('Warning: Could not get git commit SHA, using "main"');
+    return 'main';
+  }
+}
+
 function updateReadmeConfigs(): void {
   let readmeContent = fs.readFileSync(README_PATH, 'utf8');
+
+  // Update image URLs to use commit SHA instead of branch name
+  // This ensures old README versions still have accessible images
+  const commitSha = getCurrentCommitSha();
+  readmeContent = readmeContent.replace(
+    /(https:\/\/media\.githubusercontent\.com\/media\/smithumble\/ha-calendar-week-grid-card\/)main(\/media\/images\/[^)]+)/g,
+    `$1${commitSha}$2`,
+  );
 
   // Scan all providers in data directory
   if (fs.existsSync(DATA_DIR)) {

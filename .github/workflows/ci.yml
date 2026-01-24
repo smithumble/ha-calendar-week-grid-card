@@ -51,6 +51,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -61,8 +63,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Update README
-        run: npm run update-readme
+      - name: Update configs
+        run: npm run readme:update-configs
+
+      - name: Update image URLs
+        run: npm run readme:update-image-urls
 
       - name: Check for changes
         id: git-check

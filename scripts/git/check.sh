@@ -19,6 +19,8 @@ if [ -n "$(git status --porcelain "$DIR")" ]; then
   fi
   echo "Files changed in $DIR:"
   git status --porcelain "$DIR"
+  echo ""
+  git diff "$DIR" | cat
   exit 1
 else
   if [ -n "$GITHUB_OUTPUT" ]; then
