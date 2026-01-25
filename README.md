@@ -386,9 +386,6 @@ Themes from those examples are available in `Visual Editor` -> `Styling` -> `The
 
 <!-- CONFIG:yasno_v3/basic -->
 
-<details>
-<summary>YAML Configuration</summary>
-
 ```yaml
 type: custom:calendar-week-grid-card
 language: en
@@ -399,17 +396,12 @@ time_format:
 time_range: false
 icons_mode: top
 icons_container: cell
-event:
-blank_event:
-blank_all_day_event:
 entities:
   - entity: calendar.planned_outages
     filter: Outage
     icon: mdi:check-circle-outline
   - calendar.probable_outages
 ```
-
-</details>
 
 <!-- END_CONFIG -->
 
@@ -461,7 +453,6 @@ theme_values_examples:
     border-style: dotted
   - opacity: 0.1
     border-style: dotted
-event:
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
   theme_values:
@@ -582,7 +573,6 @@ theme_values_examples:
   - color: var(--info-color)
     opacity: 0.1
     border-style: dotted
-event:
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
   theme_values:
@@ -700,7 +690,6 @@ theme_values_examples:
     opacity: 0.2
   - color: var(--info-color)
     opacity: 0.2
-event:
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
   theme_values:
@@ -810,7 +799,6 @@ theme_values_examples:
     background: 'repeating-linear-gradient(45deg, rgb(from #FF8A80 r g b / 0.08), rgb(from #FF8A80 r g b / 0.08) 10px, rgb(from #FF8A80 r g b / 0.15) 10px, rgb(from #FF8A80 r g b / 0.15) 20px)'
   - color: '#29B6F6'
     background: 'repeating-linear-gradient(45deg, rgb(from #29B6F6 r g b / 0.08), rgb(from #29B6F6 r g b / 0.08) 10px, rgb(from #29B6F6 r g b / 0.15) 10px, rgb(from #29B6F6 r g b / 0.15) 20px)'
-event:
 blank_event:
   icon: mdi:lightning-bolt
   theme_values:
@@ -927,7 +915,6 @@ theme_values_examples:
     background: '#FFF176'
   - color: '#006064'
     background: '#80DEEA'
-event:
 blank_event:
   icon: mdi:circle-outline
   theme_values:
@@ -1049,13 +1036,10 @@ theme_values_examples:
   - color: var(--color-highlight-icon)
     background: var(--color-highlight)
   - color: var(--color-highlight-light-icon)
-event:
 blank_event:
   icon:
   theme_values:
     opacity: 0.3
-blank_all_day_event:
-  icon:
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -1180,11 +1164,9 @@ theme_values_examples:
   - color: var(--success-color)
   - color: var(--warning-color)
   - color: var(--info-color)
-event:
 blank_event:
   theme_values:
     color: transparent
-blank_all_day_event:
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -1440,11 +1422,9 @@ theme_values_examples:
   - color: var(--success-color)
   - color: var(--warning-color)
   - color: var(--info-color)
-event:
 blank_event:
   theme_values:
     color: transparent
-blank_all_day_event:
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -1709,11 +1689,9 @@ theme_values_examples:
   - color: '#D40101'
   - color: '#34B779'
   - color: '#F6BE28'
-event:
 blank_event:
   theme_values:
     color: transparent
-blank_all_day_event:
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
@@ -1932,11 +1910,9 @@ theme_values_examples:
   - color: '#D40101'
   - color: '#34B779'
   - color: '#F6BE28'
-event:
 blank_event:
   theme_values:
     color: transparent
-blank_all_day_event:
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
