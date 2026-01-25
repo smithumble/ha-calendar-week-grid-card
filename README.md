@@ -22,6 +22,9 @@ If it doesn't work, add this repository to HACS manually:
 
 ### Manual Installation
 
+<details>
+<summary>Manual Installation Steps</summary>
+
 1. **Download** the latest release: [calendar-week-grid-card.js](https://github.com/smithumble/ha-calendar-week-grid-card/releases/latest)
 2. Place it in your `www` folder (e.g. `/config/www/calendar-week-grid-card.js`).
 3. Add a reference to `calendar-week-grid-card.js`.
@@ -51,6 +54,8 @@ Add the resource to your yaml configuration:
 url: /local/calendar-week-grid-card.js
 type: module
 ```
+
+</details>
 
 ## Configuration
 
@@ -371,6 +376,8 @@ Each item in `hide` can be:
 
 ## Examples
 
+Themes from those examples are available in `Visual Editor` -> `Styling` -> `Theme` or can be configured via the YAML Editor.
+
 > [!NOTE]
 > The examples use the [HA Yasno Outages](https://github.com/denysdovhan/ha-yasno-outages) integration calendar, which shows outages in Ukraine caused by Russian attacks on civilian and energy infrastructure during the invasion of Ukraine.
 
@@ -381,7 +388,7 @@ Each item in `hide` can be:
 <!-- CONFIG:yasno_v3/basic -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -414,7 +421,7 @@ entities:
 <!-- CONFIG:yasno_v3/simple -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -527,7 +534,7 @@ css: |
 <!-- CONFIG:yasno_v3/simple_colored -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -654,7 +661,7 @@ css: |
 <!-- CONFIG:yasno_v3/classic -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -765,7 +772,7 @@ css: |
 <!-- CONFIG:yasno_v3/neon -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -886,7 +893,7 @@ css: |
 <!-- CONFIG:yasno_v3/soft_ui -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -1013,7 +1020,7 @@ css: |
 <!-- CONFIG:yasno_v3/yasno_legacy -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -1147,7 +1154,7 @@ css: |
 <!-- CONFIG:yasno_v3/google_calendar -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -1407,7 +1414,7 @@ css: |
 <!-- CONFIG:yasno_v3/google_calendar_separated -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -1677,7 +1684,7 @@ css: |
 <!-- CONFIG:yasno_v3/google_calendar_original -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
@@ -1900,7 +1907,7 @@ css: |
 <!-- CONFIG:yasno_v3/google_calendar_original_separated -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
