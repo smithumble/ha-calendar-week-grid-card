@@ -278,7 +278,7 @@ async function captureEditorScreenshot(
   await page.evaluate((selector) => {
     try {
       // Find calendar-week-grid-card-editor
-      let editorElement = null;
+      let editorElement: Element | null = null;
       const rootsToCheck = [{ root: document, depth: 0 }];
       const checkedRoots = new WeakSet();
 
@@ -326,16 +326,19 @@ async function captureEditorScreenshot(
       }
 
       // If found, look for .card-config in its shadow root
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (editorElement && (editorElement as any).shadowRoot) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const cardConfig = (editorElement as any).shadowRoot?.querySelector(
-          '.card-config',
-        );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (cardConfig && (cardConfig as any).style) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (cardConfig as any).style.padding = '50px';
+      if (
+        editorElement &&
+        editorElement instanceof HTMLElement &&
+        editorElement.shadowRoot
+      ) {
+        const cardConfig =
+          editorElement.shadowRoot.querySelector('.card-config');
+        if (
+          cardConfig &&
+          cardConfig instanceof HTMLElement &&
+          cardConfig.style
+        ) {
+          cardConfig.style.padding = '50px';
         }
       }
     } catch {
@@ -350,7 +353,7 @@ async function captureEditorScreenshot(
   const screenshotData = await page.evaluate((selector) => {
     try {
       // First find calendar-week-grid-card-editor
-      let targetElement = null;
+      let targetElement: Element | null = null;
       const rootsToCheck = [{ root: document, depth: 0 }];
       const checkedRoots = new WeakSet();
 
@@ -397,15 +400,12 @@ async function captureEditorScreenshot(
         }
       }
 
-      if (
-        !targetElement ||
-        typeof (targetElement as any).getBoundingClientRect !== 'function' // eslint-disable-line @typescript-eslint/no-explicit-any
-      ) {
+      if (!targetElement || !(targetElement instanceof HTMLElement)) {
         return { found: false };
       }
 
       // Get bounding box of calendar-week-grid-card-editor
-      const rect = (targetElement as any).getBoundingClientRect(); // eslint-disable-line @typescript-eslint/no-explicit-any
+      const rect = targetElement.getBoundingClientRect();
       return {
         found: true,
         x: rect.x,
