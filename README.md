@@ -82,31 +82,30 @@ All configuration options available in YAML are accessible through the visual ed
 <details>
 <summary>YAML Configuration Options</summary>
 
-| Name                    | Type          | Required | Description                                                                                                                                                  |
-| ----------------------- | ------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `type`                  | string        | **Yes**  | `custom:calendar-week-grid-card`                                                                                                                             |
-| `entities`              | list          | **Yes**  | List of calendar entities or objects.                                                                                                                        |
-| `language`              | string        | No       | Language code for days (e.g., `en`, `fr`).                                                                                                                   |
-| `primary_date_format`   | object        | No       | Primary date format options for day headers. Default: `{ weekday: 'short' }`. See [Date Format](#date-format).                                               |
-| `secondary_date_format` | object        | No       | Secondary date format options for day headers (displayed below primary). Optional. See [Date Format](#date-format).                                          |
-| `time_format`           | string/object | No       | Time format pattern (string) or options (object). Default: `h A` (string) or `{ hour: 'numeric' }` (object). See [Time Format](#time-format).                |
-| `time_range`            | boolean       | No       | Display time as a range (e.g., "09 - 10" instead of "09"). Default: `false`.                                                                                 |
-| `start_hour`            | number        | No       | First hour to display (0-23). Default: 0.                                                                                                                    |
-| `end_hour`              | number        | No       | Last hour to display (0-23). Default: 24.                                                                                                                    |
-| `filter`                | string        | No       | Global filter text for event summary.                                                                                                                        |
-| `icons_container`       | string        | No       | Where to render icons: `cell` (in the cell) or `event` (in event blocks). Default: `cell`.                                                                   |
-| `icons_mode`            | string        | No       | Which events show icons: `top` (only main event) or `all` (all events). Default: `top`.                                                                      |
-| `event`                 | object        | No       | Default event configuration with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                                                 |
-| `blank_event`           | object        | No       | Configuration for cells with no events with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                                      |
-| `blank_all_day_event`   | object        | No       | Configuration for all-day cells with no events with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                              |
-| `all_day`               | string        | No       | Where to display all-day events: `grid` (in the grid), `row` (in a separate row), or `both` (in both the grid and a separate row). Default: `grid`.          |
-| `all_day_label`         | string        | No       | Label text for the all-day row in the time column. Default: empty string.                                                                                    |
-| `theme_variables`       | object        | No       | Theme variables definition for the visual editor. See [Theme Variables](#theme-variables).                                                                   |
-| `theme_values_examples` | array         | No       | Example theme values for the visual editor. See [Theme Variables](#theme-variables).                                                                         |
-| `week_start`            | string        | No       | Day of the week to start the calendar: `today`, `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, or `saturday`. Default: `today`.           |
-| `days`                  | number        | No       | Number of days to display. Default: `7`.                                                                                                                     |
-| `theme`                 | string        | No       | Theme mode: `dark`, `light`, or `auto` (default). `auto` automatically detects the theme from Home Assistant. `dark` and `light` force the respective theme. |
-| `css`                   | string        | No       | CSS styles for the card.                                                                                                                                     |
+| Name                    | Type          | Required | Description                                                                                                                                         |
+| ----------------------- | ------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`                  | string        | **Yes**  | `custom:calendar-week-grid-card`                                                                                                                    |
+| `entities`              | list          | **Yes**  | List of calendar entities or objects.                                                                                                               |
+| `language`              | string        | No       | Language code for days (e.g., `en`, `fr`).                                                                                                          |
+| `primary_date_format`   | object        | No       | Primary date format options for day headers. Default: `{ weekday: 'short' }`. See [Date Format](#date-format).                                      |
+| `secondary_date_format` | object        | No       | Secondary date format options for day headers (displayed below primary). Optional. See [Date Format](#date-format).                                 |
+| `time_format`           | string/object | No       | Time format pattern (string) or options (object). Default: `h A` (string) or `{ hour: 'numeric' }` (object). See [Time Format](#time-format).       |
+| `time_range`            | boolean       | No       | Display time as a range (e.g., "09 - 10" instead of "09"). Default: `false`.                                                                        |
+| `start_hour`            | number        | No       | First hour to display (0-23). Default: 0.                                                                                                           |
+| `end_hour`              | number        | No       | Last hour to display (0-23). Default: 24.                                                                                                           |
+| `filter`                | string        | No       | Global filter text for event summary.                                                                                                               |
+| `icons_container`       | string        | No       | Where to render icons: `cell` (in the cell) or `event` (in event blocks). Default: `cell`.                                                          |
+| `icons_mode`            | string        | No       | Which events show icons: `top` (only main event) or `all` (all events). Default: `top`.                                                             |
+| `event`                 | object        | No       | Default event configuration with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                                        |
+| `blank_event`           | object        | No       | Configuration for cells with no events with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                             |
+| `blank_all_day_event`   | object        | No       | Configuration for all-day cells with no events with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                     |
+| `all_day`               | string        | No       | Where to display all-day events: `grid` (in the grid), `row` (in a separate row), or `both` (in both the grid and a separate row). Default: `grid`. |
+| `all_day_label`         | string        | No       | Label text for the all-day row in the time column. Default: empty string.                                                                           |
+| `theme_variables`       | object        | No       | Theme variables definition for the visual editor. See [Theme Variables](#theme-variables).                                                          |
+| `theme_values_examples` | array         | No       | Example theme values for the visual editor. See [Theme Variables](#theme-variables).                                                                |
+| `week_start`            | string        | No       | Day of the week to start the calendar: `today`, `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, or `saturday`. Default: `today`.  |
+| `days`                  | number        | No       | Number of days to display. Default: `7`.                                                                                                            |
+| `css`                   | string        | No       | CSS styles for the card.                                                                                                                            |
 
 ### Date Format
 

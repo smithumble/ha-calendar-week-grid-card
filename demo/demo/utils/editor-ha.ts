@@ -714,10 +714,10 @@ export function mockHaEditorComponents(): void {
                 transition: background-color 0.2s;
               }
               .top:hover {
-                background-color: var(--hover-color);
+                background-color: var(--input-fill-color);
               }
               .top.expanded {
-                background-color: var(--hover-color);
+                background-color: var(--input-fill-color);
                 border-bottom-left-radius: 0px;
                 border-bottom-right-radius: 0px;
               }
@@ -969,7 +969,7 @@ export function mockHaEditorComponents(): void {
                   transition: background-color 0.2s, opacity 0.2s;
                 }
                 button:hover:not(:disabled) {
-                  background-color: var(--hover-color);
+                  background-color: var(--input-fill-color);
                 }
                 button:disabled {
                   opacity: 0.38;

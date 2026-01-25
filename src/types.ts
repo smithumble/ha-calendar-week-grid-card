@@ -40,6 +40,9 @@ export interface HomeAssistant {
   entities: Record<string, EntityRegistryEntry>;
   devices: Record<string, DeviceRegistryEntry>;
   language?: string;
+  themes?: {
+    darkMode?: boolean;
+  };
   callApi: <T>(
     method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     path: string,
@@ -134,7 +137,6 @@ export interface CardConfig {
     | 'friday'
     | 'saturday';
   days?: number;
-  theme?: 'dark' | 'light' | 'auto';
   entities?: (string | EntityConfig)[];
   theme_variables?: Record<string, ThemeVariable>;
   css?: string;

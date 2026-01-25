@@ -144,34 +144,13 @@ export class CalendarWeekGridCard extends LitElement {
       this.fetchEventsIfNeeded();
       this.updateThemeClass();
     }
-    if (changedProps.has('config')) {
-      this.updateThemeClass();
-    }
   }
 
   private updateThemeClass(): void {
-    const themeConfig = this.config?.theme || 'auto';
-    let isDark = false;
-
-    if (themeConfig === 'dark') {
-      isDark = true;
-    } else if (themeConfig === 'light') {
-      isDark = false;
-    } else {
-      const themes = this.hass?.themes as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-      isDark = themes?.darkMode || false;
-    }
-
-    this.classList.toggle('theme-dark', !!isDark);
-    this.classList.toggle('theme-light', !isDark);
-
+    const darkMode = this.hass?.themes?.darkMode || false;
     const haCard = this.shadowRoot?.querySelector('ha-card');
-    if (!haCard) {
-      return;
-    }
-
-    haCard.classList.toggle('theme-dark', !!isDark);
-    haCard.classList.toggle('theme-light', !isDark);
+    haCard?.classList.toggle('theme-dark', !!darkMode);
+    haCard?.classList.toggle('theme-light', !darkMode);
   }
 
   protected render(): TemplateResult {

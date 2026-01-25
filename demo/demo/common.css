@@ -6,6 +6,7 @@
   --mdc-typography-body1-font-family: Roboto, sans-serif;
   --mdc-typography-button-font-family: Roboto, sans-serif;
   --mdc-icon-size: 24px;
+  --hover-color: rgba(0, 0, 0, 0.04);
 }
 :host {
   display: block;
@@ -15,10 +16,4 @@
   color: var(--primary-text-color);
   transition: all 0.3s ease-out;
   position: relative;
-}
-.theme-light {
-  --hover-color: rgba(0, 0, 0, 0.04);
-}
-.theme-dark {
-  --hover-color: rgba(255, 255, 255, 0.08);
 }

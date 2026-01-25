@@ -304,23 +304,12 @@ export class CalendarWeekGridCardEditor extends LitElement {
           'Core Settings',
           'mdi:calendar-month',
           html`
-            <!-- Language & Theme -->
-            <h3>Language & Theme</h3>
+            <!-- Language -->
+            <h3>Language</h3>
             ${this.addTextField('language', 'Language Code')}
             <div class="helper-text">
               Language code for date formatting (e.g., en, fr, de)
             </div>
-            ${this.addSelectField(
-              'theme',
-              'Theme',
-              [
-                { value: 'auto', label: 'Auto' },
-                { value: 'dark', label: 'Dark' },
-                { value: 'light', label: 'Light' },
-              ],
-              false,
-              'auto',
-            )}
 
             <!-- Days Range -->
             <h3>Days Range</h3>
