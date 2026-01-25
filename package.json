@@ -25,6 +25,7 @@
     "screenshots": "rollup -c demo/rollup.screenshot.config.mjs && vite --config demo/vite.config.ts",
     "screenshots:generate": "npm run screenshots:build && tsx scripts/screenshots/generate.ts --force",
     "screenshots:generate:docker": "./scripts/screenshots/generate.sh",
+    "screenshots:capture-editor": "tsx scripts/screenshots/capture-editor.ts",
     "screenshots:compare": "tsx scripts/screenshots/compare.ts media/images/ --diffs media/images/diffs --threshold 1 --pixel-threshold 0.01",
     "readme:update-configs": "npm run demo:build && tsx scripts/readme/update-configs.ts",
     "readme:update-image-urls": "tsx scripts/readme/update-image-urls.ts",

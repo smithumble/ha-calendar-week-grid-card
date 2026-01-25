@@ -54,6 +54,27 @@ type: module
 
 ## Configuration
 
+### Visual Editor
+
+This card supports Home Assistant's visual editor, providing an intuitive interface to configure all card options without writing YAML.
+
+![Visual Editor](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/editor.png)
+
+Simply click the **Configure** button when editing your dashboard to access the visual editor. The editor allows you to:
+
+- Add and configure calendar entities
+- Customize date and time formats
+- Set up event styling and icons
+- Configure theme variables
+- Adjust display options like week start, days shown, and theme mode
+
+All configuration options available in YAML are accessible through the visual editor interface.
+
+### YAML
+
+<details>
+<summary>YAML Configuration Options</summary>
+
 | Name                    | Type          | Required | Description                                                                                                                                                  |
 | ----------------------- | ------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `type`                  | string        | **Yes**  | `custom:calendar-week-grid-card`                                                                                                                             |
@@ -79,6 +100,8 @@ type: module
 | `days`                  | number        | No       | Number of days to display. Default: `7`.                                                                                                                     |
 | `theme`                 | string        | No       | Theme mode: `dark`, `light`, or `auto` (default). `auto` automatically detects the theme from Home Assistant. `dark` and `light` force the respective theme. |
 | `css`                   | string        | No       | CSS styles for the card.                                                                                                                                     |
+
+</details>
 
 ### Date Format
 
