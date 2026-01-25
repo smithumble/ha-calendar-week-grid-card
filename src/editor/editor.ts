@@ -397,7 +397,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
               'grid',
             )}
             ${this.addTextField('all_day_label', 'All Day Label')}
-            ${this.addIconPickerField('all_day_icon', 'All Day Icon')}
 
             <!-- Icons -->
             <h3>Icons</h3>
