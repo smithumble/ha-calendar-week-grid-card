@@ -46,6 +46,10 @@ export class CalendarWeekGridCardEditor extends LitElement {
   @state() private _expandedEntityIndex: number | null = null;
   @state() private _selectedTheme: string = 'custom';
   private _isInitializing: boolean = true;
+  private _debounceTimeouts: Map<string, ReturnType<typeof setTimeout>> =
+    new Map();
+  private _pendingValues: Map<string, { target: HTMLElement; value: unknown }> =
+    new Map();
 
   //-----------------------------------------------------------------------------
   // LIFECYCLE METHODS
@@ -54,6 +58,14 @@ export class CalendarWeekGridCardEditor extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     this.loadHaComponents();
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    // Clear all pending debounce timeouts
+    this._debounceTimeouts.forEach((timeout) => clearTimeout(timeout));
+    this._debounceTimeouts.clear();
+    this._pendingValues.clear();
   }
 
   private loadHaComponents(): void {
@@ -127,28 +139,43 @@ export class CalendarWeekGridCardEditor extends LitElement {
   // INPUT/EVENT HANDLERS
   //-----------------------------------------------------------------------------
 
-  _valueChanged(event: Event): void {
-    if (!event.target) return;
-
-    event.stopPropagation();
-
-    const target = event.target as
-      | HTMLInputElement
-      | HTMLSelectElement
-      | HTMLTextAreaElement;
+  /**
+   * Processes a value change from a target element
+   * Extracted to be reusable for both immediate and debounced changes
+   */
+  private _processValueChange(
+    target: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
+  ): void {
     const name = target.getAttribute('name');
-
     if (!name) return;
 
-    let value: string | boolean | number | object | null = target.value;
+    let processedValue: string | boolean | number | object | null =
+      target.value;
 
     if (target.tagName === 'HA-SWITCH') {
-      value = (target as HTMLInputElement).checked;
+      processedValue = (target as HTMLInputElement).checked;
     }
 
-    if (target.getAttribute('type') === 'number' && value !== '') {
-      value = parseFloat(value as string);
+    if (
+      target.getAttribute('type') === 'number' &&
+      processedValue !== '' &&
+      typeof processedValue === 'string'
+    ) {
+      processedValue = parseFloat(processedValue);
     }
+
+    this._applyValueChange(name, processedValue);
+  }
+
+  /**
+   * Applies a value change by name and value
+   * Used for debounced changes where we have the value directly
+   */
+  private _applyValueChange(
+    name: string,
+    processedValue: string | boolean | number | object | null,
+  ): void {
+    if (!name) return;
 
     // Create context for field handlers
     const context: FieldHandlerContext = {
@@ -158,13 +185,13 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
     // Handle theme_selection (UI-only field that controls theme switching)
     if (name === 'theme_selection') {
-      this._handleThemeSelection(value as string);
+      this._handleThemeSelection(processedValue as string);
       return;
     }
 
     // Handle time_format_type (UI-only field that controls format switching)
     if (name === 'time_format_type') {
-      const formatType = value as 'string' | 'object';
+      const formatType = processedValue as 'string' | 'object';
       this._timeFormatType = formatType;
       handleTimeFormatTypeChange(formatType, context);
       return;
@@ -177,21 +204,26 @@ export class CalendarWeekGridCardEditor extends LitElement {
     ) {
       const configPath = name.split('.')[0];
       const fieldName = name.split('.')[1];
-      handleDateFormatFieldChange(configPath, fieldName, value, context);
+      handleDateFormatFieldChange(
+        configPath,
+        fieldName,
+        processedValue,
+        context,
+      );
       return;
     }
 
     // Handle time format object fields
     if (name.startsWith('time_format.')) {
       const fieldName = name.split('.')[1];
-      handleTimeFormatObjectFieldChange(fieldName, value, context);
+      handleTimeFormatObjectFieldChange(fieldName, processedValue, context);
       return;
     }
 
     // Handle criteria type switching (UI-only field)
     if (name.endsWith('.__type')) {
       const basePath = name.replace('.__type', '');
-      const newType = value as 'string' | 'object';
+      const newType = processedValue as 'string' | 'object';
       handleCriteriaTypeChange(basePath, newType, context);
       return;
     }
@@ -209,7 +241,13 @@ export class CalendarWeekGridCardEditor extends LitElement {
         return;
       }
 
-      handleCriteriaFieldChange(basePath, itemIndex, fieldName, value, context);
+      handleCriteriaFieldChange(
+        basePath,
+        itemIndex,
+        fieldName,
+        processedValue,
+        context,
+      );
       return;
     }
 
@@ -222,19 +260,87 @@ export class CalendarWeekGridCardEditor extends LitElement {
       'layout_options',
     ];
     if (
-      typeof value === 'string' &&
-      value.trim() !== '' &&
+      typeof processedValue === 'string' &&
+      processedValue.trim() !== '' &&
       objectFields.includes(name) &&
-      (value.startsWith('{') || value.startsWith('['))
+      (processedValue.startsWith('{') || processedValue.startsWith('['))
     ) {
       try {
-        value = JSON.parse(value);
+        processedValue = JSON.parse(processedValue);
       } catch {
         // If parsing fails, keep as string
       }
     }
 
-    this.setConfigValue(name, value);
+    this.setConfigValue(name, processedValue);
+  }
+
+  /**
+   * Debounced handler for keyup events
+   * Applies changes after user stops typing for 500ms
+   */
+  _valueChangedDebounced(event: Event): void {
+    if (!event.target) return;
+
+    const target = event.target as
+      | HTMLInputElement
+      | HTMLSelectElement
+      | HTMLTextAreaElement;
+    const name = target.getAttribute('name');
+
+    if (!name) return;
+
+    // Extract current value from target
+    let value: string | boolean | number | null = target.value;
+    if (target.tagName === 'HA-SWITCH') {
+      value = (target as HTMLInputElement).checked;
+    }
+    if (
+      target.getAttribute('type') === 'number' &&
+      value !== '' &&
+      typeof value === 'string'
+    ) {
+      value = parseFloat(value);
+    }
+
+    // Store the pending value
+    this._pendingValues.set(name, { target, value });
+
+    // Clear existing timeout for this field
+    const existingTimeout = this._debounceTimeouts.get(name);
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
+    }
+
+    // Set new timeout to apply change after debounce period
+    const timeout = setTimeout(() => {
+      this._debounceTimeouts.delete(name);
+
+      // Get the pending value for this field
+      const pending = this._pendingValues.get(name);
+      if (!pending) return;
+
+      this._pendingValues.delete(name);
+
+      // Process the value change directly with name and value
+      const value = pending.value as string | boolean | number | object | null;
+      this._applyValueChange(name, value);
+    }, 500);
+
+    this._debounceTimeouts.set(name, timeout);
+  }
+
+  _valueChanged(event: Event): void {
+    if (!event.target) return;
+
+    event.stopPropagation();
+
+    const target = event.target as
+      | HTMLInputElement
+      | HTMLSelectElement
+      | HTMLTextAreaElement;
+
+    this._processValueChange(target);
   }
 
   /**
@@ -538,7 +644,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
         type="${type ?? 'text'}"
         .value="${value}"
         @change="${this._valueChanged}"
-        @keyup="${this._valueChanged}"
+        @keyup="${this._valueChangedDebounced}"
       ></ha-textfield>
     `;
   }
