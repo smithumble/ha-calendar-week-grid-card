@@ -21,11 +21,11 @@ theme_values_examples:
   - color: '#D40101'
   - color: '#34B779'
   - color: '#F6BE28'
-event:
+event: {}
 blank_event:
   theme_values:
     color: transparent
-blank_all_day_event:
+blank_all_day_event: {}
 entities:
   - name: planned_outages
     entity: calendar.planned_outages
