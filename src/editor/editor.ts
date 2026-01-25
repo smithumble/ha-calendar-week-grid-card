@@ -482,7 +482,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
             </div>
             ${this.addSelectField(
               'theme_selection',
-              'Theme',
+              '',
               [
                 { value: 'custom', label: 'Custom' },
                 ...themes.map((theme) => ({
@@ -499,17 +499,25 @@ export class CalendarWeekGridCardEditor extends LitElement {
               Custom CSS styles. Use CSS variables and selectors to style the
               card.
             </div>
-            <ha-code-editor
-              .hass="${this.hass}"
-              name="css"
-              label="Custom CSS"
-              .value="${this.getConfigValue('css', '')}"
-              @value-changed="${(e: CustomEvent) => {
-                e.stopPropagation();
-                this._handleCssChange(e.detail.value);
-              }}"
-            ></ha-code-editor>
+            ${this.addExpansionPanel(
+              'Custom CSS',
+              'mdi:code-tags',
+              html`
+                <ha-code-editor
+                  .hass="${this.hass}"
+                  name="css"
+                  label="Custom CSS"
+                  .value="${this.getConfigValue('css', '')}"
+                  @value-changed="${(e: CustomEvent) => {
+                    e.stopPropagation();
+                    this._handleCssChange(e.detail.value);
+                  }}"
+                ></ha-code-editor>
+              `,
+              false,
+            )}
           `,
+          true,
         )}
       </div>
     `;
