@@ -25,12 +25,10 @@ theme_values_examples:
   - color: var(--color-highlight-icon)
     background: var(--color-highlight)
   - color: var(--color-highlight-light-icon)
-event: {}
 blank_event:
   icon:
   theme_values:
     opacity: 0.3
-blank_all_day_event: {}
 entities:
   - name: planned_outages
     entity: calendar.planned_outages

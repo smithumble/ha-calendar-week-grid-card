@@ -201,25 +201,6 @@ export class ThemeManager {
   }
 
   /**
-   * Removes theme_values from all entities
-   */
-  static removeObsoleteThemeVariables(
-    entities: Array<string | EntityConfig>,
-  ): Array<string | EntityConfig> {
-    return entities.map((entity) => {
-      if (typeof entity === 'string') {
-        return entity;
-      }
-
-      const entityObj = entity as EntityConfig;
-      const cleanedEntity: EntityConfig = { ...entityObj };
-      delete cleanedEntity.theme_values;
-
-      return cleanedEntity;
-    });
-  }
-
-  /**
    * Apply theme_values_examples to entities
    */
   applyThemeValuesExamplesToEntities(
@@ -231,26 +212,30 @@ export class ThemeManager {
     }
 
     return entities.map((entity, index) => {
-      // First check if there's an archived value for this theme
-      if (
-        themeId &&
-        typeof entity === 'object' &&
-        entity.theme_values_archive
-      ) {
-        const archivedValues = entity.theme_values_archive[themeId];
-        if (archivedValues) {
-          const result = { ...entity };
-          result.theme_values = archivedValues;
-          return result;
+      let result = entity;
+
+      if (typeof entity === 'object') {
+        result = { ...entity };
+        delete result.theme_values;
+
+        // First check if there's an archived value for this theme
+        if (themeId && entity.theme_values_archive) {
+          const archivedValues = entity.theme_values_archive[themeId];
+          if (archivedValues) {
+            result.theme_values = archivedValues;
+            return result;
+          }
         }
       }
 
       // Fall back to theme_values_examples
       const example = this.getExampleByEntityIndex(index);
-      if (!example) {
-        return entity;
+      if (example) {
+        return this.applyThemeValuesToEntity(result, example);
       }
-      return this.applyThemeValuesToEntity(entity, example);
+
+      // Fall back to original entity
+      return result;
     });
   }
 }

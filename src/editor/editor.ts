@@ -367,29 +367,57 @@ export class CalendarWeekGridCardEditor extends LitElement {
         this._archiveCurrentThemeValues(previousTheme);
       }
 
-      // Clear theme-related fields if not present in theme (e.g., basic theme has no CSS or theme variables)
-      if (!('css' in selectedTheme.config)) {
-        this.setConfigValue('css', '');
-      }
-      if (!('theme_variables' in selectedTheme.config)) {
-        this.setConfigValue('theme_variables', undefined);
-      }
-      if (!('theme_values_examples' in selectedTheme.config)) {
-        this.setConfigValue('theme_values_examples', undefined);
-      }
+      // Root config keys
 
-      Object.entries(selectedTheme.config).forEach(([key, value]) => {
-        if (key !== 'entities' && value !== null && value !== undefined) {
-          this.setConfigValue(key, value);
+      // Clear theme-related fields if not present in theme (e.g., basic theme has no CSS or theme variables)
+      const themeRelatedKeys = [
+        'css',
+        'theme_variables',
+        'theme_values_examples',
+      ];
+      themeRelatedKeys.forEach((key) => {
+        if (!(key in selectedTheme.config)) {
+          this.setConfigValue(key, undefined);
         }
       });
 
-      this._removeObsoleteThemeVariables();
-      this._applyThemeValuesExamplesToEntities(themeId);
+      const eventNames = [
+        'event',
+        'blank_event',
+        'blank_all_day_event',
+      ] as const;
 
-      this._restoreEventConfigThemeValues('event', themeId);
-      this._restoreEventConfigThemeValues('blank_event', themeId);
-      this._restoreEventConfigThemeValues('blank_all_day_event', themeId);
+      const excludedKeys = ['entities', ...eventNames];
+      Object.entries(selectedTheme.config).forEach(([key, value]) => {
+        if (excludedKeys.includes(key)) return;
+        if (value === null || value === undefined) return;
+        this.setConfigValue(key, value);
+      });
+
+      // Event config keys (event, blank_event, blank_all_day_event)
+
+      eventNames.forEach((eventName) => {
+        const eventConfig = selectedTheme.config[eventName] || {};
+
+        // Clear theme-related fields if not present in theme
+        const eventThemeRelatedKeys = ['icon', 'theme_values'];
+        eventThemeRelatedKeys.forEach((key) => {
+          if (!(key in eventConfig)) {
+            this.setConfigValue(`${eventName}.${key}`, undefined);
+          }
+        });
+
+        Object.entries(eventConfig as DefaultEventConfig).forEach(
+          ([eventKey, value]) => {
+            if (value === null || value === undefined) return;
+            this.setConfigValue(`${eventName}.${eventKey}`, value);
+          },
+        );
+
+        this._restoreEventConfigThemeValues(eventName, themeId);
+      });
+
+      this._applyThemeValuesExamplesToEntities(themeId);
     }
   }
 
@@ -1563,7 +1591,9 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
     if (archivedValues && Object.keys(archivedValues).length > 0) {
       // Restore archived values
-      this.setConfigValue(`${configKey}.theme_values`, archivedValues);
+      Object.entries(archivedValues).forEach(([key, value]) => {
+        this.setConfigValue(`${configKey}.theme_values.${key}`, value);
+      });
     }
   }
 
@@ -1589,23 +1619,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
       entities,
       themeId,
     );
-    this.setConfigValue('entities', updatedEntities);
-  }
-
-  /**
-   * Removes theme_values from all entities before applying new theme
-   */
-  private _removeObsoleteThemeVariables(): void {
-    if (!this._config) {
-      return;
-    }
-
-    const entities = this._config.entities || [];
-    if (entities.length === 0) {
-      return;
-    }
-
-    const updatedEntities = ThemeManager.removeObsoleteThemeVariables(entities);
     this.setConfigValue('entities', updatedEntities);
   }
 

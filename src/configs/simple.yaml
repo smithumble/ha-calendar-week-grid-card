@@ -36,7 +36,6 @@ theme_values_examples:
     border-style: dotted
   - opacity: 0.1
     border-style: dotted
-event: {}
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
   theme_values:

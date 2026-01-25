@@ -30,7 +30,6 @@ theme_values_examples:
     background: '#FFF176'
   - color: '#006064'
     background: '#80DEEA'
-event: {}
 blank_event:
   icon: mdi:circle-outline
   theme_values:

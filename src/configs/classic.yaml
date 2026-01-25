@@ -35,7 +35,6 @@ theme_values_examples:
     opacity: 0.2
   - color: var(--info-color)
     opacity: 0.2
-event: {}
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
   theme_values:

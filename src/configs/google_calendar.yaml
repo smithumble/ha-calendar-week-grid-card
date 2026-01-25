@@ -22,11 +22,9 @@ theme_values_examples:
   - color: var(--success-color)
   - color: var(--warning-color)
   - color: var(--info-color)
-event: {}
 blank_event:
   theme_values:
     color: transparent
-blank_all_day_event: {}
 entities:
   - name: planned_outages
     entity: calendar.planned_outages

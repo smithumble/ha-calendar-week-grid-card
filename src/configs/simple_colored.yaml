@@ -44,7 +44,6 @@ theme_values_examples:
   - color: var(--info-color)
     opacity: 0.1
     border-style: dotted
-event: {}
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
   theme_values:

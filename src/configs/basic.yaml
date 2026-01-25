@@ -7,9 +7,6 @@ time_format:
 time_range: false
 icons_mode: top
 icons_container: cell
-event: {}
-blank_event: {}
-blank_all_day_event: {}
 entities:
   - entity: calendar.planned_outages
     filter: Outage
