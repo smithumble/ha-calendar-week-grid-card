@@ -9,8 +9,8 @@ const projectRoot = path.resolve(__dirname, '../../');
 
 // Constants
 const OUTPUT_DIR = path.resolve(projectRoot, 'media/images');
-const VIEWPORT_WIDTH = 1920;
-const VIEWPORT_HEIGHT = 1080;
+const SCREENSHOT_VIEWPORT_WIDTH = 2560;
+const SCREENSHOT_VIEWPORT_HEIGHT = 1440;
 const DEVICE_SCALE_FACTOR = 2;
 const ELEMENT_SELECTOR = 'calendar-week-grid-card-editor';
 const POLL_INTERVAL = 1000; // Check every second
@@ -261,6 +261,91 @@ async function captureEditorScreenshot(
   page: Page,
   outputPath: string,
 ): Promise<void> {
+  // Wait a bit for any animations/transitions to complete
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Change viewport to larger size for screenshot
+  await page.setViewport({
+    width: SCREENSHOT_VIEWPORT_WIDTH,
+    height: SCREENSHOT_VIEWPORT_HEIGHT,
+    deviceScaleFactor: DEVICE_SCALE_FACTOR,
+  });
+
+  // Wait a bit for viewport change to apply
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  // Find calendar-week-grid-card-editor and apply padding to .card-config in its shadow DOM
+  await page.evaluate((selector) => {
+    try {
+      // Find calendar-week-grid-card-editor
+      let editorElement = null;
+      const rootsToCheck = [{ root: document, depth: 0 }];
+      const checkedRoots = new WeakSet();
+
+      while (rootsToCheck.length > 0 && !editorElement) {
+        const current = rootsToCheck.shift();
+        if (!current || current.depth > 20) continue;
+
+        let direct;
+        try {
+          direct = current.root.querySelector(selector);
+        } catch {
+          // Continue to next root
+        }
+
+        if (direct) {
+          editorElement = direct;
+          break;
+        }
+
+        let elements;
+        try {
+          elements = current.root.querySelectorAll('*');
+        } catch {
+          continue;
+        }
+
+        for (let i = 0; i < elements.length; i++) {
+          const el = elements[i];
+          if (!el) continue;
+
+          const tagName = el.tagName ? el.tagName.toLowerCase() : '';
+          if (tagName === selector.toLowerCase()) {
+            editorElement = el;
+            break;
+          }
+
+          if (el.shadowRoot && !checkedRoots.has(el.shadowRoot)) {
+            checkedRoots.add(el.shadowRoot);
+            rootsToCheck.push({
+              root: el.shadowRoot,
+              depth: current.depth + 1,
+            });
+          }
+        }
+      }
+
+      // If found, look for .card-config in its shadow root
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (editorElement && (editorElement as any).shadowRoot) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const cardConfig = (editorElement as any).shadowRoot?.querySelector(
+          '.card-config',
+        );
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (cardConfig && (cardConfig as any).style) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (cardConfig as any).style.padding = '50px';
+        }
+      }
+    } catch {
+      // Ignore errors
+    }
+  }, ELEMENT_SELECTOR);
+
+  // Wait a bit for styles to apply
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
   // Find calendar-week-grid-card-editor
   const screenshotData = await page.evaluate((selector) => {
     try {
@@ -314,9 +399,8 @@ async function captureEditorScreenshot(
 
       if (
         !targetElement ||
-        typeof (targetElement as any).getBoundingClientRect !== 'function'
+        typeof (targetElement as any).getBoundingClientRect !== 'function' // eslint-disable-line @typescript-eslint/no-explicit-any
       ) {
-        // eslint-disable-line @typescript-eslint/no-explicit-any
         return { found: false };
       }
 
@@ -362,17 +446,6 @@ async function captureEditorScreenshot(
 }
 
 /**
- * Setup page with initial viewport
- */
-async function setupPage(page: Page): Promise<void> {
-  await page.setViewport({
-    width: VIEWPORT_WIDTH,
-    height: VIEWPORT_HEIGHT,
-    deviceScaleFactor: DEVICE_SCALE_FACTOR,
-  });
-}
-
-/**
  * Main execution function
  */
 async function main(): Promise<void> {
@@ -404,8 +477,6 @@ async function main(): Promise<void> {
 
   try {
     const page = await browser.newPage();
-    await setupPage(page);
-
     // Open a blank page or you can navigate to a specific URL
     // For Home Assistant, you might want to start at the login page
     await page.goto('about:blank');
