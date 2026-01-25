@@ -75,7 +75,7 @@ function updateReadmeConfigs(): void {
                 const lines = configContent.trim().split('\n');
 
                 if (lines.length > 15) {
-                  codeBlock = `<details>\n<summary>Configuration</summary>\n\n${codeBlock}\n\n</details>`;
+                  codeBlock = `<details>\n<summary>YAML Configuration</summary>\n\n${codeBlock}\n\n</details>`;
                 }
 
                 const newBlock = `${startMarker}\n\n${codeBlock}\n\n${endMarker}`;
