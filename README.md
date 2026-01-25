@@ -60,7 +60,9 @@ This card supports Home Assistant's visual editor, providing an intuitive interf
 
 ![Visual Editor](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/b500d091d95a9a931e67cfd61fe3f0e4df2e17b4/media/images/editor.png)
 
-Simply click the **Configure** button when editing your dashboard to access the visual editor. The editor allows you to:
+Simply click the **Configure** button when editing your dashboard to access the visual editor.
+
+The editor allows you to:
 
 - Add and configure calendar entities
 - Customize date and time formats
@@ -100,8 +102,6 @@ All configuration options available in YAML are accessible through the visual ed
 | `days`                  | number        | No       | Number of days to display. Default: `7`.                                                                                                                     |
 | `theme`                 | string        | No       | Theme mode: `dark`, `light`, or `auto` (default). `auto` automatically detects the theme from Home Assistant. `dark` and `light` force the respective theme. |
 | `css`                   | string        | No       | CSS styles for the card.                                                                                                                                     |
-
-</details>
 
 ### Date Format
 
@@ -366,6 +366,8 @@ Each item in `hide` can be:
   - `type`: Match by entity type
   - `entity`: Match by entity ID
   - `filter`: Match by filter text
+
+</details>
 
 ## Examples
 
