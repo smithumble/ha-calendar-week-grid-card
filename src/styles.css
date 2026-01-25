@@ -15,6 +15,12 @@ Base Styles
   --text-secondary: var(--secondary-text-color, #999999);
 }
 
+/* Limit card size when in card picker */
+:host-context(hui-card-picker) ha-card {
+  max-height: 300px;
+  overflow: hidden;
+}
+
 * {
   box-sizing: border-box;
 }
