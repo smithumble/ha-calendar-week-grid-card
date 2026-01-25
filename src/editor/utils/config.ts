@@ -99,13 +99,29 @@ export class ConfigManager {
         const item = (current as unknown[])[index];
         if (!item || (isNextPartNumeric && !Array.isArray(item))) {
           (current as unknown[])[index] = isNextPartNumeric ? [] : {};
-        } else if (!isNextPartNumeric && typeof item !== 'object') {
+        } else if (
+          !isNextPartNumeric &&
+          (typeof item !== 'object' || item === null)
+        ) {
+          // Replace string/primitive/null with empty object
           (current as unknown[])[index] = {};
         }
-        current = (current as unknown[])[index] as
-          | Record<string, unknown>
-          | unknown[];
+        const nextItem = (current as unknown[])[index];
+        // Ensure the item exists and is not null
+        if (nextItem === null || nextItem === undefined) {
+          (current as unknown[])[index] = isNextPartNumeric ? [] : {};
+          current = (current as unknown[])[index] as
+            | Record<string, unknown>
+            | unknown[];
+        } else {
+          current = nextItem as Record<string, unknown> | unknown[];
+        }
         continue;
+      }
+
+      // Ensure current is an object (not array, not null) before accessing properties
+      if (typeof current !== 'object' || current === null) {
+        current = {} as Record<string, unknown>;
       }
 
       if (!Object.prototype.hasOwnProperty.call(current, part)) {
@@ -116,11 +132,15 @@ export class ConfigManager {
         const existing = (current as Record<string, unknown>)[part];
         if (isNextPartNumeric && !Array.isArray(existing)) {
           (current as Record<string, unknown>)[part] = [];
-        } else if (
-          !isNextPartNumeric &&
-          (typeof existing !== 'object' || Array.isArray(existing))
-        ) {
-          (current as Record<string, unknown>)[part] = {};
+        } else if (!isNextPartNumeric) {
+          // Handle null, string, or non-object values - replace with empty object
+          if (
+            existing === null ||
+            typeof existing !== 'object' ||
+            Array.isArray(existing)
+          ) {
+            (current as Record<string, unknown>)[part] = {};
+          }
         }
       }
       current = (current as Record<string, unknown>)[part] as
@@ -143,6 +163,10 @@ export class ConfigManager {
         (current as unknown[])[index] = value;
       }
     } else {
+      // Ensure current is a non-null object before setting property
+      if (typeof current !== 'object' || current === null) {
+        current = {} as Record<string, unknown>;
+      }
       if (value === undefined) {
         delete (current as Record<string, unknown>)[lastPart];
       } else {
