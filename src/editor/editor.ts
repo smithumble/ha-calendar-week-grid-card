@@ -272,6 +272,13 @@ export class CalendarWeekGridCardEditor extends LitElement {
       }
     }
 
+    // Empty strings should remove the property for all optional fields
+    // (fields handled by special handlers above already return early)
+    if (processedValue === '') {
+      this.setConfigValue(name, undefined);
+      return;
+    }
+
     this.setConfigValue(name, processedValue);
   }
 
@@ -734,7 +741,10 @@ export class CalendarWeekGridCardEditor extends LitElement {
         placeholder="${placeholder}"
         .value="${this.getConfigValue(name)}"
         @value-changed="${(event: CustomEvent<{ value: string }>) => {
-          this.setConfigValue(name, event.detail.value);
+          // Empty strings should remove the property
+          const value =
+            event.detail.value === '' ? undefined : event.detail.value;
+          this.setConfigValue(name, value);
         }}"
       ></ha-icon-picker>
     `;
