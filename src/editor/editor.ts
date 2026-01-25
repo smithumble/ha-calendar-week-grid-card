@@ -8,7 +8,6 @@ import { property, state } from 'lit/decorators.js';
 import type {
   HomeAssistant,
   CardConfig,
-  DefaultEventConfig,
   EntityConfig,
   ThemeVariable,
 } from '../types';
@@ -364,60 +363,17 @@ export class CalendarWeekGridCardEditor extends LitElement {
     const selectedTheme = themes.find((t) => t.id === themeId);
     if (selectedTheme && selectedTheme.config) {
       if (previousTheme !== 'custom') {
-        this._archiveCurrentThemeValues(previousTheme);
+        const themeManager = new ThemeManager(this._config!, themes);
+        this._config = themeManager.archiveThemeValues(previousTheme);
       }
 
-      // Root config keys
-
-      // Clear theme-related fields if not present in theme (e.g., basic theme has no CSS or theme variables)
-      const themeRelatedKeys = [
-        'css',
-        'theme_variables',
-        'theme_values_examples',
-      ];
-      themeRelatedKeys.forEach((key) => {
-        if (!(key in selectedTheme.config)) {
-          this.setConfigValue(key, undefined);
-        }
-      });
-
-      const eventNames = [
-        'event',
-        'blank_event',
-        'blank_all_day_event',
-      ] as const;
-
-      const excludedKeys = ['entities', ...eventNames];
-      Object.entries(selectedTheme.config).forEach(([key, value]) => {
-        if (excludedKeys.includes(key)) return;
-        if (value === null || value === undefined) return;
-        this.setConfigValue(key, value);
-      });
-
-      // Event config keys (event, blank_event, blank_all_day_event)
-
-      eventNames.forEach((eventName) => {
-        const eventConfig = selectedTheme.config[eventName] || {};
-
-        // Clear theme-related fields if not present in theme
-        const eventThemeRelatedKeys = ['icon', 'theme_values'];
-        eventThemeRelatedKeys.forEach((key) => {
-          if (!(key in eventConfig)) {
-            this.setConfigValue(`${eventName}.${key}`, undefined);
-          }
-        });
-
-        Object.entries(eventConfig as DefaultEventConfig).forEach(
-          ([eventKey, value]) => {
-            if (value === null || value === undefined) return;
-            this.setConfigValue(`${eventName}.${eventKey}`, value);
-          },
-        );
-
-        this._restoreEventConfigThemeValues(eventName, themeId);
-      });
-
-      this._applyThemeValuesExamplesToEntities(themeId);
+      // Apply theme configuration
+      const themeManager = new ThemeManager(this._config!, themes);
+      this._config = themeManager.applyThemeConfig(
+        selectedTheme.config,
+        themeId,
+      );
+      this._fireConfigChanged();
     }
   }
 
@@ -1408,40 +1364,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
   //-----------------------------------------------------------------------------
 
   /**
-   * Compares two values for equality, handling type conversions
-   * (e.g., string "0.3" equals number 0.3)
-   */
-  private _valuesAreEqual(a: unknown, b: unknown): boolean {
-    // Strict equality check first
-    if (a === b) {
-      return true;
-    }
-
-    // If either is undefined, they're not equal (unless both are, caught above)
-    if (a === undefined || b === undefined) {
-      return false;
-    }
-
-    // Convert both to strings and compare
-    const aStr = String(a);
-    const bStr = String(b);
-
-    // String comparison
-    if (aStr === bStr) {
-      return true;
-    }
-
-    // Try numeric comparison if both can be parsed as numbers
-    const aNum = parseFloat(aStr);
-    const bNum = parseFloat(bStr);
-    if (!isNaN(aNum) && !isNaN(bNum)) {
-      return aNum === bNum;
-    }
-
-    return false;
-  }
-
-  /**
    * Gets theme_values_examples entry by entity index (cycling with modulo)
    */
   private _getExampleByEntityIndex(
@@ -1450,11 +1372,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
     if (!this._config) {
       return undefined;
     }
-    const themeManager = new ThemeManager(
-      this._config,
-      themes,
-      this._selectedTheme,
-    );
+    const themeManager = new ThemeManager(this._config, themes);
     return themeManager.getExampleByEntityIndex(entityIndex);
   }
 
@@ -1466,11 +1384,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
       this._selectedTheme = 'custom';
       return;
     }
-    const themeManager = new ThemeManager(
-      this._config,
-      themes,
-      this._selectedTheme,
-    );
+    const themeManager = new ThemeManager(this._config, themes);
     this._selectedTheme = themeManager.detectSelectedTheme();
   }
 
@@ -1495,131 +1409,8 @@ export class CalendarWeekGridCardEditor extends LitElement {
     if (!this._config) {
       return entity;
     }
-    const themeManager = new ThemeManager(
-      this._config,
-      themes,
-      this._selectedTheme,
-    );
+    const themeManager = new ThemeManager(this._config, themes);
     return themeManager.applyThemeValuesToEntity(entity, example);
-  }
-
-  /**
-   * Archives current theme_values for all entities and configs
-   */
-  private _archiveCurrentThemeValues(themeId: string): void {
-    if (!this._config) {
-      return;
-    }
-
-    const entities = this._config.entities || [];
-    if (entities.length > 0) {
-      const themeManager = new ThemeManager(
-        this._config,
-        themes,
-        this._selectedTheme,
-      );
-      const updatedEntities = themeManager.archiveEntityThemeValues(
-        entities,
-        themeId,
-      );
-      this.setConfigValue('entities', updatedEntities);
-    }
-
-    this._archiveConfigThemeValues('event', themeId);
-    this._archiveConfigThemeValues('blank_event', themeId);
-    this._archiveConfigThemeValues('blank_all_day_event', themeId);
-  }
-
-  /**
-   * Archives theme_values for a specific config (event, blank_event, blank_all_day_event)
-   * Only archives values that differ from the theme's example values
-   */
-  private _archiveConfigThemeValues(
-    configKey: 'event' | 'blank_event' | 'blank_all_day_event',
-    themeId: string,
-  ): void {
-    const config = this.getConfigValue(configKey) as
-      | DefaultEventConfig
-      | undefined;
-    if (
-      !config ||
-      !config.theme_values ||
-      Object.keys(config.theme_values).length === 0
-    ) {
-      return;
-    }
-
-    // Get example values from the theme
-    const theme = themes.find((t) => t.id === themeId);
-    const exampleThemeValues = theme?.config[configKey] as
-      | { theme_values?: Record<string, unknown> }
-      | undefined;
-
-    const archivePath = `${configKey}.theme_values_archive.${themeId}`;
-    const currentArchive = this.getConfigValue(archivePath, {}) as Record<
-      string,
-      unknown
-    >;
-
-    // Only archive values that differ from examples
-    const valuesToArchive: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(config.theme_values)) {
-      const exampleValue = exampleThemeValues?.theme_values?.[key];
-      // Archive if value differs from example (using type-aware comparison)
-      if (!this._valuesAreEqual(value, exampleValue)) {
-        valuesToArchive[key] = value;
-      }
-    }
-
-    if (Object.keys(valuesToArchive).length > 0) {
-      const updatedArchive = { ...currentArchive, ...valuesToArchive };
-      this.setConfigValue(archivePath, updatedArchive);
-    }
-  }
-
-  /**
-   * Restores archived theme_values for a specific config if available
-   */
-  private _restoreEventConfigThemeValues(
-    configKey: 'event' | 'blank_event' | 'blank_all_day_event',
-    themeId: string,
-  ): void {
-    const archivePath = `${configKey}.theme_values_archive.${themeId}`;
-    const archivedValues = this.getConfigValue(archivePath) as
-      | Record<string, unknown>
-      | undefined;
-
-    if (archivedValues && Object.keys(archivedValues).length > 0) {
-      // Restore archived values
-      Object.entries(archivedValues).forEach(([key, value]) => {
-        this.setConfigValue(`${configKey}.theme_values.${key}`, value);
-      });
-    }
-  }
-
-  /**
-   * Apply properties from theme_values_examples to existing entities
-   */
-  private _applyThemeValuesExamplesToEntities(themeId?: string): void {
-    if (!this._config) {
-      return;
-    }
-
-    const entities = this._config.entities || [];
-    if (entities.length === 0) {
-      return;
-    }
-
-    const themeManager = new ThemeManager(
-      this._config,
-      themes,
-      this._selectedTheme,
-    );
-    const updatedEntities = themeManager.applyThemeValuesExamplesToEntities(
-      entities,
-      themeId,
-    );
-    this.setConfigValue('entities', updatedEntities);
   }
 
   /**

@@ -72,8 +72,8 @@ export interface EntityConfig {
   entity: string;
   filter?: string;
   icon?: string;
-  theme_values?: Record<string, unknown>;
-  theme_values_archive?: Record<string, Record<string, unknown>>;
+  theme_values?: ThemeValues;
+  theme_values_archive?: Record<string, ThemeValues>;
   under?: (string | EventCriteria)[];
   over?: (string | EventCriteria)[];
   hide?: (string | EventCriteria)[];
@@ -103,8 +103,14 @@ export interface ThemeValues {
 export interface DefaultEventConfig {
   icon?: string;
   theme_values?: ThemeValues;
-  theme_values_archive?: Record<string, ThemeValues>;
 }
+
+export const EVENT_CONFIG_KEYS = [
+  'event',
+  'blank_event',
+  'blank_all_day_event',
+] as const;
+export type EventConfigKey = (typeof EVENT_CONFIG_KEYS)[number];
 
 export interface CardConfig {
   type: string;
