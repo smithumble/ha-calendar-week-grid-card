@@ -29,33 +29,34 @@ blank_event:
   icon:
   theme_values:
     opacity: 0.3
-entities:
-  - name: planned_outages
-    entity: calendar.planned_outages
-    filter: Outage
-    type: highlight
-    icon: mdi:flash-off
-    theme_values:
-      color: var(--color-highlight-icon)
-      background: var(--color-highlight)
-  - name: probable_outages
-    entity: calendar.probable_outages
-    icon: mdi:flash-off
-    theme_values:
-      color: var(--color-highlight-light-icon)
-  - name: emergency_shutdowns
-    entity: calendar.planned_outages
-    filter: Emergency Shutdowns
-    icon: mdi:transmission-tower-off
-  - name: waiting_for_schedule
-    entity: calendar.planned_outages
-    filter: Waiting for Schedule
-    icon: mdi:timer-sand
-    theme_values:
-      color: var(--color-highlight-light-icon)
-      opacity: 0.5
-    hide:
-      - planned_outages
+entities_presets:
+  demo:
+    - name: planned_outages
+      entity: calendar.planned_outages
+      filter: Outage
+      type: highlight
+      icon: mdi:flash-off
+      theme_values:
+        color: var(--color-highlight-icon)
+        background: var(--color-highlight)
+    - name: probable_outages
+      entity: calendar.probable_outages
+      icon: mdi:flash-off
+      theme_values:
+        color: var(--color-highlight-light-icon)
+    - name: emergency_shutdowns
+      entity: calendar.planned_outages
+      filter: Emergency Shutdowns
+      icon: mdi:transmission-tower-off
+    - name: waiting_for_schedule
+      entity: calendar.planned_outages
+      filter: Waiting for Schedule
+      icon: mdi:timer-sand
+      theme_values:
+        color: var(--color-highlight-light-icon)
+        opacity: 0.5
+      hide:
+        - planned_outages
 css: |
   ha-card {
     --color-highlight: #FDD631;

@@ -144,6 +144,7 @@ export interface CardConfig {
     | 'saturday';
   days?: number;
   entities?: (string | EntityConfig)[];
+  entities_presets?: Record<string, (string | EntityConfig)[]>;
   theme_variables?: Record<string, ThemeVariable>;
   css?: string;
   grid_options?: GridOptions;

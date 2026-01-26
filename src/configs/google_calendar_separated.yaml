@@ -25,38 +25,39 @@ theme_values_examples:
 blank_event:
   theme_values:
     color: transparent
-entities:
-  - name: planned_outages
-    entity: calendar.planned_outages
-    filter: Outage
-    icon: mdi:flash-off
-    theme_values:
-      color: var(--error-color)
-  - name: probable_outages
-    entity: calendar.probable_outages
-    icon: mdi:flash-off
-    theme_values:
-      color: var(--primary-color)
-  - name: emergency_shutdowns
-    entity: calendar.planned_outages
-    filter: Emergency Shutdowns
-    icon: mdi:transmission-tower-off
-    theme_values:
-      color: var(--error-color)
-  - name: schedule_applies
-    entity: calendar.planned_outages
-    filter: Schedule Applies
-    icon: mdi:flash-off
-    theme_values:
-      color: var(--success-color)
-  - name: waiting_for_schedule
-    entity: calendar.planned_outages
-    filter: Waiting for Schedule
-    icon: mdi:timer-sand
-    theme_values:
-      color: var(--warning-color)
-    hide:
-      - planned_outages
+entities_presets:
+  demo:
+    - name: planned_outages
+      entity: calendar.planned_outages
+      filter: Outage
+      icon: mdi:flash-off
+      theme_values:
+        color: var(--error-color)
+    - name: probable_outages
+      entity: calendar.probable_outages
+      icon: mdi:flash-off
+      theme_values:
+        color: var(--primary-color)
+    - name: emergency_shutdowns
+      entity: calendar.planned_outages
+      filter: Emergency Shutdowns
+      icon: mdi:transmission-tower-off
+      theme_values:
+        color: var(--error-color)
+    - name: schedule_applies
+      entity: calendar.planned_outages
+      filter: Schedule Applies
+      icon: mdi:flash-off
+      theme_values:
+        color: var(--success-color)
+    - name: waiting_for_schedule
+      entity: calendar.planned_outages
+      filter: Waiting for Schedule
+      icon: mdi:timer-sand
+      theme_values:
+        color: var(--warning-color)
+      hide:
+        - planned_outages
 css: |
   ha-card { 
     --grid-bg: var(--card-background-color, #FFF);

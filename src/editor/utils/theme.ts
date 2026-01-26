@@ -346,7 +346,7 @@ export class ThemeManager {
     });
 
     // Update fields from theme config
-    const excludedKeys = ['entities', ...EVENT_CONFIG_KEYS];
+    const excludedKeys = ['entities', 'entities_presets', ...EVENT_CONFIG_KEYS];
     Object.entries(themeConfig).forEach(([key, value]) => {
       if (excludedKeys.includes(key)) return;
       if (value === null || value === undefined) return;

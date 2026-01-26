@@ -98,6 +98,21 @@ export abstract class BaseProvider {
   }
 
   /**
+   * Transform entities_presets.demo to entities for demo providers
+   */
+  private transformEntitiesPresets(config: CardConfig): void {
+    if (!config.entities_presets || config.entities) {
+      return;
+    }
+
+    const demoEntities = config.entities_presets.demo;
+    if (demoEntities) {
+      config.entities = demoEntities;
+      delete config.entities_presets;
+    }
+  }
+
+  /**
    * Load and parse a config by name
    */
   async loadConfig(configName: string): Promise<CardConfig | null> {
@@ -108,7 +123,9 @@ export abstract class BaseProvider {
 
     try {
       const yaml = await import('js-yaml');
-      return yaml.load(yamlContent) as CardConfig;
+      const config = yaml.load(yamlContent) as CardConfig;
+      this.transformEntitiesPresets(config);
+      return config;
     } catch (error) {
       console.warn(`Failed to parse config ${configName}:`, error);
       return null;

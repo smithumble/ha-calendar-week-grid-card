@@ -37,43 +37,44 @@ blank_event:
     background: '#F5F5F5'
 blank_all_day_event:
   icon: mdi:checkbox-blank-circle
-entities:
-  - name: planned_outages
-    entity: calendar.planned_outages
-    filter: Outage
-    icon: mdi:close-circle
-    theme_values:
-      color: '#FFFFFF'
-      background: '#FF8A80'
-  - name: probable_outages
-    entity: calendar.probable_outages
-    icon: mdi:close-circle
-    theme_values:
-      color: '#1B5E20'
-      background: '#B9F6CA'
-  - name: emergency_shutdowns
-    entity: calendar.planned_outages
-    filter: Emergency Shutdowns
-    icon: mdi:alert-circle
-    theme_values:
-      color: '#FFFFFF'
-      background: '#FF80AB'
-  - name: schedule_applies
-    entity: calendar.planned_outages
-    filter: Schedule Applies
-    icon: mdi:circle-outline
-    theme_values:
-      color: '#F57F17'
-      background: '#FFF176'
-  - name: waiting_for_schedule
-    entity: calendar.planned_outages
-    filter: Waiting for Schedule
-    icon: mdi:clock-outline
-    theme_values:
-      color: '#006064'
-      background: '#80DEEA'
-    hide:
-      - planned_outages
+entities_presets:
+  demo:
+    - name: planned_outages
+      entity: calendar.planned_outages
+      filter: Outage
+      icon: mdi:close-circle
+      theme_values:
+        color: '#FFFFFF'
+        background: '#FF8A80'
+    - name: probable_outages
+      entity: calendar.probable_outages
+      icon: mdi:close-circle
+      theme_values:
+        color: '#1B5E20'
+        background: '#B9F6CA'
+    - name: emergency_shutdowns
+      entity: calendar.planned_outages
+      filter: Emergency Shutdowns
+      icon: mdi:alert-circle
+      theme_values:
+        color: '#FFFFFF'
+        background: '#FF80AB'
+    - name: schedule_applies
+      entity: calendar.planned_outages
+      filter: Schedule Applies
+      icon: mdi:circle-outline
+      theme_values:
+        color: '#F57F17'
+        background: '#FFF176'
+    - name: waiting_for_schedule
+      entity: calendar.planned_outages
+      filter: Waiting for Schedule
+      icon: mdi:clock-outline
+      theme_values:
+        color: '#006064'
+        background: '#80DEEA'
+      hide:
+        - planned_outages
 css: |
   ha-card {
     --text-color: #444;

@@ -42,43 +42,44 @@ blank_event:
     opacity: 0
 blank_all_day_event:
   icon: mdi:checkbox-blank-circle
-entities:
-  - name: planned_outages
-    entity: calendar.planned_outages
-    filter: Outage
-    icon: mdi:flash-off
-    theme_values:
-      color: var(--error-color)
-      opacity: 0.2
-  - name: probable_outages
-    entity: calendar.probable_outages
-    icon: mdi:flash-off
-    theme_values:
-      color: var(--primary-color)
-      opacity: 0.2
-  - name: emergency_shutdowns
-    entity: calendar.planned_outages
-    filter: Emergency Shutdowns
-    icon: mdi:transmission-tower-off
-    theme_values:
-      color: var(--error-color)
-      opacity: 0.4
-  - name: schedule_applies
-    entity: calendar.planned_outages
-    filter: Schedule Applies
-    icon: mdi:flash-off
-    theme_values:
-      color: var(--success-color)
-      opacity: 0.2
-  - name: waiting_for_schedule
-    entity: calendar.planned_outages
-    filter: Waiting for Schedule
-    icon: mdi:timer-sand
-    theme_values:
-      color: var(--warning-color)
-      opacity: 0.2
-    hide:
-      - planned_outages
+entities_presets:
+  demo:
+    - name: planned_outages
+      entity: calendar.planned_outages
+      filter: Outage
+      icon: mdi:flash-off
+      theme_values:
+        color: var(--error-color)
+        opacity: 0.2
+    - name: probable_outages
+      entity: calendar.probable_outages
+      icon: mdi:flash-off
+      theme_values:
+        color: var(--primary-color)
+        opacity: 0.2
+    - name: emergency_shutdowns
+      entity: calendar.planned_outages
+      filter: Emergency Shutdowns
+      icon: mdi:transmission-tower-off
+      theme_values:
+        color: var(--error-color)
+        opacity: 0.4
+    - name: schedule_applies
+      entity: calendar.planned_outages
+      filter: Schedule Applies
+      icon: mdi:flash-off
+      theme_values:
+        color: var(--success-color)
+        opacity: 0.2
+    - name: waiting_for_schedule
+      entity: calendar.planned_outages
+      filter: Waiting for Schedule
+      icon: mdi:timer-sand
+      theme_values:
+        color: var(--warning-color)
+        opacity: 0.2
+      hide:
+        - planned_outages
 css: |
   .event-block {
     border-radius: 4px;
