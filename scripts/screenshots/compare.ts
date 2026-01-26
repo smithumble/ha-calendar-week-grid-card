@@ -197,17 +197,29 @@ async function compareImages(
 
 /**
  * Get all PNG files in a directory
+ * Excludes diff images (.diff.png) and the excludeDir if provided
  */
-function getPngFiles(dirPath: string): string[] {
+function getPngFiles(
+  dirPath: string,
+  excludeDir: string | null = null,
+): string[] {
   const files: string[] = [];
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
 
   for (const entry of entries) {
     const fullPath = path.join(dirPath, entry.name);
     if (entry.isDirectory()) {
+      // Skip the exclude directory if it matches
+      if (excludeDir && path.resolve(fullPath) === path.resolve(excludeDir)) {
+        continue;
+      }
       // Recursively search subdirectories
-      files.push(...getPngFiles(fullPath));
+      files.push(...getPngFiles(fullPath, excludeDir));
     } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.png')) {
+      // Skip diff images
+      if (entry.name.toLowerCase().endsWith('.diff.png')) {
+        continue;
+      }
       files.push(fullPath);
     }
   }
@@ -535,6 +547,9 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  // Resolve diffs path early so we can exclude it from file search
+  const diffDir = diffsPath ? path.resolve(process.cwd(), diffsPath) : null;
+
   const stats = fs.statSync(resolvedPath);
   let imageFiles: string[] = [];
 
@@ -546,8 +561,8 @@ async function main(): Promise<void> {
     }
     imageFiles = [resolvedPath];
   } else if (stats.isDirectory()) {
-    // Directory - find all PNG files
-    imageFiles = getPngFiles(resolvedPath);
+    // Directory - find all PNG files, excluding the diffs directory
+    imageFiles = getPngFiles(resolvedPath, diffDir);
     if (imageFiles.length === 0) {
       console.error(`Error: No PNG images found in directory: ${resolvedPath}`);
       process.exit(1);
@@ -564,11 +579,13 @@ async function main(): Promise<void> {
   console.log(`Pixel threshold: ${toPercent(pixelThreshold)}%`);
   console.log(`Git reference: ${gitRef}`);
   if (diffsPath) {
-    const diffDir = path.resolve(process.cwd(), diffsPath);
     console.log(`Diffs path: ${diffDir}`);
+    // Clear diffs folder before starting comparisons
     if (fs.existsSync(diffDir)) {
       fs.rmSync(diffDir, { recursive: true });
     }
+    // Ensure the directory exists (will be created by saveDiffImage, but create it here for clarity)
+    fs.mkdirSync(diffDir, { recursive: true });
   } else {
     console.log('Diffs: disabled');
   }

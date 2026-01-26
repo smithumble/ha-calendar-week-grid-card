@@ -1,12 +1,12 @@
 type: custom:calendar-week-grid-card
 primary_date_format:
-  weekday: 'short'
+  weekday: short
 secondary_date_format:
-  day: 'numeric'
-  month: 'short'
+  day: numeric
+  month: short
 time_format:
-  hour: '2-digit'
-  minute: '2-digit'
+  hour: 2-digit
+  minute: 2-digit
   hour12: false
 time_range: false
 icons_container: event
@@ -37,44 +37,100 @@ blank_event:
     background: '#F5F5F5'
 blank_all_day_event:
   icon: mdi:checkbox-blank-circle
+entities: []
 entities_presets:
-  demo:
-    - name: planned_outages
-      entity: calendar.planned_outages
-      filter: Outage
-      icon: mdi:close-circle
-      theme_values:
-        color: '#FFFFFF'
-        background: '#FF8A80'
-    - name: probable_outages
-      entity: calendar.probable_outages
-      icon: mdi:close-circle
-      theme_values:
-        color: '#1B5E20'
-        background: '#B9F6CA'
-    - name: emergency_shutdowns
-      entity: calendar.planned_outages
-      filter: Emergency Shutdowns
-      icon: mdi:alert-circle
-      theme_values:
-        color: '#FFFFFF'
-        background: '#FF80AB'
-    - name: schedule_applies
-      entity: calendar.planned_outages
-      filter: Schedule Applies
-      icon: mdi:circle-outline
-      theme_values:
-        color: '#F57F17'
-        background: '#FFF176'
-    - name: waiting_for_schedule
-      entity: calendar.planned_outages
-      filter: Waiting for Schedule
-      icon: mdi:clock-outline
-      theme_values:
-        color: '#006064'
-        background: '#80DEEA'
-      hide:
-        - planned_outages
+  - name: yasno_en
+    title: Yasno (English)
+    entities:
+      - name: Planned Outages
+        entity: calendar.planned_outages
+        filter: Outage
+        icon: mdi:close-circle
+        theme_values:
+          color: '#FFFFFF'
+          background: '#FF8A80'
+      - name: Probable Outages
+        entity: calendar.probable_outages
+        icon: mdi:close-circle
+        theme_values:
+          color: '#1B5E20'
+          background: '#B9F6CA'
+      - name: Emergency Shutdowns
+        entity: calendar.planned_outages
+        filter: Emergency Shutdowns
+        icon: mdi:alert-circle
+        theme_values:
+          color: '#FFFFFF'
+          background: '#FF80AB'
+      - name: Schedule Applies
+        entity: calendar.planned_outages
+        filter: Schedule Applies
+        icon: mdi:circle-outline
+        theme_values:
+          color: '#F57F17'
+          background: '#FFF176'
+      - name: Waiting for Schedule
+        entity: calendar.planned_outages
+        filter: Waiting for Schedule
+        icon: mdi:clock-outline
+        theme_values:
+          color: '#006064'
+          background: '#80DEEA'
+        hide:
+          - Planned Outages
+    calendars:
+      - template: calendar.planned_outages
+        title: Planned Outages Calendar
+        description: Planned Outages Calendar from ha-yasno-outages integration
+      - template: calendar.probable_outages
+        title: Probable Outages Calendar
+        description: Probable Outages Calendar from ha-yasno-outages integration
+  - name: yasno_uk
+    title: Yasno (Ukrainian)
+    entities:
+      - name: Заплановані відключення
+        entity: calendar.planned_outages
+        filter: Відключення
+        icon: mdi:close-circle
+        theme_values:
+          color: '#FFFFFF'
+          background: '#FF8A80'
+      - name: Імовірні відключення
+        entity: calendar.probable_outages
+        icon: mdi:close-circle
+        theme_values:
+          color: '#1B5E20'
+          background: '#B9F6CA'
+      - name: Аварійні відключення
+        entity: calendar.planned_outages
+        filter: Аварійні відключення
+        icon: mdi:alert-circle
+        theme_values:
+          color: '#FFFFFF'
+          background: '#FF80AB'
+      - name: Графік діє
+        entity: calendar.planned_outages
+        filter: Графік діє
+        icon: mdi:circle-outline
+        theme_values:
+          color: '#F57F17'
+          background: '#FFF176'
+      - name: Очікування графіка
+        entity: calendar.planned_outages
+        filter: Очікування графіка
+        icon: mdi:clock-outline
+        theme_values:
+          color: '#006064'
+          background: '#80DEEA'
+        hide:
+          - Заплановані відключення
+    calendars:
+      - template: calendar.planned_outages
+        title: Календар запланованих відключень
+        description: Календар запланованих відключень з інтеграції ha-yasno-outages
+      - template: calendar.probable_outages
+        title: Календар імовірних відключень
+        description: Календар імовірних відключень з інтеграції ha-yasno-outages
 css: |
   ha-card {
     --text-color: #444;

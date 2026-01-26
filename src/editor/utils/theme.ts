@@ -12,6 +12,11 @@ import {
 } from '../../types';
 import { ConfigManager } from './config';
 
+export const THEME_HIDDEN_FIELDS = [
+  'entities_presets',
+  'theme_values_examples',
+] as const;
+
 export interface ThemeInfo {
   id: string;
   name: string;
@@ -69,12 +74,15 @@ export class ThemeManager {
    */
   getExampleByEntityIndex(
     entityIndex: number,
+    themeId: string,
   ): Record<string, unknown> | undefined {
-    const themeValuesExamples = ConfigManager.getValue(
-      this.config,
-      'theme_values_examples',
-      [],
-    ) as Array<Record<string, unknown>>;
+    const theme = this.themes.find((t) => t.id === themeId);
+    if (!theme) {
+      return undefined;
+    }
+
+    const themeValuesExamples = (theme.config.theme_values_examples ||
+      []) as Array<Record<string, unknown>>;
 
     if (themeValuesExamples.length === 0) {
       return undefined;
@@ -204,7 +212,7 @@ export class ThemeManager {
         }
 
         // Get example values for this entity index
-        const example = this.getExampleByEntityIndex(index);
+        const example = this.getExampleByEntityIndex(index, themeId);
         const archivedEntity = this.archiveEntityThemeValues(
           entity,
           example,
@@ -249,7 +257,7 @@ export class ThemeManager {
       }
 
       // Fall back to theme_values_examples
-      const example = this.getExampleByEntityIndex(index);
+      const example = this.getExampleByEntityIndex(index, themeId);
       if (example) {
         const populatedEntity = this.applyThemeValuesToEntity(
           restoredEntity,
@@ -333,20 +341,18 @@ export class ThemeManager {
     themeConfig: Partial<CardConfig>,
     themeId: string,
   ): CardConfig {
-    // Clear theme-related fields if not present in theme
-    const themeRelatedKeys = [
-      'css',
-      'theme_variables',
-      'theme_values_examples',
-    ];
+    // Clear theme-related fields
+    const themeRelatedKeys = ['css', 'theme_variables', ...THEME_HIDDEN_FIELDS];
     themeRelatedKeys.forEach((key) => {
-      if (!(key in themeConfig)) {
-        this.config = ConfigManager.setValue(this.config, key, undefined);
-      }
+      this.config = ConfigManager.setValue(this.config, key, undefined);
     });
 
     // Update fields from theme config
-    const excludedKeys = ['entities', 'entities_presets', ...EVENT_CONFIG_KEYS];
+    const excludedKeys = [
+      'entities',
+      ...THEME_HIDDEN_FIELDS,
+      ...EVENT_CONFIG_KEYS,
+    ];
     Object.entries(themeConfig).forEach(([key, value]) => {
       if (excludedKeys.includes(key)) return;
       if (value === null || value === undefined) return;

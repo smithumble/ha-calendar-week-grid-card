@@ -2,6 +2,9 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import yaml from 'js-yaml';
+import { THEME_HIDDEN_FIELDS } from '../../src/editor/utils/theme';
+import type { CardConfig } from '../../src/types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,6 +12,8 @@ const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, '../../');
 const README_PATH = path.resolve(PROJECT_ROOT, 'README.md');
 const DATA_DIR = path.resolve(PROJECT_ROOT, 'dist/demo/assets/data');
+
+const ENTITIES_PRESET_NAME = 'yasno_en';
 
 function getCurrentCommitSha(): string {
   try {
@@ -19,6 +24,41 @@ function getCurrentCommitSha(): string {
   } catch {
     console.warn('Warning: Could not get git commit SHA, using "main"');
     return 'main';
+  }
+}
+
+function transformConfigForReadme(configContent: string): string {
+  try {
+    const config = yaml.load(configContent) as CardConfig;
+
+    // Find demo preset and extract its entities
+    if (config.entities_presets && Array.isArray(config.entities_presets)) {
+      const demoPreset = config.entities_presets.find(
+        (preset) => preset.name === ENTITIES_PRESET_NAME,
+      );
+
+      if (demoPreset && demoPreset.entities) {
+        config.entities = demoPreset.entities;
+      }
+    }
+
+    // Remove theme hidden fields
+    THEME_HIDDEN_FIELDS.forEach((field) => {
+      delete config[field as keyof CardConfig];
+    });
+
+    // Convert back to YAML
+    return yaml.dump(config, {
+      lineWidth: -1,
+      noRefs: true,
+      sortKeys: false,
+    });
+  } catch (error) {
+    console.warn(
+      `Failed to transform config: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    // Return original content if transformation fails
+    return configContent;
   }
 }
 
@@ -71,8 +111,12 @@ function updateReadmeConfigs(): void {
               }
 
               if (markerFound) {
-                let codeBlock = '```yaml\n' + configContent.trim() + '\n```';
-                const lines = configContent.trim().split('\n');
+                // Transform config: extract demo preset entities and remove theme hidden fields
+                const transformedContent =
+                  transformConfigForReadme(configContent);
+                let codeBlock =
+                  '```yaml\n' + transformedContent.trim() + '\n```';
+                const lines = transformedContent.trim().split('\n');
 
                 if (lines.length > 15) {
                   codeBlock = `<details>\n<summary>YAML Configuration</summary>\n\n${codeBlock}\n\n</details>`;

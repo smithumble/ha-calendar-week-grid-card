@@ -83,6 +83,31 @@ ha-formfield {
   margin: 8px 0;
 }
 
+.preset-form {
+  margin: 16px 0;
+  padding: 0 16px;
+  background-color: var(--card-background-color, rgba(0, 0, 0, 0.02));
+  border-radius: var(--ha-card-border-radius, var(--ha-border-radius-lg));
+  border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+}
+
+.preset-form .helper-text {
+  margin-top: 8px;
+}
+
+.preset-form .button-group {
+  margin-top: 16px;
+}
+
+.preset-form ha-entity-picker {
+  display: block;
+  margin: 8px 0;
+}
+
+.preset-form-helper {
+  margin-top: 8px;
+}
+
 .format-fields {
   display: flex;
   flex-direction: column;

@@ -1,5 +1,11 @@
+import { THEME_HIDDEN_FIELDS } from '../../../../src/editor/utils/theme';
 import type { CardConfig } from '../../../../src/types';
 import type { Calendar } from '../data';
+
+/**
+ * Demo preset name
+ */
+export const DEMO_PRESET_NAME = 'yasno_en';
 
 /**
  * Base class for data providers
@@ -99,17 +105,30 @@ export abstract class BaseProvider {
 
   /**
    * Transform entities_presets.demo to entities for demo providers
+   * Preserves other presets for the editor to use
    */
   private transformEntitiesPresets(config: CardConfig): void {
-    if (!config.entities_presets || config.entities) {
+    if (!config.entities_presets || !Array.isArray(config.entities_presets)) {
       return;
     }
 
-    const demoEntities = config.entities_presets.demo;
-    if (demoEntities) {
-      config.entities = demoEntities;
-      delete config.entities_presets;
+    // Find preset with excluded names (e.g., "demo")
+    const excludedPreset = config.entities_presets.find(
+      (preset) => preset.name === DEMO_PRESET_NAME,
+    );
+
+    // Set entities from excluded preset if it exists and has entities, and entities is empty
+    if (
+      excludedPreset?.entities &&
+      (!config.entities || config.entities.length === 0)
+    ) {
+      config.entities = excludedPreset.entities;
     }
+
+    // Delete theme hidden fields
+    THEME_HIDDEN_FIELDS.forEach((field) => {
+      delete config[field as keyof CardConfig];
+    });
   }
 
   /**

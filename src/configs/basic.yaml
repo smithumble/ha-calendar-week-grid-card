@@ -1,15 +1,43 @@
 type: custom:calendar-week-grid-card
 language: en
 time_format:
-  hour: '2-digit'
-  minute: '2-digit'
+  hour: 2-digit
+  minute: 2-digit
   hour12: false
 time_range: false
 icons_mode: top
 icons_container: cell
+entities: []
 entities_presets:
-  demo:
-    - entity: calendar.planned_outages
-      filter: Outage
-      icon: mdi:check-circle-outline
-    - calendar.probable_outages
+  - name: yasno_en
+    title: Yasno (English)
+    entities:
+      - name: Planned Outages
+        entity: calendar.planned_outages
+        filter: Outage
+        icon: mdi:check-circle-outline
+      - name: Probable Outages
+        entity: calendar.probable_outages
+    calendars:
+      - template: calendar.planned_outages
+        title: Planned Outages Calendar
+        description: Planned Outages Calendar from ha-yasno-outages integration
+      - template: calendar.probable_outages
+        title: Probable Outages Calendar
+        description: Probable Outages Calendar from ha-yasno-outages integration
+  - name: yasno_uk
+    title: Yasno (Ukrainian)
+    entities:
+      - name: Заплановані відключення
+        entity: calendar.planned_outages
+        filter: Відключення
+        icon: mdi:check-circle-outline
+      - name: Імовірні відключення
+        entity: calendar.probable_outages
+    calendars:
+      - template: calendar.planned_outages
+        title: Календар запланованих відключень
+        description: Календар запланованих відключень з інтеграції ha-yasno-outages
+      - template: calendar.probable_outages
+        title: Календар імовірних відключень
+        description: Календар імовірних відключень з інтеграції ha-yasno-outages

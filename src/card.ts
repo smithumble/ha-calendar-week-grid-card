@@ -15,6 +15,7 @@ import {
   getDeprecatedBlankIcon,
 } from './deprecated';
 import { CalendarWeekGridCardEditor } from './editor/editor';
+import { THEME_HIDDEN_FIELDS } from './editor/utils/theme';
 import styles from './styles.css';
 import type {
   HomeAssistant,
@@ -25,6 +26,7 @@ import type {
   EntityConfig,
   RawEvent,
   CalendarEvent,
+  EntitiesPreset,
 } from './types';
 import {
   getDays,
@@ -84,17 +86,72 @@ export class CalendarWeekGridCard extends LitElement {
    */
   static getStubConfig(hass: HomeAssistant): CardConfig {
     const stubConfig = googleCalendarSeparatedYamlConfig;
+
+    const config = {
+      type: 'custom:calendar-week-grid-card',
+      ...stubConfig,
+    } as CardConfig;
+
+    // Check if yasno calendar entities are available
     const calendarEntities = this.findCalendarEntities(hass);
-    const configEntities = this.mapEntitiesToConfig(
-      calendarEntities,
-      stubConfig.theme_values_examples,
+    const plannedOutagesEntity = calendarEntities.find((entityId) =>
+      /^calendar\.yasno_.*_planned_outages$/.test(entityId),
+    );
+    const probableOutagesEntity = calendarEntities.find((entityId) =>
+      /^calendar\.yasno_.*_probable_outages$/.test(entityId),
     );
 
-    return {
-      ...stubConfig,
-      type: 'custom:calendar-week-grid-card',
-      entities: configEntities,
-    };
+    // Determine preset name based on Home Assistant language
+    const language = hass.language || 'en';
+    const presetName = language.startsWith('uk') ? 'yasno_uk' : 'yasno_en';
+
+    // If both yasno entities exist, use yasno preset
+    if (
+      plannedOutagesEntity &&
+      probableOutagesEntity &&
+      stubConfig.entities_presets
+    ) {
+      const yasnoPreset = stubConfig.entities_presets.find(
+        (p: EntitiesPreset) => p.name === presetName,
+      );
+
+      if (yasnoPreset?.entities) {
+        // Clone entities from yasno preset and replace template values
+        const yasnoEntities = JSON.parse(
+          JSON.stringify(yasnoPreset.entities),
+        ) as EntityConfig[];
+
+        yasnoEntities.forEach((entity) => {
+          if (entity && typeof entity === 'object' && 'entity' in entity) {
+            // Replace entity field if it matches a template
+            if (entity.entity === 'calendar.planned_outages') {
+              entity.entity = plannedOutagesEntity;
+            } else if (entity.entity === 'calendar.probable_outages') {
+              entity.entity = probableOutagesEntity;
+            }
+          }
+        });
+
+        THEME_HIDDEN_FIELDS.forEach((field) => {
+          delete config[field as keyof CardConfig];
+        });
+
+        config.entities = yasnoEntities;
+      }
+    } else {
+      // Default: map all calendar entities to config
+      const configEntities = this.mapEntitiesToConfig(
+        calendarEntities,
+        stubConfig.theme_values_examples,
+      );
+      config.entities = configEntities;
+    }
+
+    THEME_HIDDEN_FIELDS.forEach((field) => {
+      delete config[field as keyof CardConfig];
+    });
+
+    return config;
   }
 
   /**

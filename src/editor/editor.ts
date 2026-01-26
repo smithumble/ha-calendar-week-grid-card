@@ -9,6 +9,7 @@ import type {
   HomeAssistant,
   CardConfig,
   EntityConfig,
+  EntitiesPreset,
   ThemeVariable,
 } from '../types';
 import styles from './styles.css';
@@ -44,6 +45,9 @@ export class CalendarWeekGridCardEditor extends LitElement {
   @state() private _timeFormatType: 'string' | 'object' = 'object';
   @state() private _expandedEntityIndex: number | null = null;
   @state() private _selectedTheme: string = 'custom';
+  @state() private _showPresetForm: boolean = false;
+  @state() private _selectedPresetName: string = '';
+  @state() private _presetCalendarValues: Record<string, string> = {};
   private _debounceTimeouts: Map<string, ReturnType<typeof setTimeout>> =
     new Map();
   private _pendingValues: Map<string, { target: HTMLElement; value: unknown }> =
@@ -84,9 +88,12 @@ export class CalendarWeekGridCardEditor extends LitElement {
   setConfig(config: Partial<CardConfig>): void {
     this._config = {
       type: 'custom:calendar-week-grid-card',
-      entities: [],
       ...config,
     };
+    // Set entities to empty array if not present, preserving original order
+    if (!this._config.entities) {
+      this._config.entities = [];
+    }
 
     // Initialize time format type based on current config
     const timeFormat = this._config?.time_format;
@@ -135,6 +142,14 @@ export class CalendarWeekGridCardEditor extends LitElement {
   ): void {
     const name = target.getAttribute('name');
     if (!name) return;
+
+    // Handle preset_selection immediately without debouncing
+    if (name === 'preset_selection') {
+      const value = target.value || '';
+      this._selectedPresetName = value;
+      this._presetCalendarValues = {};
+      return;
+    }
 
     let processedValue: string | boolean | number | object | null =
       target.value;
@@ -1247,7 +1262,11 @@ export class CalendarWeekGridCardEditor extends LitElement {
               this._removeAllCalendarEntities(),
             )
           : ''}
+        ${this.addButton('Apply Preset', 'mdi:package-variant', () =>
+          this._togglePresetForm(),
+        )}
       </div>
+      ${this._showPresetForm ? this._renderPresetForm() : ''}
     `;
   }
 
@@ -1271,12 +1290,213 @@ export class CalendarWeekGridCardEditor extends LitElement {
     this._collapseAllEntityPanels();
     const entities = [...(this._config?.entities || [])];
     entities.splice(index, 1);
-    this.setConfigValue('entities', entities);
+    // Always set entities to empty array if it becomes empty, never delete it
+    this.setConfigValue('entities', entities.length > 0 ? entities : []);
   }
 
   _removeAllCalendarEntities(): void {
     this._collapseAllEntityPanels();
     this.setConfigValue('entities', []);
+  }
+
+  /**
+   * Get available presets from the currently selected theme
+   */
+  private _getAvailablePresets() {
+    // If custom theme is selected, get presets from all themes
+    if (this._selectedTheme === 'custom') {
+      const presetMap = new Map<string, EntitiesPreset>();
+      themes.forEach((theme) => {
+        const themePresets = theme.config.entities_presets || [];
+        themePresets.forEach((preset) => {
+          if (!presetMap.has(preset.name)) {
+            const presetName = `${preset.name}_${theme.id}`;
+            const presetTitle = `${theme.name}: ${preset.title}`;
+            const customPreset: EntitiesPreset = {
+              ...preset,
+              name: presetName,
+              title: presetTitle,
+            };
+            presetMap.set(presetName, customPreset);
+          }
+        });
+      });
+      return Array.from(presetMap.values());
+    }
+
+    // Get presets from the currently selected theme
+    const selectedTheme = themes.find((t) => t.id === this._selectedTheme);
+    if (!selectedTheme || !selectedTheme.config.entities_presets) {
+      return [];
+    }
+
+    return selectedTheme.config.entities_presets;
+  }
+
+  _togglePresetForm(): void {
+    this._showPresetForm = !this._showPresetForm;
+    if (this._showPresetForm) {
+      // Auto-select first preset if none selected
+      const presets = this._getAvailablePresets();
+      if (!this._selectedPresetName && presets.length > 0) {
+        this._selectedPresetName = presets[0].name;
+      }
+      this._presetCalendarValues = {};
+    } else {
+      // Clear state when closing
+      this._selectedPresetName = '';
+      this._presetCalendarValues = {};
+    }
+  }
+
+  _renderPresetForm(): TemplateResult {
+    const presets = this._getAvailablePresets();
+
+    if (presets.length === 0) {
+      return html`
+        <div class="helper-text preset-form-helper">No presets available</div>
+      `;
+    }
+
+    // Ensure a preset is selected (default to first one)
+    if (!this._selectedPresetName && presets.length > 0) {
+      this._selectedPresetName = presets[0].name;
+    }
+
+    const selectedPreset = presets.find(
+      (p) => p.name === this._selectedPresetName,
+    );
+    const calendars = selectedPreset?.calendars || [];
+
+    return html`
+      <div class="preset-form">
+        <h4>Apply Preset</h4>
+        <ha-select
+          name="preset_selection"
+          label="Preset"
+          .value="${this._selectedPresetName || ''}"
+          .clearable="${false}"
+          @change="${this._valueChanged}"
+          @opened="${() => {
+            // Ensure state is synced when dropdown opens
+            const availablePresets = this._getAvailablePresets();
+            if (!this._selectedPresetName && availablePresets.length > 0) {
+              this._selectedPresetName = availablePresets[0].name;
+            }
+          }}"
+          @closed="${(event: Event) => event.stopPropagation()}"
+        >
+          ${presets.map(
+            (p) => html`
+              <mwc-list-item value="${p.name}">${p.title}</mwc-list-item>
+            `,
+          )}
+        </ha-select>
+        ${selectedPreset && calendars.length > 0
+          ? html`
+              ${calendars.map(
+                (calendar) => html`
+                  <ha-entity-picker
+                    .hass="${this.hass}"
+                    label="${calendar.title}"
+                    .helper="${calendar.description || ''}"
+                    .value="${this._presetCalendarValues[calendar.template] ||
+                    ''}"
+                    .includeDomains="${['calendar']}"
+                    @value-changed="${(e: CustomEvent) => {
+                      e.stopPropagation();
+                      this._presetCalendarValues = {
+                        ...this._presetCalendarValues,
+                        [calendar.template]: e.detail.value,
+                      };
+                    }}"
+                  ></ha-entity-picker>
+                `,
+              )}
+              <div class="button-group">
+                ${this.addButton('Apply', 'mdi:check', () =>
+                  this._applyPreset(),
+                )}
+                ${this.addButton('Cancel', 'mdi:close', () =>
+                  this._togglePresetForm(),
+                )}
+              </div>
+            `
+          : selectedPreset
+            ? html`
+                <div class="button-group">
+                  ${this.addButton('Apply', 'mdi:check', () =>
+                    this._applyPreset(),
+                  )}
+                  ${this.addButton('Cancel', 'mdi:close', () =>
+                    this._togglePresetForm(),
+                  )}
+                </div>
+              `
+            : ''}
+      </div>
+    `;
+  }
+
+  _applyPreset(): void {
+    if (!this._selectedPresetName || !this._config) {
+      return;
+    }
+
+    // Get preset from themes instead of current config
+    const availablePresets = this._getAvailablePresets();
+    const selectedPreset = availablePresets.find(
+      (p) => p.name === this._selectedPresetName,
+    );
+
+    if (!selectedPreset || !selectedPreset.entities) {
+      return;
+    }
+
+    // Clone entities from preset
+    const entities = JSON.parse(JSON.stringify(selectedPreset.entities)) as (
+      | string
+      | EntityConfig
+    )[];
+
+    // Replace template values with selected calendar entities
+    if (selectedPreset.calendars && selectedPreset.calendars.length > 0) {
+      entities.forEach((entity, index) => {
+        if (typeof entity === 'string') {
+          // Find matching template and replace
+          const calendar = selectedPreset.calendars?.find(
+            (c) => c.template === entity,
+          );
+          if (calendar) {
+            const selectedEntity =
+              this._presetCalendarValues[calendar.template];
+            if (selectedEntity) {
+              entities[index] = selectedEntity;
+            }
+          }
+        } else if (entity && typeof entity === 'object' && 'entity' in entity) {
+          // Replace entity field if it matches a template
+          const calendar = selectedPreset.calendars?.find(
+            (c) => c.template === entity.entity,
+          );
+          if (calendar) {
+            const selectedEntity =
+              this._presetCalendarValues[calendar.template];
+            if (selectedEntity) {
+              // Create a new object to ensure reactivity
+              entities[index] = {
+                ...entity,
+                entity: selectedEntity,
+              };
+            }
+          }
+        }
+      });
+    }
+
+    this._collapseAllEntityPanels();
+    this.setConfigValue('entities', entities);
+    this._togglePresetForm();
   }
 
   _moveEntityUp(index: number): void {
@@ -1361,7 +1581,10 @@ export class CalendarWeekGridCardEditor extends LitElement {
       return undefined;
     }
     const themeManager = new ThemeManager(this._config, themes);
-    return themeManager.getExampleByEntityIndex(entityIndex);
+    return themeManager.getExampleByEntityIndex(
+      entityIndex,
+      this._selectedTheme,
+    );
   }
 
   /**

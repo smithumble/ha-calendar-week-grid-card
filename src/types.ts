@@ -112,6 +112,19 @@ export const EVENT_CONFIG_KEYS = [
 ] as const;
 export type EventConfigKey = (typeof EVENT_CONFIG_KEYS)[number];
 
+export interface PresetCalendar {
+  template: string;
+  title: string;
+  description?: string;
+}
+
+export interface EntitiesPreset {
+  name: string;
+  title: string;
+  entities: (string | EntityConfig)[];
+  calendars?: PresetCalendar[];
+}
+
 export interface CardConfig {
   type: string;
   language?: string;
@@ -144,7 +157,7 @@ export interface CardConfig {
     | 'saturday';
   days?: number;
   entities?: (string | EntityConfig)[];
-  entities_presets?: Record<string, (string | EntityConfig)[]>;
+  entities_presets?: EntitiesPreset[];
   theme_variables?: Record<string, ThemeVariable>;
   css?: string;
   grid_options?: GridOptions;
