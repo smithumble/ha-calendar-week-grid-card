@@ -44,7 +44,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
   @state() private _timeFormatType: 'string' | 'object' = 'object';
   @state() private _expandedEntityIndex: number | null = null;
   @state() private _selectedTheme: string = 'custom';
-  private _isInitializing: boolean = true;
   private _debounceTimeouts: Map<string, ReturnType<typeof setTimeout>> =
     new Map();
   private _pendingValues: Map<string, { target: HTMLElement; value: unknown }> =
@@ -83,7 +82,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
   //-----------------------------------------------------------------------------
 
   setConfig(config: Partial<CardConfig>): void {
-    this._isInitializing = true;
     this._config = {
       type: 'custom:calendar-week-grid-card',
       entities: [],
@@ -99,12 +97,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
     // Detect which theme is currently selected based on CSS content
     this._detectSelectedTheme();
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        this._isInitializing = false;
-      });
-    });
   }
 
   getConfigValue(path: string, defaultValue?: unknown): unknown {
@@ -123,10 +115,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   private _fireConfigChanged(): void {
-    if (this._isInitializing) {
-      return;
-    }
-
     this.dispatchEvent(
       new CustomEvent('config-changed', {
         detail: { config: this._config },
