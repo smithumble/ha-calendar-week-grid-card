@@ -1,24 +1,16 @@
+import { selectConfig, selectDataSource } from 'demo/utils/selects';
 import { initializeProviderData } from '../demo/common';
 import { setupBrowserEnv } from '../demo/utils/browser';
 import { loadIcons } from '../demo/utils/icons';
 import { providerRegistry } from '../demo/utils/registry';
-import {
-  selectConfig,
-  updateCalendarsAndRender,
-  setCurrentProvider,
-} from '../demo/utils/state';
-import {
-  setStoragePrefix,
-  getProviderValue,
-  getProviderStorageKey,
-  saveToStorage,
-  updateURLParams,
-  getFromURL,
-} from '../demo/utils/storage';
+import { setStoragePrefix, getFromURL } from '../demo/utils/storage';
 import { loadTheme } from '../demo/utils/theme';
 
+/**
+ * Main initialization function
+ */
 async function main() {
-  // Set storage prefix for screenshot page
+  // Set storage prefix
   setStoragePrefix('screenshot');
 
   // Load theme and icons
@@ -28,51 +20,17 @@ async function main() {
   // Setup browser environment
   setupBrowserEnv(haTheme, haIcons);
 
-  // Get parameters from URL or use defaults
-  const urlProvider = getFromURL('provider');
-  const urlConfig = getFromURL('config');
-  const urlDataSource = getFromURL('dataSource');
+  const currentProvider = initializeProviderData();
+  const currentProviderInstance = providerRegistry.getProvider(currentProvider);
 
-  // Initialize provider data
-  const allProviders = providerRegistry.getAllProviderNames();
-  const currentProvider = initializeProviderData(
-    urlProvider ? [urlProvider] : allProviders,
-  );
-  setCurrentProvider(currentProvider);
+  const defaultConfig = currentProviderInstance?.getDefaultConfig();
+  const defaultDataSource = currentProviderInstance?.getDefaultDataSource();
 
-  if (!currentProvider) {
-    console.error('Failed to initialize provider');
-    return;
-  }
+  const config = getFromURL('config') || defaultConfig || '';
+  const dataSource = getFromURL('dataSource') || defaultDataSource || '';
 
-  // Setup data source without using selects
-  const providerInstance = providerRegistry.getProvider(currentProvider);
-  if (!providerInstance) {
-    console.error(`Provider ${currentProvider} not found`);
-    return;
-  }
-
-  // Select config from URL or use default
-  const configName = urlConfig || 'google_calendar_separated';
-  await selectConfig(configName, currentProvider);
-
-  const dataSources = providerInstance.getDataSources();
-  const selectedDataSource =
-    urlDataSource ||
-    getProviderValue(currentProvider, 'selected-data-source', 'dataSource') ||
-    providerInstance.getDefaultDataSource() ||
-    '';
-
-  if (selectedDataSource && dataSources.includes(selectedDataSource)) {
-    if (!urlDataSource) {
-      saveToStorage(
-        getProviderStorageKey(currentProvider, 'selected-data-source'),
-        selectedDataSource,
-      );
-    }
-    updateURLParams({ dataSource: selectedDataSource });
-    await updateCalendarsAndRender(selectedDataSource, currentProvider);
-  }
+  await selectConfig(config);
+  await selectDataSource(dataSource);
 }
 
 main().catch(console.error);

@@ -7,8 +7,8 @@ import { providerRegistry } from './utils/registry';
 import {
   setupProviderSelector,
   updateSelectsForProvider,
-  setupConfigSelectListener,
-  setupDataSourceSelectListener,
+  setupConfigSelector,
+  setupDataSourceSelector,
 } from './utils/selects';
 import { setStoragePrefix } from './utils/storage';
 import { loadTheme } from './utils/theme';
@@ -24,7 +24,7 @@ export const AVAILABLE_PROVIDERS =
     : AVAILABLE_PROVIDERS_PROD;
 
 async function main() {
-  // Set storage prefix for demo page
+  // Set storage prefix
   setStoragePrefix('demo');
 
   // Load theme and icons
@@ -54,8 +54,8 @@ async function main() {
 
   // Setup selects for current provider
   await updateSelectsForProvider(currentProvider);
-  setupConfigSelectListener(selectorIds);
-  setupDataSourceSelectListener(selectorIds);
+  setupConfigSelector(selectorIds);
+  setupDataSourceSelector(selectorIds);
 }
 
 main().catch(console.error);

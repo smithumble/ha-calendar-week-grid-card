@@ -13,7 +13,7 @@ import { updateConfigEditorWithVisual } from './editor/updates';
 import { setupSelectKeyboardNavigation } from './keyboard';
 import { providerRegistry } from './registry';
 import {
-  selectConfig,
+  setConfig,
   renderCurrentCards,
   updateCalendarsAndRender,
   getCurrentProvider,
@@ -107,7 +107,7 @@ export async function updateConfigSelect(provider: string) {
       ? savedConfig
       : providerInstance?.getDefaultConfig() || '';
 
-  if (selectedConfig && (await selectConfig(selectedConfig, provider))) {
+  if (selectedConfig && (await setConfig(selectedConfig, provider))) {
     configSelect.value = selectedConfig;
     if (!savedConfig) {
       saveToStorage(
@@ -162,33 +162,37 @@ export async function updateSelectsForProvider(provider: string) {
   await updateDataSourceSelect(provider);
 }
 
-export function setupConfigSelectListener(selectorIds: string[]) {
-  setupSelectListener('config-select', async (selectedName) => {
-    const provider = getCurrentProvider();
-    if (await selectConfig(selectedName, provider)) {
-      renderCurrentCards();
-      updateConfigEditorWithVisual();
-      saveToStorage(
-        getProviderStorageKey(provider, 'selected-config'),
-        selectedName,
-      );
-      updateURLParams({ config: selectedName });
-    }
-  });
+export function setupConfigSelector(selectorIds: string[]) {
+  setupSelectListener('config-select', selectConfig);
   setupSelectKeyboardNavigation(selectorIds, 'config-select');
 }
 
-export function setupDataSourceSelectListener(selectorIds: string[]) {
-  setupSelectListener('data-source-select', async (selectedDataSource) => {
-    const provider = getCurrentProvider();
+export async function selectConfig(configName: string) {
+  const provider = getCurrentProvider();
+  if (await setConfig(configName, provider)) {
+    renderCurrentCards();
+    updateConfigEditorWithVisual();
     saveToStorage(
-      getProviderStorageKey(provider, 'selected-data-source'),
-      selectedDataSource,
+      getProviderStorageKey(provider, 'selected-config'),
+      configName,
     );
-    updateURLParams({ dataSource: selectedDataSource });
-    await updateCalendarsAndRender(selectedDataSource, provider);
-  });
+    updateURLParams({ config: configName });
+  }
+}
+
+export function setupDataSourceSelector(selectorIds: string[]) {
+  setupSelectListener('data-source-select', selectDataSource);
   setupSelectKeyboardNavigation(selectorIds, 'data-source-select');
+}
+
+export async function selectDataSource(dataSource: string) {
+  const provider = getCurrentProvider();
+  saveToStorage(
+    getProviderStorageKey(provider, 'selected-data-source'),
+    dataSource,
+  );
+  updateURLParams({ dataSource: dataSource });
+  await updateCalendarsAndRender(dataSource, provider);
 }
 
 export function setupProviderSelector(selectorIds: string[]) {

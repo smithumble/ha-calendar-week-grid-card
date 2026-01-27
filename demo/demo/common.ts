@@ -14,38 +14,72 @@ import {
   updateURLParams,
 } from './utils/storage';
 
-// ============================================================================
-// PROVIDER INITIALIZATION
-// ============================================================================
+/**
+ * Get filtered list of providers based on available providers
+ */
+function getFilteredProviders(availableProviders?: string[]): string[] {
+  const allProviders = providerRegistry.getAllProviderNames();
+  return availableProviders
+    ? allProviders.filter((p) => availableProviders.includes(p))
+    : allProviders;
+}
 
-export function initializeProviderData(availableProviders?: string[]): string {
-  // Get all providers from registry
-  let allProviders = providerRegistry.getAllProviderNames();
-
-  // Filter providers based on availableProviders if provided
-  if (availableProviders) {
-    allProviders = allProviders.filter((p) => availableProviders.includes(p));
-  }
-
-  const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
-  const defaultProvider = allProviders.includes(DEFAULT_PROVIDER)
+/**
+ * Determine the default provider from available providers
+ */
+function determineDefaultProvider(
+  allProviders: string[],
+  visibleProviders: string[],
+): string {
+  return allProviders.includes(DEFAULT_PROVIDER)
     ? DEFAULT_PROVIDER
     : visibleProviders[0] || allProviders[0];
+}
 
-  // Check URL param first (highest priority)
+/**
+ * Get the selected provider from URL or storage, falling back to default
+ */
+function getSelectedProvider(defaultProvider: string): string {
   const urlProvider = getFromURL('provider');
-  const selectedProvider =
-    urlProvider || getValue('selected-provider', 'provider', defaultProvider);
+  return (
+    urlProvider || getValue('selected-provider', 'provider', defaultProvider)
+  );
+}
+
+/**
+ * Apply provider selection: set state, update storage/URL, and update date override
+ */
+function applyProviderSelection(
+  selectedProvider: string,
+  urlProvider: string | null,
+): void {
+  setCurrentProvider(selectedProvider);
+
+  if (urlProvider) {
+    saveToStorage('selected-provider', urlProvider);
+  }
+
+  updateURLParams({ provider: selectedProvider });
+
+  const providerInstance = providerRegistry.getProvider(selectedProvider);
+  updateDateOverride(providerInstance?.getMockDate());
+}
+
+/**
+ * Initialize provider data and return the selected provider name
+ */
+export function initializeProviderData(availableProviders?: string[]): string {
+  const allProviders = getFilteredProviders(availableProviders);
+  const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
+  const defaultProvider = determineDefaultProvider(
+    allProviders,
+    visibleProviders,
+  );
+  const urlProvider = getFromURL('provider');
+  const selectedProvider = getSelectedProvider(defaultProvider);
 
   if (selectedProvider && allProviders.includes(selectedProvider)) {
-    setCurrentProvider(selectedProvider);
-    if (urlProvider) {
-      saveToStorage('selected-provider', urlProvider);
-    }
-    updateURLParams({ provider: selectedProvider });
-    // Update date override based on initial provider
-    const providerInstance = providerRegistry.getProvider(selectedProvider);
-    updateDateOverride(providerInstance?.getMockDate());
+    applyProviderSelection(selectedProvider, urlProvider);
   }
 
   return getCurrentProvider();

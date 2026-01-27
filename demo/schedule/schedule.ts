@@ -4,9 +4,9 @@ import { setupBrowserEnv } from '../demo/utils/browser';
 import { loadIcons } from '../demo/utils/icons';
 import {
   updateDataSourceSelect,
-  setupDataSourceSelectListener,
+  setupDataSourceSelector,
 } from '../demo/utils/selects';
-import { selectConfig } from '../demo/utils/state';
+import { setConfig } from '../demo/utils/state';
 import { setStoragePrefix } from '../demo/utils/storage';
 import { loadTheme } from '../demo/utils/theme';
 
@@ -25,7 +25,7 @@ async function main() {
   const currentProvider = initializeProviderData(['yasno_api']);
 
   // Select a specific config for the schedule page
-  await selectConfig('google_calendar_separated', currentProvider);
+  await setConfig('google_calendar_separated', currentProvider);
 
   const selectorIds = ['data-source-select'];
 
@@ -34,7 +34,7 @@ async function main() {
 
   // Setup data source selector
   await updateDataSourceSelect(currentProvider);
-  setupDataSourceSelectListener(selectorIds);
+  setupDataSourceSelector(selectorIds);
 }
 
 main().catch(console.error);

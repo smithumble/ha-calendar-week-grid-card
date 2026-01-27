@@ -47,7 +47,7 @@ export async function getConfigByName(
   return await providerInstance.loadConfig(configName);
 }
 
-export async function selectConfig(
+export async function setConfig(
   configName: string,
   provider: string,
 ): Promise<boolean> {
