@@ -1367,6 +1367,13 @@ export class CalendarWeekGridCardEditor extends LitElement {
       (p) => p.name === this._selectedPresetName,
     );
     const calendars = selectedPreset?.calendars || [];
+    const allCalendarsFilled =
+      calendars.length === 0 ||
+      calendars.every(
+        (calendar) =>
+          this._presetCalendarValues[calendar.template] &&
+          this._presetCalendarValues[calendar.template].trim() !== '',
+      );
 
     return html`
       <div class="preset-form">
@@ -1403,6 +1410,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
                     .value="${this._presetCalendarValues[calendar.template] ||
                     ''}"
                     .includeDomains="${['calendar']}"
+                    .required="${true}"
                     @value-changed="${(e: CustomEvent) => {
                       e.stopPropagation();
                       this._presetCalendarValues = {
@@ -1414,9 +1422,13 @@ export class CalendarWeekGridCardEditor extends LitElement {
                 `,
               )}
               <div class="button-group">
-                ${this.addButton('Apply', 'mdi:check', () =>
-                  this._applyPreset(),
-                )}
+                <ha-button
+                  .disabled="${!allCalendarsFilled}"
+                  @click="${() => this._applyPreset()}"
+                >
+                  <ha-icon icon="mdi:check"></ha-icon>
+                  Apply
+                </ha-button>
                 ${this.addButton('Cancel', 'mdi:close', () =>
                   this._togglePresetForm(),
                 )}
