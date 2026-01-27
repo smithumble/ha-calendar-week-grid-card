@@ -1,3 +1,4 @@
+import { setupGlobalKeyboardNavigation } from 'demo/utils/keyboard';
 import { initializeProviderData } from '../demo/common';
 import { setupBrowserEnv } from '../demo/utils/browser';
 import { loadIcons } from '../demo/utils/icons';
@@ -26,9 +27,14 @@ async function main() {
   // Select a specific config for the schedule page
   await selectConfig('google_calendar_separated', currentProvider);
 
+  const selectorIds = ['data-source-select'];
+
+  // Setup global keyboard navigation
+  setupGlobalKeyboardNavigation(selectorIds, 'data-source-select');
+
   // Setup data source selector
   await updateDataSourceSelect(currentProvider);
-  setupDataSourceSelectListener();
+  setupDataSourceSelectListener(selectorIds);
 }
 
 main().catch(console.error);

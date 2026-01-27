@@ -40,16 +40,22 @@ async function main() {
   // Setup editor toggle button
   setupEditorToggleButton();
 
+  const selectorIds = [
+    'provider-select',
+    'config-select',
+    'data-source-select',
+  ];
+
   // Setup global keyboard navigation
-  setupGlobalKeyboardNavigation();
+  setupGlobalKeyboardNavigation(selectorIds, 'config-select');
 
   // Setup provider selector
-  setupProviderSelector();
+  setupProviderSelector(selectorIds);
 
   // Setup selects for current provider
   await updateSelectsForProvider(currentProvider);
-  setupConfigSelectListener();
-  setupDataSourceSelectListener();
+  setupConfigSelectListener(selectorIds);
+  setupDataSourceSelectListener(selectorIds);
 }
 
 main().catch(console.error);

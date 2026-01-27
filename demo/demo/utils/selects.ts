@@ -162,7 +162,7 @@ export async function updateSelectsForProvider(provider: string) {
   await updateDataSourceSelect(provider);
 }
 
-export function setupConfigSelectListener() {
+export function setupConfigSelectListener(selectorIds: string[]) {
   setupSelectListener('config-select', async (selectedName) => {
     const provider = getCurrentProvider();
     if (await selectConfig(selectedName, provider)) {
@@ -175,10 +175,10 @@ export function setupConfigSelectListener() {
       updateURLParams({ config: selectedName });
     }
   });
-  setupSelectKeyboardNavigation('config-select');
+  setupSelectKeyboardNavigation(selectorIds, 'config-select');
 }
 
-export function setupDataSourceSelectListener() {
+export function setupDataSourceSelectListener(selectorIds: string[]) {
   setupSelectListener('data-source-select', async (selectedDataSource) => {
     const provider = getCurrentProvider();
     saveToStorage(
@@ -188,10 +188,10 @@ export function setupDataSourceSelectListener() {
     updateURLParams({ dataSource: selectedDataSource });
     await updateCalendarsAndRender(selectedDataSource, provider);
   });
-  setupSelectKeyboardNavigation('data-source-select');
+  setupSelectKeyboardNavigation(selectorIds, 'data-source-select');
 }
 
-export function setupProviderSelector() {
+export function setupProviderSelector(selectorIds: string[]) {
   const providerSelect = document.getElementById(
     'provider-select',
   ) as HTMLSelectElement;
@@ -262,5 +262,5 @@ export function setupProviderSelector() {
       await updateSelectsForProvider(selectedProvider);
     }
   });
-  setupSelectKeyboardNavigation('provider-select');
+  setupSelectKeyboardNavigation(selectorIds, 'provider-select');
 }

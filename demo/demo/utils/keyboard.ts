@@ -2,114 +2,149 @@
 // KEYBOARD NAVIGATION
 // ============================================================================
 
-const SELECTOR_IDS = [
-  'provider-select',
-  'config-select',
-  'data-source-select',
+const ARROW_KEYS = {
+  UP: 'ArrowUp',
+  DOWN: 'ArrowDown',
+  LEFT: 'ArrowLeft',
+  RIGHT: 'ArrowRight',
+} as const;
+
+const NAVIGATION_KEYS = [
+  ARROW_KEYS.UP,
+  ARROW_KEYS.DOWN,
+  ARROW_KEYS.LEFT,
+  ARROW_KEYS.RIGHT,
 ] as const;
 
-function isAnySelectorFocused(): boolean {
-  return SELECTOR_IDS.some((id) => {
-    const select = document.getElementById(id) as HTMLSelectElement;
-    return select && document.activeElement === select;
+const KEYBOARD_NAV_ATTRIBUTE = 'data-keyboard-nav-attached';
+
+function isEditableElement(element: Element | null): boolean {
+  if (!element) return false;
+
+  if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
+    return true;
+  }
+
+  return element instanceof HTMLElement && element.isContentEditable;
+}
+
+function getSelectElement(id: string): HTMLSelectElement | null {
+  return document.getElementById(id) as HTMLSelectElement | null;
+}
+
+export function isAnySelectorFocused(selectorIds: string[]): boolean {
+  return selectorIds.some((id) => {
+    const select = getSelectElement(id);
+    return select !== null && document.activeElement === select;
   });
+}
+
+function navigateSelectOption(
+  select: HTMLSelectElement,
+  direction: 'up' | 'down',
+): void {
+  const options = Array.from(select.options);
+  const currentIndex = select.selectedIndex;
+
+  const newIndex =
+    direction === 'down'
+      ? currentIndex < options.length - 1
+        ? currentIndex + 1
+        : 0
+      : currentIndex > 0
+        ? currentIndex - 1
+        : options.length - 1;
+
+  select.selectedIndex = newIndex;
+  select.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function navigateBetweenSelects(
+  selectorIds: readonly string[],
+  currentIndex: number,
+  direction: 'left' | 'right',
+): void {
+  const targetIndex =
+    direction === 'right'
+      ? currentIndex < selectorIds.length - 1
+        ? currentIndex + 1
+        : 0
+      : currentIndex > 0
+        ? currentIndex - 1
+        : selectorIds.length - 1;
+
+  const targetSelect = getSelectElement(selectorIds[targetIndex]);
+  if (targetSelect) {
+    targetSelect.focus();
+  }
 }
 
 let globalKeyboardNavSetup = false;
 
-export function setupGlobalKeyboardNavigation(): void {
+export function setupGlobalKeyboardNavigation(
+  selectorIds: string[],
+  defaultSelectorId: string,
+): void {
   if (globalKeyboardNavSetup) return;
   globalKeyboardNavSetup = true;
 
   document.addEventListener('keydown', (e) => {
-    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    if (!NAVIGATION_KEYS.includes(e.key as (typeof NAVIGATION_KEYS)[number])) {
       return;
     }
 
-    if (!isAnySelectorFocused()) {
-      const activeElement = document.activeElement;
-      if (
-        activeElement &&
-        (activeElement.tagName === 'TEXTAREA' ||
-          activeElement.tagName === 'INPUT' ||
-          (activeElement instanceof HTMLElement &&
-            activeElement.isContentEditable))
-      ) {
-        return;
-      }
+    if (isAnySelectorFocused(selectorIds)) {
+      return;
+    }
 
-      const configSelect = document.getElementById(
-        'config-select',
-      ) as HTMLSelectElement;
-      if (configSelect) {
-        e.preventDefault();
-        configSelect.focus();
-        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-          const options = Array.from(configSelect.options);
-          const currentIndex = configSelect.selectedIndex;
-          let newIndex: number;
-          if (e.key === 'ArrowDown') {
-            newIndex = currentIndex < options.length - 1 ? currentIndex + 1 : 0;
-          } else {
-            newIndex = currentIndex > 0 ? currentIndex - 1 : options.length - 1;
-          }
-          configSelect.selectedIndex = newIndex;
-          configSelect.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-      }
+    if (isEditableElement(document.activeElement)) {
+      return;
+    }
+
+    const configSelect = getSelectElement(defaultSelectorId);
+    if (!configSelect) return;
+
+    e.preventDefault();
+    configSelect.focus();
+
+    if (e.key === ARROW_KEYS.DOWN || e.key === ARROW_KEYS.UP) {
+      navigateSelectOption(
+        configSelect,
+        e.key === ARROW_KEYS.DOWN ? 'down' : 'up',
+      );
     }
   });
 }
 
-export function setupSelectKeyboardNavigation(selectId: string): void {
-  const select = document.getElementById(selectId) as HTMLSelectElement;
-  if (!select || select.hasAttribute('data-keyboard-nav-attached')) return;
+export function setupSelectKeyboardNavigation(
+  selectorIds: readonly string[],
+  selectId: string,
+): void {
+  const select = getSelectElement(selectId);
+  if (!select || select.hasAttribute(KEYBOARD_NAV_ATTRIBUTE)) {
+    return;
+  }
 
-  select.setAttribute('data-keyboard-nav-attached', 'true');
+  select.setAttribute(KEYBOARD_NAV_ATTRIBUTE, 'true');
+
   select.addEventListener('keydown', (e) => {
-    const currentSelectorIndex = SELECTOR_IDS.indexOf(
-      selectId as (typeof SELECTOR_IDS)[number],
-    );
+    const currentSelectorIndex = selectorIds.indexOf(selectId);
 
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    if (e.key === ARROW_KEYS.LEFT || e.key === ARROW_KEYS.RIGHT) {
       e.preventDefault();
-      let targetIndex: number;
-      if (e.key === 'ArrowRight') {
-        targetIndex =
-          currentSelectorIndex < SELECTOR_IDS.length - 1
-            ? currentSelectorIndex + 1
-            : 0;
-      } else {
-        targetIndex =
-          currentSelectorIndex > 0
-            ? currentSelectorIndex - 1
-            : SELECTOR_IDS.length - 1;
-      }
-
-      const targetSelect = document.getElementById(
-        SELECTOR_IDS[targetIndex],
-      ) as HTMLSelectElement;
-      if (targetSelect) {
-        targetSelect.focus();
-      }
+      navigateBetweenSelects(
+        selectorIds,
+        currentSelectorIndex,
+        e.key === ARROW_KEYS.RIGHT ? 'right' : 'left',
+      );
       return;
     }
 
-    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-
-    e.preventDefault();
-
-    const options = Array.from(select.options);
-    const currentIndex = select.selectedIndex;
-
-    let newIndex: number;
-    if (e.key === 'ArrowDown') {
-      newIndex = currentIndex < options.length - 1 ? currentIndex + 1 : 0;
-    } else {
-      newIndex = currentIndex > 0 ? currentIndex - 1 : options.length - 1;
+    if (e.key !== ARROW_KEYS.DOWN && e.key !== ARROW_KEYS.UP) {
+      return;
     }
 
-    select.selectedIndex = newIndex;
-    select.dispatchEvent(new Event('change', { bubbles: true }));
+    e.preventDefault();
+    navigateSelectOption(select, e.key === ARROW_KEYS.DOWN ? 'down' : 'up');
   });
 }
