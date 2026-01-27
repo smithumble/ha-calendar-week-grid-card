@@ -1,33 +1,11 @@
 import type { CardConfig } from '../../../src/types';
 import { Calendar } from './data';
-import { loadIcon } from './icons';
+import { mockHaCard, mockHaIcon } from './mocks/ha-card';
+import { getSharedMockHass } from './mocks/ha-hass';
 
 export interface MockCard extends HTMLElement {
   hass: unknown;
   setConfig: (config: CardConfig) => void;
-}
-
-function createMockHass(
-  config: CardConfig,
-  calendars: Calendar[],
-  darkMode: boolean = false,
-) {
-  return {
-    language: config.language || 'en',
-    config: { time_zone: 'Europe/Kiev' },
-    themes: {
-      darkMode: darkMode,
-    },
-    callApi: async (_method: string, path: string) => {
-      if (!path.startsWith('calendars/')) return [];
-
-      const calendarId = decodeURIComponent(
-        path.split('/')[1]?.split('?')[0] || '',
-      );
-      const calendar = calendars.find((c) => c.entity_id === calendarId);
-      return calendar ? calendar.events : [];
-    },
-  };
 }
 
 function injectTheme(haTheme: { light: string; dark: string }) {
@@ -41,106 +19,6 @@ function injectTheme(haTheme: { light: string; dark: string }) {
     }
   `;
   document.head.appendChild(style);
-}
-
-function mockHaCard() {
-  if (!customElements.get('ha-card')) {
-    customElements.define(
-      'ha-card',
-      class extends HTMLElement {
-        constructor() {
-          super();
-          this.attachShadow({ mode: 'open' });
-        }
-        connectedCallback() {
-          if (this.shadowRoot) {
-            this.shadowRoot.innerHTML = `
-              <style>
-                :host {
-                  display: block;
-                  background: var(--ha-card-background, var(--card-background-color, #fff));
-                  box-shadow: var(--ha-card-box-shadow, none);
-                  border-radius: var(--ha-card-border-radius, 12px);
-                  color: var(--primary-text-color);
-                  transition: all 0.3s ease-out;
-                  position: relative;
-                }
-              </style>
-              <slot></slot>
-            `;
-          }
-        }
-      },
-    );
-  }
-}
-
-function mockHaIcon(iconMap: Record<string, string>) {
-  if (!customElements.get('ha-icon')) {
-    customElements.define(
-      'ha-icon',
-      class extends HTMLElement {
-        static get observedAttributes() {
-          return ['icon'];
-        }
-        constructor() {
-          super();
-          this.attachShadow({ mode: 'open' });
-        }
-        connectedCallback() {
-          this.render();
-        }
-        attributeChangedCallback() {
-          this.render();
-        }
-        async render() {
-          const icon = this.getAttribute('icon');
-          const iconName = icon ? icon.replace('mdi:', 'mdi/') : '';
-
-          if (!iconName) return;
-
-          // Try to get icon from map (might be cached via proxy)
-          let svg = iconMap?.[iconName];
-
-          // If icon is not available (empty string or undefined), load it on-demand
-          if (!svg || svg === '') {
-            svg = await loadIcon(iconName);
-            if (!svg) {
-              return;
-            }
-          }
-
-          if (svg) {
-            this.setIconContent(svg);
-          }
-        }
-        setIconContent(svg: string) {
-          if (this.shadowRoot) {
-            this.shadowRoot.innerHTML = `
-              <style>
-                :host {
-                  display: inline-flex;
-                  align-items: center;
-                  justify-content: center;
-                  position: relative;
-                  vertical-align: middle;
-                  fill: currentcolor;
-                  width: var(--mdc-icon-size, 24px);
-                  height: var(--mdc-icon-size, 24px);
-                }
-                svg {
-                  width: 100%;
-                  height: 100%;
-                  fill: currentColor;
-                }
-              </style>
-              ${svg}
-            `;
-          }
-        }
-      },
-    );
-  }
 }
 
 const originalDateConstructor: DateConstructor = Date;
@@ -198,7 +76,7 @@ function setupCard(
 ): void {
   Promise.resolve().then(() => {
     try {
-      card.hass = createMockHass(config, calendars, darkMode);
+      card.hass = getSharedMockHass(calendars, darkMode);
       card.setConfig(config);
     } catch (error) {
       console.error('Error setting up card:', error);

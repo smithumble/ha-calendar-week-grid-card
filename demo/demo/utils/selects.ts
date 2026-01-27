@@ -9,7 +9,7 @@ import {
   HIDDEN_PROVIDERS,
 } from './constants';
 import { getAvailableConfigNames, getVisibleProviders } from './data';
-import { updateConfigEditorWithVisual } from './editor';
+import { updateConfigEditorWithVisual } from './editor/updates';
 import { setupSelectKeyboardNavigation } from './keyboard';
 import { providerRegistry } from './registry';
 import {

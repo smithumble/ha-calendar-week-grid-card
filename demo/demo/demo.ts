@@ -1,6 +1,6 @@
 import { initializeProviderData } from './common';
 import { setupBrowserEnv } from './utils/browser';
-import { setupEditorToggleButton } from './utils/editor';
+import { setupEditorToggleButton } from './utils/editor/panel';
 import { loadIcons } from './utils/icons';
 import { setupGlobalKeyboardNavigation } from './utils/keyboard';
 import { providerRegistry } from './utils/registry';

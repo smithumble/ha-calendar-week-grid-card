@@ -1,71 +1,27 @@
 /**
- * Utilities for running the visual editor in the demo environment
- * Creates mock Home Assistant components and provides editor setup
+ * Mock Home Assistant custom elements for demo environment
  */
 
-import type {
-  HomeAssistant,
-  HassEntities,
-  CardConfig,
-} from '../../../src/types';
-import type { Calendar } from './data';
-
-/**
- * Creates a mock Home Assistant object for the visual editor
- */
-export function createMockHassForEditor(
-  config: CardConfig,
-  calendars: Calendar[],
-  darkMode: boolean = false,
-): HomeAssistant {
-  // Create states object with calendar entities
-  const states: HassEntities = {};
-  calendars.forEach((calendar) => {
-    const now = new Date().toISOString();
-    states[calendar.entity_id] = {
-      entity_id: calendar.entity_id,
-      state: 'on',
-      last_changed: now,
-      last_updated: now,
-      attributes: {
-        friendly_name: calendar.entity_id
-          .replace('calendar.', '')
-          .replace(/_/g, ' ')
-          .replace(/\b\w/g, (letter: string) => letter.toUpperCase()),
-      },
-      context: {
-        id: '',
-        user_id: null,
-        parent_id: null,
-      },
-    };
-  });
-
-  return {
-    language: config.language || 'en',
-    config: { time_zone: 'Europe/Kiev' },
-    themes: {
-      darkMode: darkMode,
-    },
-    states: states,
-    entities: {},
-    devices: {},
-    callApi: async (_method: string, path: string) => {
-      if (!path.startsWith('calendars/')) return [];
-      const calendarId = decodeURIComponent(
-        path.split('/')[1]?.split('?')[0] || '',
-      );
-      const calendar = calendars.find((c) => c.entity_id === calendarId);
-      return calendar ? calendar.events : [];
-    },
-  } as unknown as HomeAssistant;
-}
+import type { HomeAssistant } from '../../../../src/types';
 
 /**
  * Mocks Home Assistant custom elements needed by the visual editor
  */
 export function mockHaEditorComponents(): void {
-  // Mock ha-textfield
+  mockHaTextField();
+  mockHaSelect();
+  mockHaSwitch();
+  mockHaFormfield();
+  mockHaEntityPicker();
+  mockHaIconPicker();
+  mockHaExpansionPanel();
+  mockHaCodeEditor();
+  mockHaButton();
+  mockHaIconButton();
+  mockMwcListItem();
+}
+
+function mockHaTextField() {
   if (!customElements.get('ha-textfield')) {
     customElements.define(
       'ha-textfield',
@@ -164,8 +120,9 @@ export function mockHaEditorComponents(): void {
       },
     );
   }
+}
 
-  // Mock ha-select
+function mockHaSelect() {
   if (!customElements.get('ha-select')) {
     customElements.define(
       'ha-select',
@@ -350,8 +307,9 @@ export function mockHaEditorComponents(): void {
       },
     );
   }
+}
 
-  // Mock ha-switch
+function mockHaSwitch() {
   if (!customElements.get('ha-switch')) {
     customElements.define(
       'ha-switch',
@@ -405,8 +363,9 @@ export function mockHaEditorComponents(): void {
       },
     );
   }
+}
 
-  // Mock ha-formfield
+function mockHaFormfield() {
   if (!customElements.get('ha-formfield')) {
     customElements.define(
       'ha-formfield',
@@ -441,8 +400,9 @@ export function mockHaEditorComponents(): void {
       },
     );
   }
+}
 
-  // Mock ha-entity-picker
+function mockHaEntityPicker() {
   if (!customElements.get('ha-entity-picker')) {
     customElements.define(
       'ha-entity-picker',
@@ -574,8 +534,9 @@ export function mockHaEditorComponents(): void {
       },
     );
   }
+}
 
-  // Mock ha-icon-picker
+function mockHaIconPicker() {
   if (!customElements.get('ha-icon-picker')) {
     customElements.define(
       'ha-icon-picker',
@@ -671,8 +632,9 @@ export function mockHaEditorComponents(): void {
       },
     );
   }
+}
 
-  // Mock ha-expansion-panel
+function mockHaExpansionPanel() {
   if (!customElements.get('ha-expansion-panel')) {
     customElements.define(
       'ha-expansion-panel',
@@ -783,8 +745,9 @@ export function mockHaEditorComponents(): void {
       },
     );
   }
+}
 
-  // Mock ha-code-editor
+function mockHaCodeEditor() {
   if (!customElements.get('ha-code-editor')) {
     customElements.define(
       'ha-code-editor',
@@ -873,8 +836,9 @@ export function mockHaEditorComponents(): void {
       },
     );
   }
+}
 
-  // Mock ha-button
+function mockHaButton() {
   if (!customElements.get('ha-button')) {
     customElements.define(
       'ha-button',
@@ -941,8 +905,9 @@ export function mockHaEditorComponents(): void {
       },
     );
   }
+}
 
-  // Mock ha-icon-button
+function mockHaIconButton() {
   if (!customElements.get('ha-icon-button')) {
     customElements.define(
       'ha-icon-button',
@@ -1021,7 +986,9 @@ export function mockHaEditorComponents(): void {
       },
     );
   }
+}
 
+function mockMwcListItem() {
   // Mock mwc-list-item (used by ha-select)
   if (!customElements.get('mwc-list-item')) {
     customElements.define(
