@@ -21,11 +21,54 @@ export interface ProviderData {
 }
 
 /**
+ * Get all provider names
+ */
+export function getAllProviderNames(): string[] {
+  return providerRegistry.getAllProviderNames();
+}
+
+/**
  * Get available config names for a provider without loading configs
  */
 export function getAvailableConfigNames(providerName: string): string[] {
   const provider = providerRegistry.getProvider(providerName);
   return provider ? provider.getConfigNames() : [];
+}
+
+/**
+ * Get data sources for a provider
+ */
+export function getProviderDataSources(providerName: string): string[] {
+  const provider = providerRegistry.getProvider(providerName);
+  return provider ? provider.getDataSources() : [];
+}
+
+/**
+ * Get default config for a provider
+ */
+export function getProviderDefaultConfig(
+  providerName: string,
+): string | undefined {
+  const provider = providerRegistry.getProvider(providerName);
+  return provider?.getDefaultConfig();
+}
+
+/**
+ * Get default data source for a provider
+ */
+export function getProviderDefaultDataSource(
+  providerName: string,
+): string | undefined {
+  const provider = providerRegistry.getProvider(providerName);
+  return provider?.getDefaultDataSource();
+}
+
+/**
+ * Get mock date for a provider
+ */
+export function getProviderMockDate(providerName: string): Date | undefined {
+  const provider = providerRegistry.getProvider(providerName);
+  return provider?.getMockDate();
 }
 
 /**

@@ -9,13 +9,17 @@ import {
   HIDDEN_PROVIDERS,
 } from './constants';
 import {
+  getAllProviderNames,
   getAvailableConfigNames,
   getFilteredProviders,
   getVisibleProviders,
+  getProviderDefaultConfig,
+  getProviderDefaultDataSource,
+  getProviderDataSources,
+  getProviderMockDate,
 } from './data';
 import { updateConfigEditorWithVisual } from './editor/updates';
 import { setupSelectKeyboardNavigation } from './keyboard';
-import { providerRegistry } from './registry';
 import {
   setConfig,
   renderCurrentCards,
@@ -117,7 +121,7 @@ function getProvidersToShow(
   selectedProvider: string | null | undefined,
   availableProviders: string[],
 ): string[] {
-  const allProviders = providerRegistry.getAllProviderNames();
+  const allProviders = getAllProviderNames();
   const filteredProviders = getFilteredProviders(
     allProviders,
     availableProviders,
@@ -168,10 +172,9 @@ export async function updateConfigSelect(provider: string): Promise<void> {
   const configKeys = getAvailableConfigNames(provider);
   populateSelect(configSelect, configKeys);
 
-  const providerInstance = providerRegistry.getProvider(provider);
   const urlConfig = getFromURL('config');
   const savedConfig = getProviderValue(provider, 'selected-config', 'config');
-  const defaultConfig = providerInstance?.getDefaultConfig() || '';
+  const defaultConfig = getProviderDefaultConfig(provider);
 
   const selectedConfig =
     urlConfig && configKeys.includes(urlConfig)
@@ -202,10 +205,9 @@ export async function updateDataSourceSelect(provider: string): Promise<void> {
   const dataSourceSelect = getSelectElement('data-source-select');
   if (!dataSourceSelect) return;
 
-  const providerInstance = providerRegistry.getProvider(provider);
-  if (!providerInstance) return;
+  const dataSources = getProviderDataSources(provider);
+  if (dataSources.length === 0) return;
 
-  const dataSources = providerInstance.getDataSources();
   populateSelect(dataSourceSelect, dataSources);
 
   const urlDataSource = getFromURL('dataSource');
@@ -214,7 +216,7 @@ export async function updateDataSourceSelect(provider: string): Promise<void> {
     'selected-data-source',
     'dataSource',
   );
-  const defaultDataSource = providerInstance.getDefaultDataSource() || '';
+  const defaultDataSource = getProviderDefaultDataSource(provider);
 
   const selectedDataSource =
     urlDataSource && dataSources.includes(urlDataSource)
@@ -298,7 +300,7 @@ export async function selectDataSource(dataSource: string): Promise<void> {
  * Get initial provider value from URL or storage
  */
 export function getInitialProviderValue(): string | null {
-  const allProviders = providerRegistry.getAllProviderNames();
+  const allProviders = getAllProviderNames();
   if (allProviders.length === 0) return null;
 
   const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
@@ -322,7 +324,7 @@ export async function selectorSelectProvider(
   const providerSelect = getSelectElement('provider-select');
   if (!providerSelect) return;
 
-  const allProviders = providerRegistry.getAllProviderNames();
+  const allProviders = getAllProviderNames();
   if (allProviders.length === 0) return;
 
   if (!allProviders.includes(selectedProvider)) return;
@@ -343,8 +345,7 @@ export function selectProvider(selectedProvider: string): void {
     dataSource: null,
   });
 
-  const providerInstance = providerRegistry.getProvider(selectedProvider);
-  updateDateOverride(providerInstance?.getMockDate());
+  updateDateOverride(getProviderMockDate(selectedProvider));
 }
 
 /**

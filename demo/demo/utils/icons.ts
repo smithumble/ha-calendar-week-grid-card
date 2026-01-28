@@ -97,8 +97,3 @@ export async function loadIcons(): Promise<Record<string, string>> {
   iconMapCache = createIconMapProxy();
   return iconMapCache;
 }
-
-// Export function to preload a specific icon (useful for known icons)
-export async function preloadIcon(iconName: string): Promise<void> {
-  await loadIcon(iconName);
-}

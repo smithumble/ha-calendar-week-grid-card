@@ -1,8 +1,8 @@
 import { setupBrowserEnv } from './utils/browser';
+import { getAllProviderNames } from './utils/data';
 import { setupEditorToggleButton } from './utils/editor/panel';
 import { loadIcons } from './utils/icons';
 import { setupGlobalKeyboardNavigation } from './utils/keyboard';
-import { providerRegistry } from './utils/registry';
 import {
   setupProviderSelector,
   setupConfigSelector,
@@ -11,7 +11,7 @@ import {
 import { setStoragePrefix } from './utils/storage';
 import { loadTheme } from './utils/theme';
 
-const AVAILABLE_PROVIDERS_DEV = providerRegistry.getAllProviderNames();
+const AVAILABLE_PROVIDERS_DEV = getAllProviderNames();
 const AVAILABLE_PROVIDERS_PROD = ['yasno_v3'];
 
 // Available providers based on build mode

@@ -5,8 +5,11 @@ import {
   getInitialProviderValue,
 } from 'demo/utils/selects';
 import { setupBrowserEnv } from '../demo/utils/browser';
+import {
+  getProviderDefaultConfig,
+  getProviderDefaultDataSource,
+} from '../demo/utils/data';
 import { loadIcons } from '../demo/utils/icons';
-import { providerRegistry } from '../demo/utils/registry';
 import { setStoragePrefix, getFromURL } from '../demo/utils/storage';
 import { loadTheme } from '../demo/utils/theme';
 
@@ -27,11 +30,8 @@ async function main() {
   const selectedProvider = getInitialProviderValue() || '';
   selectProvider(selectedProvider);
 
-  const currentProviderInstance =
-    providerRegistry.getProvider(selectedProvider);
-
-  const defaultConfig = currentProviderInstance?.getDefaultConfig();
-  const defaultDataSource = currentProviderInstance?.getDefaultDataSource();
+  const defaultConfig = getProviderDefaultConfig(selectedProvider);
+  const defaultDataSource = getProviderDefaultDataSource(selectedProvider);
 
   const config = getFromURL('config') || defaultConfig || '';
   const dataSource = getFromURL('dataSource') || defaultDataSource || '';

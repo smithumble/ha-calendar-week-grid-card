@@ -5,7 +5,7 @@
 import type { CardConfig } from '../../../src/types';
 import { renderCards } from './browser';
 import type { Calendar } from './data';
-import { providerRegistry } from './registry';
+import { loadConfigByName, loadCalendarsForDataSource } from './data';
 
 let currentProvider: string = '';
 let currentConfig: CardConfig | null = null;
@@ -40,11 +40,8 @@ export async function getConfigByName(
   provider: string,
   configName: string,
 ): Promise<CardConfig | null> {
-  const providerInstance = providerRegistry.getProvider(provider);
-  if (!providerInstance) return null;
-
   // Provider handles caching internally
-  return await providerInstance.loadConfig(configName);
+  return await loadConfigByName(provider, configName);
 }
 
 export async function setConfig(
@@ -70,11 +67,8 @@ export async function updateCalendarsAndRender(
   dataSource: string,
   provider: string,
 ) {
-  const providerInstance = providerRegistry.getProvider(provider);
-  if (providerInstance) {
-    // Provider handles caching internally
-    const calendars = await providerInstance.loadCalendars(dataSource);
-    setCurrentCalendars(calendars);
-  }
+  // Provider handles caching internally
+  const calendars = await loadCalendarsForDataSource(dataSource, provider);
+  setCurrentCalendars(calendars);
   renderCurrentCards();
 }
