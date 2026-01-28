@@ -75,14 +75,13 @@ export class ThemeManager {
   getExampleByEntityIndex(
     entityIndex: number,
     themeId: string,
-  ): Record<string, unknown> | undefined {
+  ): ThemeValues | undefined {
     const theme = this.themes.find((t) => t.id === themeId);
     if (!theme) {
       return undefined;
     }
 
-    const themeValuesExamples = (theme.config.theme_values_examples ||
-      []) as Array<Record<string, unknown>>;
+    const themeValuesExamples = theme.config.theme_values_examples || [];
 
     if (themeValuesExamples.length === 0) {
       return undefined;
@@ -96,7 +95,7 @@ export class ThemeManager {
    */
   applyThemeValuesToEntity(
     entity: string | EntityConfig,
-    example: Record<string, unknown>,
+    example: ThemeValues,
   ): string | EntityConfig {
     const themeVariables =
       (ConfigManager.getValue(this.config, 'theme_variables', {}) as Record<
@@ -106,7 +105,7 @@ export class ThemeManager {
     const themeVariableKeys = Object.keys(themeVariables);
 
     // Extract only theme variable properties from example
-    const themeValuesProps: Record<string, unknown> = {};
+    const themeValuesProps: ThemeValues = {};
     for (const [key, value] of Object.entries(example)) {
       if (themeVariableKeys.includes(key)) {
         themeValuesProps[key] = value;
@@ -144,7 +143,7 @@ export class ThemeManager {
     }
 
     // Only archive values that differ from examples
-    const valuesToArchive: Record<string, unknown> = {};
+    const valuesToArchive: ThemeValues = {};
     for (const [key, value] of Object.entries(config.theme_values)) {
       const exampleValue = exampleValues?.[key];
       // Archive if value differs from example (using type-aware comparison)

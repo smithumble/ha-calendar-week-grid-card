@@ -145,7 +145,7 @@ export interface CardConfig {
   event?: DefaultEventConfig;
   blank_event?: DefaultEventConfig;
   blank_all_day_event?: DefaultEventConfig;
-  theme_values_examples?: DefaultEventConfig[];
+  theme_values_examples?: ThemeValues[];
   week_start?:
     | 'today'
     | 'sunday'
