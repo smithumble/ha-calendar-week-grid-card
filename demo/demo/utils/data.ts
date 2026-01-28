@@ -51,6 +51,18 @@ export async function loadConfigByName(
 }
 
 /**
+ * Get filtered list of providers based on available providers
+ */
+export function getFilteredProviders(
+  allProviders: string[],
+  availableProviders?: string[],
+): string[] {
+  return availableProviders
+    ? allProviders.filter((p) => availableProviders.includes(p))
+    : allProviders;
+}
+
+/**
  * Get list of providers that should be visible in the dropdown
  */
 export function getVisibleProviders(

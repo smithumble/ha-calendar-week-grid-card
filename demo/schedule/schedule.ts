@@ -1,14 +1,20 @@
 import { setupGlobalKeyboardNavigation } from 'demo/utils/keyboard';
-import { initializeProviderData } from '../demo/common';
 import { setupBrowserEnv } from '../demo/utils/browser';
 import { loadIcons } from '../demo/utils/icons';
 import {
   updateDataSourceSelect,
   setupDataSourceSelector,
+  selectProvider,
+  selectConfig,
 } from '../demo/utils/selects';
-import { setConfig } from '../demo/utils/state';
 import { setStoragePrefix } from '../demo/utils/storage';
 import { loadTheme } from '../demo/utils/theme';
+
+const SCHEDULE_PROVIDER = 'yasno_api';
+const SCHEDULE_CONFIG = 'google_calendar_separated';
+
+const DATA_SOURCE_SELECTOR_ID = 'data-source-select';
+const KEYBOARD_NAV_SELECTORS = [DATA_SOURCE_SELECTOR_ID];
 
 async function main() {
   // Set storage prefix for schedule page
@@ -21,20 +27,21 @@ async function main() {
   // Setup browser environment
   setupBrowserEnv(haTheme, haIcons);
 
-  // Initialize provider data
-  const currentProvider = initializeProviderData(['yasno_api']);
+  // Select a specific provider for the schedule page
+  selectProvider(SCHEDULE_PROVIDER);
 
   // Select a specific config for the schedule page
-  await setConfig('google_calendar_separated', currentProvider);
-
-  const selectorIds = ['data-source-select'];
+  await selectConfig(SCHEDULE_CONFIG);
 
   // Setup global keyboard navigation
-  setupGlobalKeyboardNavigation(selectorIds, 'data-source-select');
+  setupGlobalKeyboardNavigation(
+    KEYBOARD_NAV_SELECTORS,
+    DATA_SOURCE_SELECTOR_ID,
+  );
 
   // Setup data source selector
-  await updateDataSourceSelect(currentProvider);
-  setupDataSourceSelector(selectorIds);
+  await updateDataSourceSelect(SCHEDULE_PROVIDER);
+  setupDataSourceSelector(KEYBOARD_NAV_SELECTORS);
 }
 
 main().catch(console.error);

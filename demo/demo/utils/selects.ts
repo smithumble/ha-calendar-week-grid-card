@@ -8,7 +8,11 @@ import {
   DEPRECATED_PROVIDERS,
   HIDDEN_PROVIDERS,
 } from './constants';
-import { getAvailableConfigNames, getVisibleProviders } from './data';
+import {
+  getAvailableConfigNames,
+  getFilteredProviders,
+  getVisibleProviders,
+} from './data';
 import { updateConfigEditorWithVisual } from './editor/updates';
 import { setupSelectKeyboardNavigation } from './keyboard';
 import { providerRegistry } from './registry';
@@ -28,6 +32,9 @@ import {
   getFromURL,
 } from './storage';
 
+/**
+ * Format a label for display in selectors (e.g., "google_calendar" -> "Google Calendar")
+ */
 export function formatSelectorLabel(label: string): string {
   return label
     .split('_')
@@ -35,11 +42,21 @@ export function formatSelectorLabel(label: string): string {
     .join(' ');
 }
 
+/**
+ * Get a select element by ID
+ */
+function getSelectElement(selectId: string): HTMLSelectElement | null {
+  return document.getElementById(selectId) as HTMLSelectElement | null;
+}
+
+/**
+ * Setup change listener for a select element (prevents duplicate listeners)
+ */
 export function setupSelectListener(
   selectId: string,
   handler: (value: string) => void,
 ): void {
-  const select = document.getElementById(selectId) as HTMLSelectElement;
+  const select = getSelectElement(selectId);
   if (!select || select.hasAttribute('data-listener-attached')) return;
 
   select.setAttribute('data-listener-attached', 'true');
@@ -49,135 +66,207 @@ export function setupSelectListener(
   });
 }
 
-function populateProviderSelect(selectedProvider?: string | null) {
-  const providerSelect = document.getElementById(
-    'provider-select',
-  ) as HTMLSelectElement;
-  if (!providerSelect) return;
+/**
+ * Populate a select element with options
+ */
+function populateSelect(
+  select: HTMLSelectElement,
+  options: string[],
+  formatLabel: (value: string) => string = formatSelectorLabel,
+): void {
+  select.innerHTML = options
+    .map((value) => `<option value="${value}">${formatLabel(value)}</option>`)
+    .join('');
+}
 
+/**
+ * Apply selection: save to storage, update URL params, and set select value
+ */
+function applySelection(
+  select: HTMLSelectElement,
+  value: string,
+  provider: string,
+  storageKey: string,
+  urlParam: string,
+  urlValue: string | null,
+): void {
+  select.value = value;
+
+  if (!urlValue) {
+    saveToStorage(getProviderStorageKey(provider, storageKey), value);
+  }
+
+  updateURLParams({ [urlParam]: value });
+}
+
+/**
+ * Format provider label with deprecated indicator
+ */
+function formatProviderLabel(provider: string): string {
+  const label = formatSelectorLabel(provider);
+  const deprecated = DEPRECATED_PROVIDERS.includes(provider)
+    ? ' (Deprecated)'
+    : '';
+  return `${label}${deprecated}`;
+}
+
+/**
+ * Get providers to show in the select (visible + selected if hidden)
+ */
+function getProvidersToShow(
+  selectedProvider: string | null | undefined,
+  availableProviders: string[],
+): string[] {
   const allProviders = providerRegistry.getAllProviderNames();
-  const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
+  const filteredProviders = getFilteredProviders(
+    allProviders,
+    availableProviders,
+  );
+  const visibleProviders = getVisibleProviders(
+    filteredProviders,
+    HIDDEN_PROVIDERS,
+  );
 
-  // Include selected provider even if it's hidden
   const providersToShow = new Set(visibleProviders);
   if (selectedProvider && allProviders.includes(selectedProvider)) {
     providersToShow.add(selectedProvider);
   }
 
-  const sortedProviders = Array.from(providersToShow).sort();
+  return Array.from(providersToShow).sort();
+}
 
-  providerSelect.innerHTML = sortedProviders
-    .map((p) => {
-      const label = formatSelectorLabel(p);
-      const deprecated = DEPRECATED_PROVIDERS.includes(p)
-        ? ' (Deprecated)'
-        : '';
-      return `<option value="${p}">${label}${deprecated}</option>`;
-    })
-    .join('');
+/**
+ * Populate provider select with available providers
+ */
+function populateProviderSelect(
+  selectedProvider: string,
+  availableProviders: string[],
+): void {
+  const providerSelect = getSelectElement('provider-select');
+  if (!providerSelect) return;
 
-  // Always set the value to selectedProvider if provided and valid
-  if (selectedProvider && sortedProviders.includes(selectedProvider)) {
+  const providersToShow = getProvidersToShow(
+    selectedProvider,
+    availableProviders,
+  );
+  populateSelect(providerSelect, providersToShow, formatProviderLabel);
+
+  if (selectedProvider && providersToShow.includes(selectedProvider)) {
     providerSelect.value = selectedProvider;
-  } else if (sortedProviders.length > 0 && !providerSelect.value) {
-    // Fallback to first provider if no valid selection
-    providerSelect.value = sortedProviders[0];
+  } else if (providersToShow.length > 0 && !providerSelect.value) {
+    providerSelect.value = providersToShow[0];
   }
 }
 
-export async function updateConfigSelect(provider: string) {
-  const configSelect = document.getElementById(
-    'config-select',
-  ) as HTMLSelectElement;
+/**
+ * Update config select with available configs and select appropriate one
+ */
+export async function updateConfigSelect(provider: string): Promise<void> {
+  const configSelect = getSelectElement('config-select');
   if (!configSelect) return;
 
-  // Get available config names without loading the files
   const configKeys = getAvailableConfigNames(provider);
-
-  configSelect.innerHTML = configKeys
-    .map(
-      (name) => `<option value="${name}">${formatSelectorLabel(name)}</option>`,
-    )
-    .join('');
+  populateSelect(configSelect, configKeys);
 
   const providerInstance = providerRegistry.getProvider(provider);
+  const urlConfig = getFromURL('config');
   const savedConfig = getProviderValue(provider, 'selected-config', 'config');
+  const defaultConfig = providerInstance?.getDefaultConfig() || '';
+
   const selectedConfig =
-    savedConfig && configKeys.includes(savedConfig)
-      ? savedConfig
-      : providerInstance?.getDefaultConfig() || '';
+    urlConfig && configKeys.includes(urlConfig)
+      ? urlConfig
+      : savedConfig && configKeys.includes(savedConfig)
+        ? savedConfig
+        : defaultConfig && configKeys.includes(defaultConfig)
+          ? defaultConfig
+          : '';
 
   if (selectedConfig && (await setConfig(selectedConfig, provider))) {
-    configSelect.value = selectedConfig;
-    if (!savedConfig) {
-      saveToStorage(
-        getProviderStorageKey(provider, 'selected-config'),
-        selectedConfig,
-      );
-    }
-    updateURLParams({ config: selectedConfig });
+    applySelection(
+      configSelect,
+      selectedConfig,
+      provider,
+      'selected-config',
+      'config',
+      urlConfig,
+    );
     updateConfigEditorWithVisual();
   }
 }
 
-export async function updateDataSourceSelect(provider: string) {
-  const dataSourceSelect = document.getElementById(
-    'data-source-select',
-  ) as HTMLSelectElement;
+/**
+ * Update data source select with available data sources and select appropriate one
+ */
+export async function updateDataSourceSelect(provider: string): Promise<void> {
+  const dataSourceSelect = getSelectElement('data-source-select');
   if (!dataSourceSelect) return;
 
   const providerInstance = providerRegistry.getProvider(provider);
   if (!providerInstance) return;
 
   const dataSources = providerInstance.getDataSources();
-  dataSourceSelect.innerHTML = dataSources
-    .map((ds) => `<option value="${ds}">${formatSelectorLabel(ds)}</option>`)
-    .join('');
+  populateSelect(dataSourceSelect, dataSources);
 
+  const urlDataSource = getFromURL('dataSource');
   const savedDataSource = getProviderValue(
     provider,
     'selected-data-source',
     'dataSource',
   );
+  const defaultDataSource = providerInstance.getDefaultDataSource() || '';
+
   const selectedDataSource =
-    savedDataSource && dataSources.includes(savedDataSource)
-      ? savedDataSource
-      : providerInstance.getDefaultDataSource() || '';
+    urlDataSource && dataSources.includes(urlDataSource)
+      ? urlDataSource
+      : savedDataSource && dataSources.includes(savedDataSource)
+        ? savedDataSource
+        : defaultDataSource && dataSources.includes(defaultDataSource)
+          ? defaultDataSource
+          : '';
 
   if (selectedDataSource) {
-    dataSourceSelect.value = selectedDataSource;
-    if (!savedDataSource) {
-      saveToStorage(
-        getProviderStorageKey(provider, 'selected-data-source'),
-        selectedDataSource,
-      );
-    }
-    updateURLParams({ dataSource: selectedDataSource });
+    applySelection(
+      dataSourceSelect,
+      selectedDataSource,
+      provider,
+      'selected-data-source',
+      'dataSource',
+      urlDataSource,
+    );
     await updateCalendarsAndRender(selectedDataSource, provider);
   }
 }
 
-export async function updateSelectsForProvider(provider: string) {
+export async function updateSelectsForProvider(selectedProvider?: string) {
+  const provider = selectedProvider || getCurrentProvider();
   await updateConfigSelect(provider);
   await updateDataSourceSelect(provider);
 }
 
 export function setupConfigSelector(selectorIds: string[]) {
-  setupSelectListener('config-select', selectConfig);
+  setupSelectListener('config-select', selectorSelectConfig);
   setupSelectKeyboardNavigation(selectorIds, 'config-select');
 }
 
-export async function selectConfig(configName: string) {
+/**
+ * Select and apply a config
+ */
+export async function selectorSelectConfig(configName: string): Promise<void> {
+  const configSelect = getSelectElement('config-select');
+  if (!configSelect) return;
+  configSelect.value = configName;
+  await selectConfig(configName);
+  renderCurrentCards();
+  updateConfigEditorWithVisual();
+}
+
+export async function selectConfig(configName: string): Promise<void> {
   const provider = getCurrentProvider();
-  if (await setConfig(configName, provider)) {
-    renderCurrentCards();
-    updateConfigEditorWithVisual();
-    saveToStorage(
-      getProviderStorageKey(provider, 'selected-config'),
-      configName,
-    );
-    updateURLParams({ config: configName });
-  }
+  const result = await setConfig(configName, provider);
+  if (!result) return;
+  saveToStorage(getProviderStorageKey(provider, 'selected-config'), configName);
+  updateURLParams({ config: configName });
 }
 
 export function setupDataSourceSelector(selectorIds: string[]) {
@@ -185,86 +274,92 @@ export function setupDataSourceSelector(selectorIds: string[]) {
   setupSelectKeyboardNavigation(selectorIds, 'data-source-select');
 }
 
-export async function selectDataSource(dataSource: string) {
+/**
+ * Select and apply a data source
+ */
+export async function selectDataSource(dataSource: string): Promise<void> {
   const provider = getCurrentProvider();
+  const dataSourceSelect = getSelectElement('data-source-select');
+
+  if (dataSourceSelect) {
+    dataSourceSelect.value = dataSource;
+  }
+
+  await updateCalendarsAndRender(dataSource, provider);
+
   saveToStorage(
     getProviderStorageKey(provider, 'selected-data-source'),
     dataSource,
   );
-  updateURLParams({ dataSource: dataSource });
-  await updateCalendarsAndRender(dataSource, provider);
+  updateURLParams({ dataSource });
 }
 
-export function setupProviderSelector(selectorIds: string[]) {
-  const providerSelect = document.getElementById(
-    'provider-select',
-  ) as HTMLSelectElement;
-  if (!providerSelect) return;
-
+/**
+ * Get initial provider value from URL or storage
+ */
+export function getInitialProviderValue(): string | null {
   const allProviders = providerRegistry.getAllProviderNames();
-  if (allProviders.length === 0) return;
+  if (allProviders.length === 0) return null;
 
   const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
   const defaultProvider = allProviders.includes(DEFAULT_PROVIDER)
     ? DEFAULT_PROVIDER
     : visibleProviders[0] || allProviders[0];
 
-  // Check URL param first (highest priority)
   const urlProvider = getFromURL('provider');
-  const currentProviderValue =
-    urlProvider || getValue('selected-provider', 'provider', defaultProvider);
+  return (
+    urlProvider || getValue('selected-provider', 'provider', defaultProvider)
+  );
+}
 
-  // Populate select with visible providers + selected provider (if hidden)
-  populateProviderSelect(currentProviderValue);
+/**
+ * Handle provider change event
+ */
+export async function selectorSelectProvider(
+  selectedProvider: string,
+  availableProviders: string[],
+): Promise<void> {
+  const providerSelect = getSelectElement('provider-select');
+  if (!providerSelect) return;
 
-  // Allow provider from URL/storage even if it's hidden from dropdown
-  if (currentProviderValue && allProviders.includes(currentProviderValue)) {
-    // populateProviderSelect already sets the value, but ensure it's set
-    if (providerSelect.value !== currentProviderValue) {
-      providerSelect.value = currentProviderValue;
-    }
-    setCurrentProvider(currentProviderValue);
-    if (urlProvider) {
-      saveToStorage('selected-provider', urlProvider);
-    }
-    updateURLParams({ provider: currentProviderValue });
-    // Update date override based on initial provider
-    const providerInstance = providerRegistry.getProvider(currentProviderValue);
-    updateDateOverride(providerInstance?.getMockDate());
-  }
+  const allProviders = providerRegistry.getAllProviderNames();
+  if (allProviders.length === 0) return;
+
+  if (!allProviders.includes(selectedProvider)) return;
+
+  selectProvider(selectedProvider);
+
+  populateProviderSelect(selectedProvider, availableProviders); // Need this to hide unselected hidden providers
+  await updateSelectsForProvider(selectedProvider);
+}
+
+export function selectProvider(selectedProvider: string): void {
+  setCurrentProvider(selectedProvider);
+  saveToStorage('selected-provider', selectedProvider);
+
+  updateURLParams({
+    provider: selectedProvider,
+    config: null,
+    dataSource: null,
+  });
+
+  const providerInstance = providerRegistry.getProvider(selectedProvider);
+  updateDateOverride(providerInstance?.getMockDate());
+}
+
+/**
+ * Setup provider selector with initialization and change handler
+ */
+export async function setupProviderSelector(
+  availableProviders: string[],
+  selectorIds: string[],
+): Promise<void> {
+  const currentProviderValue = getInitialProviderValue() || '';
+  await selectorSelectProvider(currentProviderValue, availableProviders);
 
   setupSelectListener('provider-select', async (selectedProvider) => {
-    if (allProviders.includes(selectedProvider)) {
-      const previousProvider = getCurrentProvider();
-      setCurrentProvider(selectedProvider);
-      saveToStorage('selected-provider', selectedProvider);
-
-      // Clear config and dataSource URL params when provider changes
-      // They will be set again by updateSelectsForProvider if needed
-      updateURLParams({
-        provider: selectedProvider,
-        config: null,
-        dataSource: null,
-      });
-
-      // Update date override based on provider
-      const providerInstance = providerRegistry.getProvider(selectedProvider);
-      updateDateOverride(providerInstance?.getMockDate());
-
-      // Only repopulate if we're switching away from a hidden provider
-      // (to remove it from the dropdown) or if we're switching to a hidden provider
-      const wasHidden =
-        previousProvider && !visibleProviders.includes(previousProvider);
-      const isHidden = !visibleProviders.includes(selectedProvider);
-
-      if (wasHidden || isHidden) {
-        // Repopulate to add/remove hidden providers as needed
-        populateProviderSelect(selectedProvider);
-      }
-
-      // Update config and data source selects for the new provider
-      await updateSelectsForProvider(selectedProvider);
-    }
+    await selectorSelectProvider(selectedProvider, availableProviders);
   });
+
   setupSelectKeyboardNavigation(selectorIds, 'provider-select');
 }

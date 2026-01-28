@@ -10,14 +10,43 @@ let sharedMockHass: HomeAssistant | null = null;
 let cacheKey: string = '';
 
 /**
+ * Creates a simple hash from a string
+ */
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash).toString(36);
+}
+
+/**
  * Creates a cache key from calendars and darkMode
+ * Includes events data to ensure cache invalidation when datasource changes
  */
 function getCacheKey(calendars: Calendar[], darkMode: boolean): string {
   const calendarIds = calendars
     .map((c) => c.entity_id)
     .sort()
     .join(',');
-  return `${calendarIds}|${darkMode}`;
+
+  // Include events data in cache key to detect when datasource changes
+  // Create a hash from events: count + hash of events content
+  const eventsHash = calendars
+    .map((c) => {
+      const eventCount = c.events?.length || 0;
+      // Create a hash from the stringified events array
+      // This ensures cache invalidation when events change even if entity_ids are the same
+      const eventsStr = JSON.stringify(c.events || []);
+      const eventsContentHash = simpleHash(eventsStr).substring(0, 8);
+      return `${eventCount}:${eventsContentHash}`;
+    })
+    .sort()
+    .join('|');
+
+  return `${calendarIds}|${darkMode}|${eventsHash}`;
 }
 
 /**

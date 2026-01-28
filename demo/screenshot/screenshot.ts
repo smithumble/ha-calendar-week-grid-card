@@ -1,5 +1,9 @@
-import { selectConfig, selectDataSource } from 'demo/utils/selects';
-import { initializeProviderData } from '../demo/common';
+import {
+  selectDataSource,
+  selectConfig,
+  selectProvider,
+  getInitialProviderValue,
+} from 'demo/utils/selects';
 import { setupBrowserEnv } from '../demo/utils/browser';
 import { loadIcons } from '../demo/utils/icons';
 import { providerRegistry } from '../demo/utils/registry';
@@ -20,8 +24,11 @@ async function main() {
   // Setup browser environment
   setupBrowserEnv(haTheme, haIcons);
 
-  const currentProvider = initializeProviderData();
-  const currentProviderInstance = providerRegistry.getProvider(currentProvider);
+  const selectedProvider = getInitialProviderValue() || '';
+  selectProvider(selectedProvider);
+
+  const currentProviderInstance =
+    providerRegistry.getProvider(selectedProvider);
 
   const defaultConfig = currentProviderInstance?.getDefaultConfig();
   const defaultDataSource = currentProviderInstance?.getDefaultDataSource();

@@ -1,4 +1,3 @@
-import { initializeProviderData } from './common';
 import { setupBrowserEnv } from './utils/browser';
 import { setupEditorToggleButton } from './utils/editor/panel';
 import { loadIcons } from './utils/icons';
@@ -6,7 +5,6 @@ import { setupGlobalKeyboardNavigation } from './utils/keyboard';
 import { providerRegistry } from './utils/registry';
 import {
   setupProviderSelector,
-  updateSelectsForProvider,
   setupConfigSelector,
   setupDataSourceSelector,
 } from './utils/selects';
@@ -23,6 +21,15 @@ export const AVAILABLE_PROVIDERS =
     ? AVAILABLE_PROVIDERS_DEV
     : AVAILABLE_PROVIDERS_PROD;
 
+const PROVIDER_SELECTOR_ID = 'provider-select';
+const CONFIG_SELECTOR_ID = 'config-select';
+const DATA_SOURCE_SELECTOR_ID = 'data-source-select';
+const KEYBOARD_NAV_SELECTORS = [
+  PROVIDER_SELECTOR_ID,
+  CONFIG_SELECTOR_ID,
+  DATA_SOURCE_SELECTOR_ID,
+];
+
 async function main() {
   // Set storage prefix
   setStoragePrefix('demo');
@@ -34,28 +41,18 @@ async function main() {
   // Setup browser environment
   setupBrowserEnv(haTheme, haIcons);
 
-  // Initialize provider data
-  const currentProvider = initializeProviderData(AVAILABLE_PROVIDERS);
-
   // Setup editor toggle button
   setupEditorToggleButton();
 
-  const selectorIds = [
-    'provider-select',
-    'config-select',
-    'data-source-select',
-  ];
-
   // Setup global keyboard navigation
-  setupGlobalKeyboardNavigation(selectorIds, 'config-select');
+  setupGlobalKeyboardNavigation(KEYBOARD_NAV_SELECTORS, CONFIG_SELECTOR_ID);
 
   // Setup provider selector
-  setupProviderSelector(selectorIds);
+  await setupProviderSelector(AVAILABLE_PROVIDERS, KEYBOARD_NAV_SELECTORS);
 
   // Setup selects for current provider
-  await updateSelectsForProvider(currentProvider);
-  setupConfigSelector(selectorIds);
-  setupDataSourceSelector(selectorIds);
+  setupConfigSelector(KEYBOARD_NAV_SELECTORS);
+  setupDataSourceSelector(KEYBOARD_NAV_SELECTORS);
 }
 
 main().catch(console.error);
