@@ -63,12 +63,8 @@ export function renderCurrentCards() {
   }
 }
 
-export async function updateCalendarsAndRender(
-  dataSource: string,
-  provider: string,
-) {
+export async function updateCalendars(dataSource: string, provider: string) {
   // Provider handles caching internally
   const calendars = await loadCalendarsForDataSource(dataSource, provider);
   setCurrentCalendars(calendars);
-  renderCurrentCards();
 }

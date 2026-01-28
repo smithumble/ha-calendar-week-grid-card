@@ -1,9 +1,10 @@
 import {
-  selectDataSource,
   selectConfig,
   selectProvider,
   getInitialProviderValue,
+  selectDataSource,
 } from 'demo/utils/selects';
+import { renderCurrentCards } from 'demo/utils/state';
 import { setupBrowserEnv } from '../demo/utils/browser';
 import {
   getProviderDefaultConfig,
@@ -38,6 +39,8 @@ async function main() {
 
   await selectConfig(config);
   await selectDataSource(dataSource);
+
+  renderCurrentCards();
 }
 
 main().catch(console.error);

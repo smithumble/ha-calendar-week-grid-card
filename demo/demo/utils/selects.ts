@@ -3,16 +3,11 @@
 // ============================================================================
 
 import { updateDateOverride } from './browser';
-import {
-  DEFAULT_PROVIDER,
-  DEPRECATED_PROVIDERS,
-  HIDDEN_PROVIDERS,
-} from './constants';
+import { DEFAULT_PROVIDER, DEPRECATED_PROVIDERS } from './constants';
 import {
   getAllProviderNames,
   getAvailableConfigNames,
   getFilteredProviders,
-  getVisibleProviders,
   getProviderDefaultConfig,
   getProviderDefaultDataSource,
   getProviderDataSources,
@@ -23,9 +18,9 @@ import { setupSelectKeyboardNavigation } from './keyboard';
 import {
   setConfig,
   renderCurrentCards,
-  updateCalendarsAndRender,
   getCurrentProvider,
   setCurrentProvider,
+  updateCalendars,
 } from './state';
 import {
   getValue,
@@ -84,26 +79,6 @@ function populateSelect(
 }
 
 /**
- * Apply selection: save to storage, update URL params, and set select value
- */
-function applySelection(
-  select: HTMLSelectElement,
-  value: string,
-  provider: string,
-  storageKey: string,
-  urlParam: string,
-  urlValue: string | null,
-): void {
-  select.value = value;
-
-  if (!urlValue) {
-    saveToStorage(getProviderStorageKey(provider, storageKey), value);
-  }
-
-  updateURLParams({ [urlParam]: value });
-}
-
-/**
  * Format provider label with deprecated indicator
  */
 function formatProviderLabel(provider: string): string {
@@ -115,24 +90,23 @@ function formatProviderLabel(provider: string): string {
 }
 
 /**
- * Get providers to show in the select (visible + selected if hidden)
+ * Get allowed providers based on available providers
+ */
+function getAllowedProviders(availableProviders?: string[]): string[] {
+  return getFilteredProviders(getAllProviderNames(), availableProviders);
+}
+
+/**
+ * Get providers to show in the select
  */
 function getProvidersToShow(
   selectedProvider: string | null | undefined,
   availableProviders: string[],
 ): string[] {
-  const allProviders = getAllProviderNames();
-  const filteredProviders = getFilteredProviders(
-    allProviders,
-    availableProviders,
-  );
-  const visibleProviders = getVisibleProviders(
-    filteredProviders,
-    HIDDEN_PROVIDERS,
-  );
+  const allowedProviders = getAllowedProviders(availableProviders);
 
-  const providersToShow = new Set(visibleProviders);
-  if (selectedProvider && allProviders.includes(selectedProvider)) {
+  const providersToShow = new Set(allowedProviders);
+  if (selectedProvider && allowedProviders.includes(selectedProvider)) {
     providersToShow.add(selectedProvider);
   }
 
@@ -185,17 +159,7 @@ export async function updateConfigSelect(provider: string): Promise<void> {
           ? defaultConfig
           : '';
 
-  if (selectedConfig && (await setConfig(selectedConfig, provider))) {
-    applySelection(
-      configSelect,
-      selectedConfig,
-      provider,
-      'selected-config',
-      'config',
-      urlConfig,
-    );
-    updateConfigEditorWithVisual();
-  }
+  await selectorSelectConfig(selectedConfig);
 }
 
 /**
@@ -227,25 +191,21 @@ export async function updateDataSourceSelect(provider: string): Promise<void> {
           ? defaultDataSource
           : '';
 
-  if (selectedDataSource) {
-    applySelection(
-      dataSourceSelect,
-      selectedDataSource,
-      provider,
-      'selected-data-source',
-      'dataSource',
-      urlDataSource,
-    );
-    await updateCalendarsAndRender(selectedDataSource, provider);
-  }
+  await selectorSelectDataSource(selectedDataSource);
 }
 
+/**
+ * Update config and data source selects for a provider
+ */
 export async function updateSelectsForProvider(selectedProvider?: string) {
   const provider = selectedProvider || getCurrentProvider();
   await updateConfigSelect(provider);
   await updateDataSourceSelect(provider);
 }
 
+/**
+ * Setup config selector with initialization and change handler
+ */
 export function setupConfigSelector(selectorIds: string[]) {
   setupSelectListener('config-select', selectorSelectConfig);
   setupSelectKeyboardNavigation(selectorIds, 'config-select');
@@ -257,38 +217,95 @@ export function setupConfigSelector(selectorIds: string[]) {
 export async function selectorSelectConfig(configName: string): Promise<void> {
   const configSelect = getSelectElement('config-select');
   if (!configSelect) return;
-  configSelect.value = configName;
-  await selectConfig(configName);
+
+  const cleanedConfigName = cleanConfigValue(configName);
+  if (!cleanedConfigName) return;
+
+  configSelect.value = cleanedConfigName;
+  await selectConfig(cleanedConfigName);
   renderCurrentCards();
   updateConfigEditorWithVisual();
 }
 
+function cleanConfigValue(configName: string): string | undefined {
+  const provider = getCurrentProvider();
+  const configKeys = getAvailableConfigNames(provider);
+
+  // Reset to default if invalid selection
+  if (!configName || !configKeys.includes(configName)) {
+    const defaultConfig = getProviderDefaultConfig(provider);
+    if (defaultConfig && configKeys.includes(defaultConfig)) {
+      configName = defaultConfig;
+    } else if (configKeys.length > 0) {
+      configName = configKeys[0];
+    } else {
+      return;
+    }
+  }
+
+  return configName;
+}
+
+/**
+ * Select a config and update the config
+ */
 export async function selectConfig(configName: string): Promise<void> {
   const provider = getCurrentProvider();
-  const result = await setConfig(configName, provider);
-  if (!result) return;
+  await setConfig(configName, provider);
   saveToStorage(getProviderStorageKey(provider, 'selected-config'), configName);
   updateURLParams({ config: configName });
 }
 
+/**
+ * Setup data source selector with initialization and change handler
+ */
 export function setupDataSourceSelector(selectorIds: string[]) {
-  setupSelectListener('data-source-select', selectDataSource);
+  setupSelectListener('data-source-select', selectorSelectDataSource);
   setupSelectKeyboardNavigation(selectorIds, 'data-source-select');
 }
 
 /**
  * Select and apply a data source
  */
-export async function selectDataSource(dataSource: string): Promise<void> {
-  const provider = getCurrentProvider();
+export async function selectorSelectDataSource(
+  dataSource: string,
+): Promise<void> {
   const dataSourceSelect = getSelectElement('data-source-select');
+  if (!dataSourceSelect) return;
 
-  if (dataSourceSelect) {
-    dataSourceSelect.value = dataSource;
+  const cleanedDataSource = cleanDataSourceValue(dataSource);
+  if (!cleanedDataSource) return;
+
+  dataSourceSelect.value = cleanedDataSource;
+  await selectDataSource(cleanedDataSource);
+  renderCurrentCards();
+}
+
+function cleanDataSourceValue(dataSource: string): string | undefined {
+  const provider = getCurrentProvider();
+  const dataSources = getProviderDataSources(provider);
+
+  // Reset to default if invalid selection
+  if (!dataSource || !dataSources.includes(dataSource)) {
+    const defaultDataSource = getProviderDefaultDataSource(provider);
+    if (defaultDataSource && dataSources.includes(defaultDataSource)) {
+      dataSource = defaultDataSource;
+    } else if (dataSources.length > 0) {
+      dataSource = dataSources[0];
+    } else {
+      return;
+    }
   }
 
-  await updateCalendarsAndRender(dataSource, provider);
+  return dataSource;
+}
 
+/**
+ * Select a data source and update the calendars
+ */
+export async function selectDataSource(dataSource: string): Promise<void> {
+  const provider = getCurrentProvider();
+  await updateCalendars(dataSource, provider);
   saveToStorage(
     getProviderStorageKey(provider, 'selected-data-source'),
     dataSource,
@@ -299,19 +316,44 @@ export async function selectDataSource(dataSource: string): Promise<void> {
 /**
  * Get initial provider value from URL or storage
  */
-export function getInitialProviderValue(): string | null {
-  const allProviders = getAllProviderNames();
-  if (allProviders.length === 0) return null;
-
-  const visibleProviders = getVisibleProviders(allProviders, HIDDEN_PROVIDERS);
-  const defaultProvider = allProviders.includes(DEFAULT_PROVIDER)
-    ? DEFAULT_PROVIDER
-    : visibleProviders[0] || allProviders[0];
-
+export function getInitialProviderValue(
+  availableProviders?: string[],
+): string | null {
   const urlProvider = getFromURL('provider');
-  return (
-    urlProvider || getValue('selected-provider', 'provider', defaultProvider)
+  const savedProvider = getValue('selected-provider', 'provider');
+
+  const cleanedUrlProvider = cleanProviderValue(
+    urlProvider,
+    availableProviders,
   );
+  if (cleanedUrlProvider) return cleanedUrlProvider;
+
+  // Validate saved provider, reset to default if invalid
+  const cleanedSavedProvider = cleanProviderValue(
+    savedProvider,
+    availableProviders,
+  );
+  if (cleanedSavedProvider) return cleanedSavedProvider;
+
+  return null;
+}
+
+function cleanProviderValue(
+  selectedProvider: string | null,
+  availableProviders?: string[],
+): string | undefined {
+  const allowedProviders = getAllowedProviders(availableProviders);
+  if (allowedProviders.length === 0) return;
+
+  // Reset to default if invalid selection
+  if (!selectedProvider || !allowedProviders.includes(selectedProvider)) {
+    const defaultProvider = allowedProviders.includes(DEFAULT_PROVIDER)
+      ? DEFAULT_PROVIDER
+      : allowedProviders[0];
+    return defaultProvider;
+  }
+
+  return selectedProvider;
 }
 
 /**
@@ -321,31 +363,24 @@ export async function selectorSelectProvider(
   selectedProvider: string,
   availableProviders: string[],
 ): Promise<void> {
-  const providerSelect = getSelectElement('provider-select');
-  if (!providerSelect) return;
+  const cleanedProvider = cleanProviderValue(
+    selectedProvider,
+    availableProviders,
+  );
+  if (!cleanedProvider) return;
 
-  const allProviders = getAllProviderNames();
-  if (allProviders.length === 0) return;
+  selectProvider(cleanedProvider);
 
-  if (!allProviders.includes(selectedProvider)) return;
-
-  selectProvider(selectedProvider);
-
-  populateProviderSelect(selectedProvider, availableProviders); // Need this to hide unselected hidden providers
-  await updateSelectsForProvider(selectedProvider);
+  populateProviderSelect(cleanedProvider, availableProviders);
+  await updateSelectsForProvider(cleanedProvider);
 }
 
-export function selectProvider(selectedProvider: string): void {
-  setCurrentProvider(selectedProvider);
-  saveToStorage('selected-provider', selectedProvider);
+export function selectProvider(provider: string): void {
+  setCurrentProvider(provider);
+  updateDateOverride(getProviderMockDate(provider));
 
-  updateURLParams({
-    provider: selectedProvider,
-    config: null,
-    dataSource: null,
-  });
-
-  updateDateOverride(getProviderMockDate(selectedProvider));
+  saveToStorage('selected-provider', provider);
+  updateURLParams({ provider });
 }
 
 /**
@@ -359,6 +394,10 @@ export async function setupProviderSelector(
   await selectorSelectProvider(currentProviderValue, availableProviders);
 
   setupSelectListener('provider-select', async (selectedProvider) => {
+    updateURLParams({
+      config: null,
+      dataSource: null,
+    });
     await selectorSelectProvider(selectedProvider, availableProviders);
   });
 
