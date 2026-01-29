@@ -223,20 +223,24 @@ export function parseYasnoData(
   plannedData: PlannedData,
   probableData: ProbableData,
   mondayIndex: number = 0,
-  groupKey: string = PLANNED_GROUP_KEY,
+  plannedGroupKey: string = PLANNED_GROUP_KEY,
+  probableGroupKey?: string,
   mockDate?: Date,
 ): Calendar[] {
   const baseDate: Date = mockDate ?? new Date();
   baseDate.setHours(0, 0, 0, 0);
 
-  const plannedGroup = plannedData[groupKey];
+  // Use separate group keys if provided, otherwise use the same key for both
+  const groupKey = probableGroupKey ?? plannedGroupKey;
+
+  const plannedGroup = plannedData[plannedGroupKey];
   const probableGroup =
     probableData[PROBABLE_REGION_KEY]?.['dsos']?.[PROBABLE_DSOS_KEY]?.[
       'groups'
     ]?.[groupKey];
 
   if (!plannedGroup) {
-    throw new Error(`Planned group "${groupKey}" not found`);
+    throw new Error(`Planned group "${plannedGroupKey}" not found`);
   }
 
   if (!probableGroup) {

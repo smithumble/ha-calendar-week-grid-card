@@ -1,4 +1,4 @@
-import type { Calendar } from '../data';
+import type { Calendar, DataSource } from '../data';
 import { MOCK_DATE_STR } from '../datetime';
 import {
   parseYasnoData,
@@ -31,7 +31,7 @@ export class YasnoProvider extends BaseProvider {
 
   private calendarPaths: Record<string, string> = {};
   private calendarsCache: Record<string, YasnoCalendarData> = {};
-  private dataSourcesCache: string[] | null = null;
+  private dataSourcesCache: DataSource[] | null = null;
 
   constructor(
     name: string,
@@ -50,7 +50,7 @@ export class YasnoProvider extends BaseProvider {
     this.defaultDataSource = options?.defaultDataSource;
   }
 
-  getDataSources(): string[] {
+  getDataSources(): DataSource[] {
     if (this.dataSourcesCache) {
       return this.dataSourcesCache;
     }
@@ -63,7 +63,9 @@ export class YasnoProvider extends BaseProvider {
       }
     }
 
-    this.dataSourcesCache = Array.from(dataSources).sort();
+    this.dataSourcesCache = Array.from(dataSources)
+      .sort()
+      .map((value) => ({ value, name: value }));
     return this.dataSourcesCache;
   }
 
@@ -131,6 +133,7 @@ export class YasnoProvider extends BaseProvider {
       calendarData.probable,
       mondayIndex,
       '6.1',
+      undefined,
       this.mockDate,
     ) as Calendar[];
   }

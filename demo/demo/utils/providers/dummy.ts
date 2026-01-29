@@ -1,4 +1,4 @@
-import type { Calendar } from '../data';
+import type { Calendar, DataSource } from '../data';
 import { MOCK_DATE_STR } from '../datetime';
 import { getDummyCalendars } from '../parsers/dummy';
 import { BaseProvider } from './base';
@@ -23,8 +23,8 @@ export class DummyProvider extends BaseProvider {
     this.defaultDataSource = options?.defaultDataSource;
   }
 
-  getDataSources(): string[] {
-    return ['data_1'];
+  getDataSources(): DataSource[] {
+    return [{ value: 'data_1', name: 'data_1' }];
   }
 
   async loadCalendars(): Promise<Calendar[]> {

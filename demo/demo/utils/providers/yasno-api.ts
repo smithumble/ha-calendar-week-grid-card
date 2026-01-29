@@ -1,5 +1,5 @@
 import { getCached, setCached } from '../cache';
-import type { Calendar } from '../data';
+import type { Calendar, DataSource } from '../data';
 import {
   parseYasnoData,
   type PlannedData,
@@ -22,21 +22,36 @@ const CORS_PROXY = 'https://api.cors.lol/?url=';
 const REGION_ID = '25';
 const DSO_ID = '902';
 
-// Available data sources
-const DATA_SOURCES = [
-  '1.1',
-  '1.2',
-  '2.1',
-  '2.2',
-  '3.1',
-  '3.2',
-  '4.1',
-  '4.2',
-  '5.1',
-  '5.2',
-  '6.1',
-  '6.2',
-];
+/**
+ * Parse value and calculate numeric index for sorting
+ * Splits by "." and "-" and converts each part to a number
+ * Returns null if parsing fails
+ */
+function calculateNumericIndex(value: string): number | null {
+  try {
+    // Split by both "." and "-"
+    const parts = value.split(/[.-]/);
+    const numbers = parts.map((part) => {
+      const num = parseInt(part, 10);
+      if (isNaN(num)) {
+        throw new Error(`Cannot parse part: ${part}`);
+      }
+      return num;
+    });
+
+    // Calculate index as a weighted sum to preserve order
+    // Each part contributes: part * (1000 ^ position)
+    // This allows up to 999 per part before overflow
+    let index = 0;
+    for (let i = 0; i < numbers.length; i++) {
+      index += numbers[i] * Math.pow(1000, numbers.length - 1 - i);
+    }
+
+    return index;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Yasno API data provider - fetches data from API in real-time
@@ -64,29 +79,110 @@ export class YasnoApiProvider extends BaseProvider {
         : 0; // Default: disabled
   }
 
-  getDataSources(): string[] {
-    return DATA_SOURCES;
+  async getDataSources(): Promise<DataSource[]> {
+    // Fetch both planned and probable outages (already has cache)
+    const [plannedData, probableData] = await Promise.all([
+      this.fetchPlannedOutages(),
+      this.fetchProbableOutages(),
+    ]);
+
+    // Extract groups from planned outages
+    const plannedGroups = Object.keys(plannedData).sort();
+    if (plannedGroups.length === 0) {
+      return [];
+    }
+
+    // Extract groups from probable outages
+    const probableGroups = Object.keys(
+      probableData[REGION_ID]?.dsos?.[DSO_ID]?.groups || {},
+    ).sort();
+    if (probableGroups.length === 0) {
+      return [];
+    }
+
+    // Check if both lists are fully identical
+    const listsAreIdentical =
+      plannedGroups.length === probableGroups.length &&
+      plannedGroups.every((group, index) => group === probableGroups[index]);
+
+    // Construct data sources
+    const dataSources: DataSource[] = [];
+
+    if (listsAreIdentical) {
+      // If lists are identical, use single groups
+      for (const group of plannedGroups) {
+        const index = calculateNumericIndex(group);
+        dataSources.push({
+          value: group,
+          name: group,
+          ...(index !== null && { index }),
+        });
+      }
+    } else {
+      // If lists differ, create all combinations
+      for (const probableGroup of probableGroups) {
+        for (const plannedGroup of plannedGroups) {
+          const value = `${probableGroup}-${plannedGroup}`;
+          const index = calculateNumericIndex(value);
+          dataSources.push({
+            value,
+            name: value,
+            ...(index !== null && { index }),
+          });
+        }
+      }
+    }
+
+    return dataSources;
   }
 
   async loadCalendars(dataSource: string): Promise<Calendar[]> {
-    if (!DATA_SOURCES.includes(dataSource)) {
+    const validDataSources = await this.getDataSources();
+    const validValues = validDataSources.map((ds) => ds.value);
+    if (!validValues.includes(dataSource)) {
       console.warn(`Invalid data source: ${dataSource}`);
       return [];
     }
 
     try {
+      // Parse data source format
+      // If it contains "-", it's a combination: [probable-group]-[planned-group]
+      // Otherwise, it's a single common group used for both
+      let probableGroupKey: string;
+      let plannedGroupKey: string;
+
+      const lastHyphenIndex = dataSource.lastIndexOf('-');
+      if (lastHyphenIndex === -1) {
+        // Single group format (e.g., "6.1") - use same group for both
+        probableGroupKey = dataSource;
+        plannedGroupKey = dataSource;
+      } else {
+        // Combination format (e.g., "1.1-6.1")
+        probableGroupKey = dataSource.substring(0, lastHyphenIndex);
+        plannedGroupKey = dataSource.substring(lastHyphenIndex + 1);
+        if (!probableGroupKey || !plannedGroupKey) {
+          console.warn(`Invalid data source format: ${dataSource}`);
+          return [];
+        }
+      }
+
       // Fetch both planned and probable data from API
       const [plannedData, probableData] = await Promise.all([
         this.fetchPlannedOutages(),
         this.fetchProbableOutages(),
       ]);
 
-      // Parse the data using the yasno parser
+      const currentDay = this.mockDate
+        ? this.mockDate.getDay()
+        : new Date().getDay();
+      const mondayIndex = currentDay - 1;
+
       return parseYasnoData(
         plannedData,
         probableData,
-        0,
-        dataSource,
+        mondayIndex,
+        plannedGroupKey,
+        probableGroupKey,
         this.mockDate,
       );
     } catch (error) {

@@ -11,6 +11,12 @@ export interface Calendar {
   events: unknown[];
 }
 
+export interface DataSource {
+  value: string;
+  name: string;
+  index?: number;
+}
+
 export interface ProviderData {
   calendars: Record<string, Calendar[]>;
   configs: ConfigItem[];
@@ -38,9 +44,15 @@ export function getAvailableConfigNames(providerName: string): string[] {
 /**
  * Get data sources for a provider
  */
-export function getProviderDataSources(providerName: string): string[] {
+export async function getProviderDataSources(
+  providerName: string,
+): Promise<DataSource[]> {
   const provider = providerRegistry.getProvider(providerName);
-  return provider ? provider.getDataSources() : [];
+  if (!provider) {
+    return [];
+  }
+  const dataSources = provider.getDataSources();
+  return Promise.resolve(dataSources);
 }
 
 /**
@@ -56,9 +68,9 @@ export function getProviderDefaultConfig(
 /**
  * Get default data source for a provider
  */
-export function getProviderDefaultDataSource(
+export async function getProviderDefaultDataSource(
   providerName: string,
-): string | undefined {
+): Promise<string | undefined> {
   const provider = providerRegistry.getProvider(providerName);
   return provider?.getDefaultDataSource();
 }
