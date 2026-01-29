@@ -105,8 +105,8 @@ export const demoConfig = {
         'dist/demo/assets/data', // providers data
         'dist/demo/assets/themes', // ha themes
       ],
-      relativeTo: 'dist',
-      absolute: true,
+      relativeTo: 'dist/demo',
+      absolute: false,
       verbose: true,
     }),
     typescript({
