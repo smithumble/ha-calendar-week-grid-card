@@ -66,6 +66,7 @@ export const screenshotConfig = {
       targets: [
         'dist/demo/assets/data', // providers data
         'dist/demo/assets/themes', // ha themes
+        'dist/demo/assets/icons', // mdi icons
       ],
       relativeTo: 'dist/screenshot',
       absolute: false,

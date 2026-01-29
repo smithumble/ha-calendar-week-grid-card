@@ -104,6 +104,7 @@ export const demoConfig = {
       targets: [
         'dist/demo/assets/data', // providers data
         'dist/demo/assets/themes', // ha themes
+        'dist/demo/assets/icons', // mdi icons
       ],
       relativeTo: 'dist/demo',
       absolute: false,
