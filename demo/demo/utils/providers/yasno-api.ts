@@ -15,7 +15,7 @@ const PROBABLE_OUTAGES_ENDPOINT =
 
 // CORS proxy for demo environment (optional)
 // Set to empty string to use direct API calls
-const CORS_PROXY = 'https://corsproxy.io/?';
+const CORS_PROXY = 'https://api.cors.lol/?url=';
 // const CORS_PROXY = ''; // Uncomment to disable CORS proxy
 
 // Default region and DSO IDs
