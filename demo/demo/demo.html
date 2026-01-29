@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"
+    />
+    <title>Calendar Week Grid Card - Demo</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%234CAF50' d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z'/></svg>"
+    />
+    <link rel="stylesheet" href="../demo/common.css" />
+    <link rel="stylesheet" href="../demo/demo.css" />
+  </head>
+  <body>
+    <div class="navbar theme-dark">
+      <div class="provider-selector">
+        <select id="provider-select"></select>
+      </div>
+      <div class="config-selector">
+        <select id="config-select"></select>
+      </div>
+      <div class="data-source-selector">
+        <select id="data-source-select"></select>
+      </div>
+      <div class="config-editor-toggle">
+        <button id="config-editor-toggle-btn">Edit Config</button>
+      </div>
+    </div>
+    <div class="config-editor-panel theme-dark" id="config-editor-panel">
+      <div class="config-editor-header">
+        <h3>Config Editor</h3>
+        <div class="config-editor-mode-toggle">
+          <button
+            id="config-editor-mode-yaml"
+            class="mode-toggle-btn"
+            data-mode="yaml"
+          >
+            YAML
+          </button>
+          <button
+            id="config-editor-mode-visual"
+            class="mode-toggle-btn active"
+            data-mode="visual"
+          >
+            Visual
+          </button>
+        </div>
+        <button
+          class="config-editor-close"
+          id="config-editor-close"
+          aria-label="Close editor"
+        ></button>
+      </div>
+      <div class="config-editor-content">
+        <div id="config-editor-yaml" class="editor-mode" style="display: none">
+          <textarea
+            class="config-editor-textarea"
+            id="config-editor-textarea"
+            spellcheck="false"
+            data-lang="yaml"
+          ></textarea>
+          <div class="config-editor-error" id="config-editor-error"></div>
+        </div>
+        <div id="config-editor-visual" class="editor-mode">
+          <div id="visual-editor-container"></div>
+        </div>
+      </div>
+      <div class="config-editor-actions">
+        <button id="config-editor-reset">Reset</button>
+        <button id="config-editor-apply" class="primary">Apply</button>
+      </div>
+    </div>
+    <div id="cards-container">
+      <div class="theme-container theme-dark">
+        <div class="theme-label">Dark</div>
+        <div id="card-container-dark"></div>
+      </div>
+      <div class="theme-container theme-light">
+        <div class="theme-label">Light</div>
+        <div id="card-container-light"></div>
+      </div>
+    </div>
+    <script type="module" src="../calendar-week-grid-card.js"></script>
+    <script type="module" src="../demo/demo.js"></script>
+  </body>
+</html>

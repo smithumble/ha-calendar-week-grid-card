@@ -4,18 +4,26 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import postcss from 'rollup-plugin-postcss';
 import postcssLit from 'rollup-plugin-postcss-lit';
 import terser from '@rollup/plugin-terser';
+import yaml from '@rollup/plugin-yaml';
 
 const dev = process.env.ROLLUP_WATCH;
 
-export default {
-  input: 'src/calendar-week-grid-card.ts',
+export const cardConfig = {
+  input: 'src/card.ts',
   output: {
     dir: 'dist',
     format: 'es',
     inlineDynamicImports: true,
+    entryFileNames: 'calendar-week-grid-card.js',
   },
   context: 'window',
+  watch: {
+    include: 'src/**',
+    clearScreen: false,
+    buildDelay: 100,
+  },
   plugins: [
+    yaml(),
     nodeResolve({
       browser: true,
       preferBuiltins: false,
@@ -26,7 +34,11 @@ export default {
       inject: false,
     }),
     postcssLit(),
-    typescript(),
+    typescript({
+      tsconfig: 'tsconfig.json',
+    }),
     !dev && terser(),
   ].filter(Boolean),
 };
+
+export default [cardConfig];

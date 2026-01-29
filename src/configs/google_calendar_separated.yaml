@@ -1,0 +1,304 @@
+type: custom:calendar-week-grid-card
+primary_date_format:
+  weekday: short
+secondary_date_format:
+  day: numeric
+time_format:
+  hour: 2-digit
+  minute: 2-digit
+  hour12: false
+time_range: true
+icons_mode: all
+icons_container: event
+all_day: row
+theme_variables:
+  color:
+    name: Event Color
+    description: The color of the event.
+theme_values_examples:
+  - color: var(--error-color)
+  - color: var(--primary-color)
+  - color: var(--error-color)
+  - color: var(--success-color)
+  - color: var(--warning-color)
+  - color: var(--info-color)
+blank_event:
+  theme_values:
+    color: transparent
+entities: []
+entities_presets:
+  - name: yasno_en
+    title: Yasno (English)
+    entities:
+      - name: Planned Outages
+        entity: calendar.planned_outages
+        filter: Outage
+        icon: mdi:flash-off
+        theme_values:
+          color: var(--error-color)
+      - name: Probable Outages
+        entity: calendar.probable_outages
+        icon: mdi:flash-off
+        theme_values:
+          color: var(--primary-color)
+      - name: Emergency Shutdowns
+        entity: calendar.planned_outages
+        filter: Emergency Shutdowns
+        icon: mdi:transmission-tower-off
+        theme_values:
+          color: var(--error-color)
+      - name: Schedule Applies
+        entity: calendar.planned_outages
+        filter: Schedule Applies
+        icon: mdi:flash-off
+        theme_values:
+          color: var(--success-color)
+      - name: Waiting for Schedule
+        entity: calendar.planned_outages
+        filter: Waiting for Schedule
+        icon: mdi:timer-sand
+        theme_values:
+          color: var(--warning-color)
+        hide:
+          - Planned Outages
+    calendars:
+      - template: calendar.planned_outages
+        title: Planned Outages Calendar
+        description: Planned Outages Calendar from ha-yasno-outages integration
+      - template: calendar.probable_outages
+        title: Probable Outages Calendar
+        description: Probable Outages Calendar from ha-yasno-outages integration
+  - name: yasno_uk
+    title: Yasno (Ukrainian)
+    entities:
+      - name: Заплановані відключення
+        entity: calendar.planned_outages
+        filter: Відключення
+        icon: mdi:flash-off
+        theme_values:
+          color: var(--error-color)
+      - name: Імовірні відключення
+        entity: calendar.probable_outages
+        icon: mdi:flash-off
+        theme_values:
+          color: var(--primary-color)
+      - name: Аварійні відключення
+        entity: calendar.planned_outages
+        filter: Аварійні відключення
+        icon: mdi:transmission-tower-off
+        theme_values:
+          color: var(--error-color)
+      - name: Графік діє
+        entity: calendar.planned_outages
+        filter: Графік діє
+        icon: mdi:flash-off
+        theme_values:
+          color: var(--success-color)
+      - name: Очікування графіка
+        entity: calendar.planned_outages
+        filter: Очікування графіка
+        icon: mdi:timer-sand
+        theme_values:
+          color: var(--warning-color)
+        hide:
+          - Заплановані відключення
+    calendars:
+      - template: calendar.planned_outages
+        title: Календар запланованих відключень
+        description: Календар запланованих відключень з інтеграції ha-yasno-outages
+      - template: calendar.probable_outages
+        title: Календар імовірних відключень
+        description: Календар імовірних відключень з інтеграції ha-yasno-outages
+css: |
+  ha-card { 
+    --grid-bg: var(--card-background-color, #FFF);
+    --grid-border-color: var(--divider-color, #dde3ea);
+    --grid-primary-text-color: var(--primary-text-color, #1f1f1f);
+    --grid-secondary-text-color: var(--secondary-text-color, #444746);
+    --grid-event-text-color: var(--card-background-color, #fff);
+    --grid-accent-color: var(--primary-color, #0b57d0);
+    --grid-accent-text-color: var(--card-background-color, #fff);
+  }
+
+  ha-card.theme-dark {
+    --grid-bg: var(--card-background-color, #202124);
+    --grid-border-color: var(--divider-color, #3c4043);
+    --grid-primary-text-color: var(--primary-text-color, #e3e3e3);
+    --grid-secondary-text-color: var(--secondary-text-color, #c4c7c5);
+    --grid-event-text-color: var(--card-background-color, #131314);
+    --grid-accent-color: var(--primary-color, #a8c7fa);
+    --grid-accent-text-color: var(--card-background-color, #062e6f);
+  }
+
+  ha-card {
+    background-color: var(--grid-bg);
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+  }
+
+  /* Grid Styling */
+
+  .grid-container {
+    gap: 0px;
+  }
+
+  .time-label-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+  }
+
+  .time-label-wrapper + .cell-wrapper,
+  .cell-wrapper + .cell-wrapper,
+  .time-label-wrapper::after {
+    border-bottom: 1px solid var(--grid-border-color);
+  }
+
+  .time-label-wrapper + .cell-wrapper,
+  .cell-wrapper + .cell-wrapper {
+    border-left: 1px solid var(--grid-border-color);
+  }
+
+  .cell {
+    position: relative;
+    top: -3px;
+    left: -3px;
+    height: 28px;
+  }
+
+  .day-header {
+    padding-bottom: 12px;
+  }
+
+  .day-header.today {
+    color: var(--grid-accent-color);
+  }
+
+  .day-header-primary {
+    text-transform: uppercase;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--grid-secondary-text-color);
+  }
+
+  .day-header-secondary {
+    position: relative;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--grid-primary-text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-top: 4px;
+    padding: 6px;
+    aspect-ratio: 1/1;
+    line-height: 1.2;
+    min-width: fit-content;
+  }
+
+  .day-header.today .day-header-secondary {
+    color: var(--grid-accent-text-color);
+  }
+
+  .day-header.today .day-header-secondary:before {
+    content: '';
+    position: absolute;
+    z-index: -1; 
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    background-color: var(--grid-accent-color);
+  }
+
+  .time-label-wrapper {
+    position: relative;
+  }
+
+  .time-label {
+    display: block;
+    position: relative;
+    font-size: 10px;
+    line-height: 10px;
+    color: var(--grid-secondary-text-color);
+    padding-right: 0;
+    margin-right: 20px;
+    text-align: right;
+  }
+
+  .time-label-all-day {
+    font-size: 8px;
+  }
+
+  .time-label-hour-separator {
+    display: none;
+  }
+
+  .time-label-hour-start,
+  .time-label-all-day,
+  .time-label-hour-end {
+    display: block;
+  }
+
+  .time-label-hour:not(.time-label-hour-end), 
+  .time-label-all-day {
+    position: relative;
+    top: -5px;
+    right: 0;
+  }
+
+  .time-label-hour-end {
+    position: absolute;
+    right: 0;
+    bottom: -5px;
+  }
+
+  .time-label-wrapper:has(~ .time-label-wrapper) .time-label-hour-end {
+    visibility: hidden;
+  }
+
+  .event-sub-block {
+    padding: 2px;
+  }
+
+  .event-sub-block:after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+  }
+
+  /* Icons: Subtle placement */
+
+  .event-icon {
+    color: var(--grid-event-text-color);
+    --icon-size: 14px;
+  }
+
+  .event-wrapper:has(.event-sub-block:not([style*="top: 0%;"][style*="height: 100%;"])) .event-icon-overlay {
+    display: none;
+  }
+
+  /* Current Time Line */
+
+  .current-time-line {
+    background-color: var(--warning-color);
+    height: 2px;
+  }
+  .current-time-circle {
+    background-color: var(--warning-color);
+    width: 8px;
+    height: 8px;
+    left: -4px;
+    top: -3px;
+  }
+
+  /* Default Event Styles */
+
+  .event-sub-block:after {
+    background-color: var(--color, var(--grid-primary-text-color));
+  }

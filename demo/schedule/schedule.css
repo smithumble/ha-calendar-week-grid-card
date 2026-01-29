@@ -1,0 +1,131 @@
+/* Base Styles */
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  padding-top: 60px;
+  font-family: 'Roboto', sans-serif;
+  width: 100vw;
+  max-width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+  transition:
+    padding-right 0.3s,
+    padding-top 0.3s;
+  background-color: var(--primary-background-color, rgb(40, 40, 40));
+}
+
+#cards-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  box-sizing: border-box;
+}
+
+/* Navbar */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: 60px;
+  background-color: var(--primary-background-color, rgb(40, 40, 40));
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: min-height 0.3s;
+}
+
+.data-source-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.data-source-selector select {
+  padding: 8px 12px;
+  padding-right: 32px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.1);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 150px;
+  max-width: 100%;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  box-sizing: border-box;
+}
+
+.data-source-selector select:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.data-source-selector select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.mode-toggle-btn {
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 4px;
+}
+
+.mode-toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.mode-toggle-btn.active {
+  background-color: rgba(3, 169, 244, 0.8);
+  border-color: rgba(3, 169, 244, 1);
+}
+
+.theme-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  background-color: var(--primary-background-color, rgb(40, 40, 40));
+  color: var(--primary-text-color);
+  position: relative;
+  min-width: 350px;
+  overflow: hidden;
+  padding: 80px 20px;
+}
+
+#card-container-light,
+#card-container-dark {
+  width: 100%;
+  max-width: 440px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-content: center;
+}

@@ -1,0 +1,172 @@
+type: custom:calendar-week-grid-card
+primary_date_format:
+  weekday: short
+secondary_date_format:
+  day: numeric
+  month: short
+time_format:
+  hour: 2-digit
+  minute: 2-digit
+  hour12: false
+time_range: false
+icons_mode: top
+icons_container: cell
+all_day: row
+theme_variables:
+  icon-opacity:
+    name: Icon Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
+  color:
+    name: Event Color
+    description: The color of the event.
+  opacity:
+    name: Opacity
+    description: The opacity of the event background (0.1 to 1.0).
+  border-style:
+    name: Border Style
+    description: The border style of the event (solid, dashed, dotted, double).
+  border-opacity:
+    name: Border Opacity
+    description: The opacity of the event border (0.0 to 1.0).
+theme_values_examples:
+  - color: var(--error-color)
+    opacity: 0.1
+    border-style: solid
+  - color: var(--warning-color)
+    opacity: 0.1
+    border-style: dashed
+  - color: var(--error-color)
+    opacity: 0.2
+    border-style: double
+  - color: var(--success-color)
+    opacity: 0.1
+    border-style: dotted
+  - color: var(--info-color)
+    opacity: 0.1
+    border-style: dotted
+blank_event:
+  icon: mdi:checkbox-blank-circle-outline
+  theme_values:
+    icon-opacity: 0.3
+    opacity: 0
+    border-opacity: 0.3
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
+entities: []
+entities_presets:
+  - name: yasno_en
+    title: Yasno (English)
+    entities:
+      - name: Planned Outages
+        entity: calendar.planned_outages
+        filter: Outage
+        icon: mdi:flash-off
+        theme_values:
+          color: var(--error-color)
+          opacity: 0.1
+          border-style: solid
+      - name: Probable Outages
+        entity: calendar.probable_outages
+        icon: mdi:alert-circle-outline
+        theme_values:
+          color: var(--warning-color)
+          opacity: 0.1
+          border-style: dashed
+      - name: Emergency Shutdowns
+        entity: calendar.planned_outages
+        filter: Emergency Shutdowns
+        icon: mdi:transmission-tower-off
+        theme_values:
+          color: var(--error-color)
+          opacity: 0.2
+          border-style: double
+      - name: Schedule Applies
+        entity: calendar.planned_outages
+        filter: Schedule Applies
+        icon: mdi:flash-off
+        theme_values:
+          color: var(--success-color)
+          opacity: 0.1
+          border-style: dotted
+      - name: Waiting for Schedule
+        entity: calendar.planned_outages
+        filter: Waiting for Schedule
+        icon: mdi:timer-sand
+        theme_values:
+          color: var(--info-color)
+          opacity: 0.1
+          border-style: dotted
+        hide:
+          - Planned Outages
+    calendars:
+      - template: calendar.planned_outages
+        title: Planned Outages Calendar
+        description: Planned Outages Calendar from ha-yasno-outages integration
+      - template: calendar.probable_outages
+        title: Probable Outages Calendar
+        description: Probable Outages Calendar from ha-yasno-outages integration
+  - name: yasno_uk
+    title: Yasno (Ukrainian)
+    entities:
+      - name: Заплановані відключення
+        entity: calendar.planned_outages
+        filter: Відключення
+        icon: mdi:flash-off
+        theme_values:
+          color: var(--error-color)
+          opacity: 0.1
+          border-style: solid
+      - name: Імовірні відключення
+        entity: calendar.probable_outages
+        icon: mdi:alert-circle-outline
+        theme_values:
+          color: var(--warning-color)
+          opacity: 0.1
+          border-style: dashed
+      - name: Аварійні відключення
+        entity: calendar.planned_outages
+        filter: Аварійні відключення
+        icon: mdi:transmission-tower-off
+        theme_values:
+          color: var(--error-color)
+          opacity: 0.2
+          border-style: double
+      - name: Графік діє
+        entity: calendar.planned_outages
+        filter: Графік діє
+        icon: mdi:flash-off
+        theme_values:
+          color: var(--success-color)
+          opacity: 0.1
+          border-style: dotted
+      - name: Очікування графіка
+        entity: calendar.planned_outages
+        filter: Очікування графіка
+        icon: mdi:timer-sand
+        theme_values:
+          color: var(--info-color)
+          opacity: 0.1
+          border-style: dotted
+        hide:
+          - Заплановані відключення
+    calendars:
+      - template: calendar.planned_outages
+        title: Календар запланованих відключень
+        description: Календар запланованих відключень з інтеграції ha-yasno-outages
+      - template: calendar.probable_outages
+        title: Календар імовірних відключень
+        description: Календар імовірних відключень з інтеграції ha-yasno-outages
+css: |
+  .event-block {
+    border-radius: 4px;
+    border: 1px var(--border-style, dotted) rgb(from var(--color, var(--primary-text-color)) r g b / var(--border-opacity, 1.0));
+  }
+
+  .event-icon {
+    color: var(--color, var(--primary-text-color));
+    opacity: var(--icon-opacity, 1.0);
+  }
+
+  .event-sub-block {
+    background-color: rgb(from var(--color, var(--primary-text-color)) r g b / var(--opacity, 0.1));
+  }

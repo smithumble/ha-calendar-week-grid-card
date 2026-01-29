@@ -2,7 +2,7 @@
 
 A custom Home Assistant card that displays calendar events in a week grid format. Check out the **[Demo](https://smithumble.github.io/ha-calendar-week-grid-card/)**
 
-![Calendar Week Grid Card Screenshot](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/image.png)
+![Calendar Week Grid Card Screenshot](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/8348663a917f20ba80d31c43ade7b22807b1b277/media/images/image.png)
 
 ## Installation
 
@@ -21,6 +21,9 @@ If it doesn't work, add this repository to HACS manually:
 5. **Clear your browser cache** and reload Home Assistant.
 
 ### Manual Installation
+
+<details>
+<summary>Manual Installation Steps</summary>
 
 1. **Download** the latest release: [calendar-week-grid-card.js](https://github.com/smithumble/ha-calendar-week-grid-card/releases/latest)
 2. Place it in your `www` folder (e.g. `/config/www/calendar-week-grid-card.js`).
@@ -52,31 +55,57 @@ url: /local/calendar-week-grid-card.js
 type: module
 ```
 
+</details>
+
 ## Configuration
 
-| Name                    | Type          | Required | Description                                                                                                                                                  |
-| ----------------------- | ------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `type`                  | string        | **Yes**  | `custom:calendar-week-grid-card`                                                                                                                             |
-| `entities`              | list          | **Yes**  | List of calendar entities or objects.                                                                                                                        |
-| `language`              | string        | No       | Language code for days (e.g., `en`, `fr`).                                                                                                                   |
-| `primary_date_format`   | object        | No       | Primary date format options for day headers. Default: `{ weekday: 'short' }`. See [Date Format](#date-format).                                               |
-| `secondary_date_format` | object        | No       | Secondary date format options for day headers (displayed below primary). Optional. See [Date Format](#date-format).                                          |
-| `time_format`           | string/object | No       | Time format pattern (string) or options (object). Default: `h A` (string) or `{ hour: 'numeric' }` (object). See [Time Format](#time-format).                |
-| `time_range`            | boolean       | No       | Display time as a range (e.g., "09 - 10" instead of "09"). Default: `false`.                                                                                 |
-| `start_hour`            | number        | No       | First hour to display (0-23). Default: 0.                                                                                                                    |
-| `end_hour`              | number        | No       | Last hour to display (0-23). Default: 24.                                                                                                                    |
-| `filter`                | string        | No       | Global filter text for event summary.                                                                                                                        |
-| `icons_container`       | string        | No       | Where to render icons: `cell` (in the cell) or `event` (in event blocks). Default: `cell`.                                                                   |
-| `icons_mode`            | string        | No       | Which events show icons: `top` (only main event) or `all` (all events). Default: `top`.                                                                      |
-| `event_icon`            | string        | No       | Default icon for events when entity doesn't have its own icon. Default: `mdi:check-circle`.                                                                  |
-| `blank_icon`            | string        | No       | Icon for cells with no events.                                                                                                                               |
-| `all_day`               | string        | No       | Where to display all-day events: `grid` (in the grid), `row` (in a separate row), or `both` (in both the grid and a separate row). Default: `grid`.          |
-| `all_day_icon`          | string        | No       | Icon for all-day events. If not specified, uses `blank_icon` for all-day cells.                                                                              |
-| `all_day_label`         | string        | No       | Label text for the all-day row in the time column. Default: empty string.                                                                                    |
-| `week_start`            | string        | No       | Day of the week to start the calendar: `today`, `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, or `saturday`. Default: `today`.           |
-| `days`                  | number        | No       | Number of days to display. Default: `7`.                                                                                                                     |
-| `theme`                 | string        | No       | Theme mode: `dark`, `light`, or `auto` (default). `auto` automatically detects the theme from Home Assistant. `dark` and `light` force the respective theme. |
-| `css`                   | string        | No       | CSS styles for the card.                                                                                                                                     |
+### Visual Editor
+
+This card supports Home Assistant's visual editor, providing an intuitive interface to configure all card options without writing YAML.
+
+![Visual Editor](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/0526ac20f24fff839f00ae539c7acd0ba5ee475e/media/images/editor.png)
+
+Simply click the **Configure** button when editing your dashboard to access the visual editor.
+
+The editor allows you to:
+
+- Add and configure calendar entities
+- Customize date and time formats
+- Set up event styling and icons
+- Configure theme variables
+- Adjust display options like week start, days shown, and theme mode
+
+All configuration options available in YAML are accessible through the visual editor interface.
+
+### YAML
+
+<details>
+<summary>YAML Configuration Options</summary>
+
+| Name                    | Type          | Required | Description                                                                                                                                         |
+| ----------------------- | ------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`                  | string        | **Yes**  | `custom:calendar-week-grid-card`                                                                                                                    |
+| `entities`              | list          | **Yes**  | List of calendar entities or objects.                                                                                                               |
+| `language`              | string        | No       | Language code for days (e.g., `en`, `fr`).                                                                                                          |
+| `primary_date_format`   | object        | No       | Primary date format options for day headers. Default: `{ weekday: 'short' }`. See [Date Format](#date-format).                                      |
+| `secondary_date_format` | object        | No       | Secondary date format options for day headers (displayed below primary). Optional. See [Date Format](#date-format).                                 |
+| `time_format`           | string/object | No       | Time format pattern (string) or options (object). Default: `h A` (string) or `{ hour: 'numeric' }` (object). See [Time Format](#time-format).       |
+| `time_range`            | boolean       | No       | Display time as a range (e.g., "09 - 10" instead of "09"). Default: `false`.                                                                        |
+| `start_hour`            | number        | No       | First hour to display (0-23). Default: 0.                                                                                                           |
+| `end_hour`              | number        | No       | Last hour to display (0-23). Default: 24.                                                                                                           |
+| `filter`                | string        | No       | Global filter text for event summary.                                                                                                               |
+| `icons_container`       | string        | No       | Where to render icons: `cell` (in the cell) or `event` (in event blocks). Default: `cell`.                                                          |
+| `icons_mode`            | string        | No       | Which events show icons: `top` (only main event) or `all` (all events). Default: `top`.                                                             |
+| `event`                 | object        | No       | Default event configuration with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                                        |
+| `blank_event`           | object        | No       | Configuration for cells with no events with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                             |
+| `blank_all_day_event`   | object        | No       | Configuration for all-day cells with no events with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                     |
+| `all_day`               | string        | No       | Where to display all-day events: `grid` (in the grid), `row` (in a separate row), or `both` (in both the grid and a separate row). Default: `grid`. |
+| `all_day_label`         | string        | No       | Label text for the all-day row in the time column. Default: empty string.                                                                           |
+| `theme_variables`       | object        | No       | Theme variables definition for the visual editor. See [Theme Variables](#theme-variables).                                                          |
+| `theme_values_examples` | array         | No       | Example theme values for the visual editor. See [Theme Variables](#theme-variables).                                                                |
+| `week_start`            | string        | No       | Day of the week to start the calendar: `today`, `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, or `saturday`. Default: `today`.  |
+| `days`                  | number        | No       | Number of days to display. Default: `7`.                                                                                                            |
+| `css`                   | string        | No       | CSS styles for the card.                                                                                                                            |
 
 ### Date Format
 
@@ -212,18 +241,86 @@ time_range: true
 # Results: "00 - 01", "09 - 10", "15 - 16"
 ```
 
+### Event Configuration
+
+The `event`, `blank_event`, and `blank_all_day_event` options allow you to configure default event styling and icons.
+
+| Name           | Type   | Description                                                                        |
+| -------------- | ------ | ---------------------------------------------------------------------------------- |
+| `icon`         | string | Icon for the event type.                                                           |
+| `theme_values` | object | Theme values to apply. These can reference variables defined in `theme_variables`. |
+
+#### Examples
+
+```yaml
+# Default event configuration
+event:
+  icon: mdi:check-circle
+  theme_values:
+    color: var(--primary-color)
+    opacity: 0.2
+
+# Blank event (cells with no events)
+blank_event:
+  icon: mdi:checkbox-blank-circle-outline
+  theme_values:
+    icon-opacity: 0.3
+    opacity: 0
+    border-opacity: 0.3
+
+# Blank all-day event
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
+```
+
+### Theme Variables
+
+The `theme_variables` and `theme_values_examples` options are used by the visual editor to provide a user-friendly interface for customizing event appearance.
+
+#### Theme Variables
+
+Define custom variables that can be used in `theme_values`. Each variable can have a `name` and `description` for the editor.
+
+```yaml
+theme_variables:
+  color:
+    name: Event Color
+    description: The color of the event.
+  opacity:
+    name: Opacity
+    description: The opacity of the event background (0.1 to 1.0).
+  border-style:
+    name: Border Style
+    description: The border style of the event (solid, dashed, dotted, double).
+```
+
+#### Theme Values Examples
+
+Provide example configurations that the visual editor can use as presets.
+
+```yaml
+theme_values_examples:
+  - color: var(--error-color)
+    opacity: 0.1
+    border-style: solid
+  - color: var(--warning-color)
+    opacity: 0.1
+    border-style: dashed
+```
+
 ### Entity Configuration
 
-| Name     | Type   | Required | Description                                                                   |
-| -------- | ------ | -------- | ----------------------------------------------------------------------------- |
-| `name`   | string | No       | Friendly name for the entity.                                                 |
-| `entity` | string | **Yes**  | The entity_id of the calendar.                                                |
-| `filter` | string | No       | Filter text for events.                                                       |
-| `icon`   | string | No       | Icon for the entity.                                                          |
-| `type`   | string | No       | Type identifier for the entity.                                               |
-| `under`  | array  | No       | Events to render underneath this one. See [Event Layering](#event-layering).  |
-| `over`   | array  | No       | Events to render on top of this one. See [Event Layering](#event-layering).   |
-| `hide`   | array  | No       | Events to hide when this event is present. See [Event Hiding](#event-hiding). |
+| Name           | Type   | Required | Description                                                                        |
+| -------------- | ------ | -------- | ---------------------------------------------------------------------------------- |
+| `name`         | string | No       | Friendly name for the entity.                                                      |
+| `entity`       | string | **Yes**  | The entity_id of the calendar.                                                     |
+| `filter`       | string | No       | Filter text for events.                                                            |
+| `icon`         | string | No       | Icon for the entity.                                                               |
+| `type`         | string | No       | Type identifier for the entity.                                                    |
+| `theme_values` | object | No       | Theme values to apply. These can reference variables defined in `theme_variables`. |
+| `under`        | array  | No       | Events to render underneath this one. See [Event Layering](#event-layering).       |
+| `over`         | array  | No       | Events to render on top of this one. See [Event Layering](#event-layering).        |
+| `hide`         | array  | No       | Events to hide when this event is present. See [Event Hiding](#event-hiding).      |
 
 ### Data Attributes
 
@@ -274,143 +371,141 @@ Each item in `hide` can be:
   - `entity`: Match by entity ID
   - `filter`: Match by filter text
 
+</details>
+
 ## Examples
+
+Themes from those examples are available in `Visual Editor` -> `Styling` -> `Theme` or can be configured via the YAML Editor.
 
 > [!NOTE]
 > The examples use the [HA Yasno Outages](https://github.com/denysdovhan/ha-yasno-outages) integration calendar, which shows outages in Ukraine caused by Russian attacks on civilian and energy infrastructure during the invasion of Ukraine.
 
-### Example 1: Basic
+### Basic
 
-![Calendar Week Grid Card Example 1: Basic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_1_basic.png)
+![Calendar Week Grid Card Example: Basic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/basic.png)
 
-<!-- CONFIG:yasno/example_1_basic -->
+<!-- CONFIG:yasno_v3/basic -->
+
+<details>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
 language: en
 time_format:
-  hour: '2-digit'
-  minute: '2-digit'
+  hour: 2-digit
+  minute: 2-digit
   hour12: false
+time_range: false
+icons_mode: top
+icons_container: cell
 entities:
-  - entity: calendar.planned_outages
+  - name: Planned Outages
+    entity: calendar.planned_outages
     filter: Outage
     icon: mdi:check-circle-outline
-  - calendar.probable_outages
+  - name: Probable Outages
+    entity: calendar.probable_outages
 ```
+
+</details>
 
 <!-- END_CONFIG -->
 
-### Example 2: Simple
+### Simple
 
-![Calendar Week Grid Card Example 2: Simple](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_2_simple.png)
+![Calendar Week Grid Card Example: Simple](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/simple.png)
 
-<!-- CONFIG:yasno/example_2_simple -->
+<!-- CONFIG:yasno_v3/simple -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
-  weekday: 'short'
+  weekday: short
 secondary_date_format:
-  day: 'numeric'
-  month: 'short'
+  day: numeric
+  month: short
 time_format:
-  hour: '2-digit'
-  minute: '2-digit'
+  hour: 2-digit
+  minute: 2-digit
   hour12: false
-blank_icon: mdi:checkbox-blank-circle-outline
-all_day_icon: ''
+time_range: false
+icons_mode: top
+icons_container: cell
 all_day: row
+theme_variables:
+  icon-opacity:
+    name: Icon Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
+  opacity:
+    name: Opacity
+    description: The opacity of the event background (0.1 to 1.0).
+  border-opacity:
+    name: Border Opacity
+    description: The opacity of the event border (0.0 to 1.0).
+  border-style:
+    name: Border Style
+    description: The border style of the event (solid, dashed, dotted, double).
+blank_event:
+  icon: mdi:checkbox-blank-circle-outline
+  theme_values:
+    icon-opacity: 0.3
+    opacity: 0
+    border-opacity: 0.3
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
 entities:
-  - name: planned_outages
+  - name: Planned Outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-  - name: probable_outages
+    theme_values:
+      opacity: 0.3
+      border-style: solid
+  - name: Probable Outages
     entity: calendar.probable_outages
     icon: mdi:alert-circle-outline
-  - name: emergency_shutdowns
+    theme_values:
+      opacity: 0.1
+      border-style: dashed
+  - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-  - name: schedule_applies
+    theme_values:
+      opacity: 0.2
+      border-style: double
+  - name: Schedule Applies
     entity: calendar.planned_outages
     filter: Schedule Applies
-    icon: mdi:checkbox-marked-circle
-  - name: waiting_for_schedule
+    icon: mdi:flash-off
+    theme_values:
+      opacity: 0.1
+      border-style: dotted
+  - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    theme_values:
+      opacity: 0.1
+      border-style: dotted
     hide:
-      - planned_outages
+      - Planned Outages
 css: |
   .event-block {
     border-radius: 4px;
-    border: 1px dotted rgb(from var(--primary-text-color) r g b / 0.3);
+    border: 1px var(--border-style, dotted) rgb(from var(--primary-text-color) r g b / var(--border-opacity, 1.0));
   }
 
-  [data-type="blank"] {
-    &.event-icon {
-      opacity: 0.3;
-    }
+  .event-icon {
+    opacity: var(--icon-opacity, 1.0);
   }
 
-  [data-name="planned_outages"] {
-    .event-block {
-      border: 1px solid var(--primary-text-color);
-    }
-
-    .event-sub-block {
-      background-color: rgb(from var(--primary-text-color) r g b / 0.3);
-    }
-  }
-
-  [data-name="emergency_shutdowns"] {
-    .event-block {
-      border: 1px double var(--primary-text-color);
-    }
-
-    .event-sub-block {
-      background-color: rgb(from var(--primary-text-color) r g b / 0.2);
-    }
-  }
-
-  [data-name="waiting_for_schedule"]  {
-    .event-block {
-      border: 1px dotted var(--primary-text-color);
-    }
-
-    .event-sub-block {
-      background-color: rgb(from var(--primary-text-color) r g b / 0.1);
-    }
-  }
-
-  [data-name="schedule_applies"] {
-    .event-block {
-      border: 1px dotted var(--primary-text-color);
-    }
-
-    .event-sub-block {
-      background-color: rgb(from var(--primary-text-color) r g b / 0.1);
-    }
-  }
-
-  [data-name="probable_outages"] {
-    &.event-icon {
-      color: var(--primary-text-color);
-    }
-
-    .event-block {
-      border: 1px dashed var(--primary-text-color);
-    }
-
-    .event-sub-block {
-      background-color: rgb(from var(--primary-text-color) r g b / 0.1);
-    }
+  .event-sub-block {
+    background-color: rgb(from var(--primary-text-color) r g b / var(--opacity, 0.1));
   }
 ```
 
@@ -418,132 +513,109 @@ css: |
 
 <!-- END_CONFIG -->
 
-### Example 3: Simple Colored
+### Simple Colored
 
-![Calendar Week Grid Card Example 3: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_3_simple_colored.png)
+![Calendar Week Grid Card Example: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/simple_colored.png)
 
-<!-- CONFIG:yasno/example_3_simple_colored -->
+<!-- CONFIG:yasno_v3/simple_colored -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
-  weekday: 'short'
+  weekday: short
 secondary_date_format:
-  day: 'numeric'
-  month: 'short'
+  day: numeric
+  month: short
 time_format:
-  hour: '2-digit'
-  minute: '2-digit'
+  hour: 2-digit
+  minute: 2-digit
   hour12: false
-blank_icon: mdi:checkbox-blank-circle-outline
-all_day_icon: mdi:checkbox-blank-circle
+time_range: false
+icons_mode: top
+icons_container: cell
 all_day: row
+theme_variables:
+  icon-opacity:
+    name: Icon Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
+  color:
+    name: Event Color
+    description: The color of the event.
+  opacity:
+    name: Opacity
+    description: The opacity of the event background (0.1 to 1.0).
+  border-style:
+    name: Border Style
+    description: The border style of the event (solid, dashed, dotted, double).
+  border-opacity:
+    name: Border Opacity
+    description: The opacity of the event border (0.0 to 1.0).
+blank_event:
+  icon: mdi:checkbox-blank-circle-outline
+  theme_values:
+    icon-opacity: 0.3
+    opacity: 0
+    border-opacity: 0.3
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
 entities:
-  - name: planned_outages
+  - name: Planned Outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-  - name: probable_outages
+    theme_values:
+      color: var(--error-color)
+      opacity: 0.1
+      border-style: solid
+  - name: Probable Outages
     entity: calendar.probable_outages
     icon: mdi:alert-circle-outline
-  - name: emergency_shutdowns
+    theme_values:
+      color: var(--warning-color)
+      opacity: 0.1
+      border-style: dashed
+  - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-  - name: schedule_applies
+    theme_values:
+      color: var(--error-color)
+      opacity: 0.2
+      border-style: double
+  - name: Schedule Applies
     entity: calendar.planned_outages
     filter: Schedule Applies
-    icon: mdi:checkbox-marked-circle
-  - name: waiting_for_schedule
+    icon: mdi:flash-off
+    theme_values:
+      color: var(--success-color)
+      opacity: 0.1
+      border-style: dotted
+  - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    theme_values:
+      color: var(--info-color)
+      opacity: 0.1
+      border-style: dotted
     hide:
-      - planned_outages
+      - Planned Outages
 css: |
   .event-block {
     border-radius: 4px;
-    border: 1px dotted rgb(from var(--secondary-text-color) r g b / 0.3);
+    border: 1px var(--border-style, dotted) rgb(from var(--color, var(--primary-text-color)) r g b / var(--border-opacity, 1.0));
   }
 
-  [data-type="blank"] {
-    &.event-icon {
-      opacity: 0.3;
-    }
+  .event-icon {
+    color: var(--color, var(--primary-text-color));
+    opacity: var(--icon-opacity, 1.0);
   }
 
-  [data-name="planned_outages"] {
-    &.event-icon {
-      color: var(--error-color);
-    }
-
-    .event-block {
-      border: 1px solid var(--error-color);
-    }
-
-    .event-sub-block {
-      background-color: rgb(from var(--error-color) r g b / 0.1);
-    }
-  }
-
-  [data-name="emergency_shutdowns"] {
-    &.event-icon {
-      color: var(--error-color);
-    }
-
-    .event-block {
-      border: 1px double var(--error-color);
-    }
-
-    .event-sub-block {
-      background-color: rgb(from var(--error-color) r g b / 0.2);
-    }
-  }
-
-  [data-name="waiting_for_schedule"] {
-    &.event-icon {
-      color: var(--info-color);
-    }
-
-    .event-block {
-      border: 1px dotted var(--info-color);
-    }
-
-    .event-sub-block {
-      background-color: rgb(from var(--info-color) r g b / 0.1);
-    }
-  }
-
-  [data-name="schedule_applies"] {
-    &.event-icon {
-      color: var(--success-color);
-    }
-
-    .event-block {
-      border: 1px dotted var(--success-color);
-    }
-
-    .event-sub-block {
-      background-color: rgb(from var(--success-color) r g b / 0.1);
-    }
-  }
-
-  [data-name="probable_outages"] {
-    &.event-icon {
-      color: var(--warning-color);
-    }
-
-    .event-block {
-      border: 1px dashed var(--warning-color);
-    }
-
-    .event-sub-block {
-      background-color: rgb(from var(--warning-color) r g b / 0.1);
-    }
+  .event-sub-block {
+    background-color: rgb(from var(--color, var(--primary-text-color)) r g b / var(--opacity, 0.1));
   }
 ```
 
@@ -551,105 +623,96 @@ css: |
 
 <!-- END_CONFIG -->
 
-### Example 4: Classic
+### Classic
 
-![Calendar Week Grid Card Example 4: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_4_classic.png)
+![Calendar Week Grid Card Example: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/classic.png)
 
-<!-- CONFIG:yasno/example_4_classic -->
+<!-- CONFIG:yasno_v3/classic -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
-  weekday: 'short'
+  weekday: short
 secondary_date_format:
-  day: 'numeric'
-  month: 'short'
+  day: numeric
+  month: short
 time_format:
-  hour: '2-digit'
-  minute: '2-digit'
+  hour: 2-digit
+  minute: 2-digit
   hour12: false
-blank_icon: mdi:checkbox-blank-circle-outline
-all_day_icon: mdi:checkbox-blank-circle
+time_range: false
+icons_mode: top
+icons_container: cell
 all_day: row
+theme_variables:
+  icon-opacity:
+    name: Icon Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
+  color:
+    name: Event Color
+    description: The color of the event.
+  opacity:
+    name: Opacity
+    description: The opacity of the event background (0.1 to 1.0).
+blank_event:
+  icon: mdi:checkbox-blank-circle-outline
+  theme_values:
+    icon-opacity: 0.3
+    opacity: 0
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
 entities:
-  - name: planned_outages
+  - name: Planned Outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-  - name: probable_outages
+    theme_values:
+      color: var(--error-color)
+      opacity: 0.2
+  - name: Probable Outages
     entity: calendar.probable_outages
-    icon: mdi:alert-circle-outline
-  - name: emergency_shutdowns
+    icon: mdi:flash-off
+    theme_values:
+      color: var(--primary-color)
+      opacity: 0.2
+  - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-  - name: schedule_applies
+    theme_values:
+      color: var(--error-color)
+      opacity: 0.4
+  - name: Schedule Applies
     entity: calendar.planned_outages
     filter: Schedule Applies
-    icon: mdi:checkbox-blank-circle
-  - name: waiting_for_schedule
+    icon: mdi:flash-off
+    theme_values:
+      color: var(--success-color)
+      opacity: 0.2
+  - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    theme_values:
+      color: var(--warning-color)
+      opacity: 0.2
     hide:
-      - planned_outages
+      - Planned Outages
 css: |
   .event-block {
     border-radius: 4px;
   }
 
-  [data-type="blank"] {
-    &.event-icon {
-      opacity: 0.3;
-    }
+  .event-icon {
+    color: var(--color, var(--primary-text-color));
+    opacity: var(--icon-opacity, 1.0);
   }
 
-  [data-name="planned_outages"] {
-    &.event-icon {
-      color: #FF0000;
-    }
-
-    .event-sub-block {
-      background-color: rgb(from #FF0000 r g b / 0.2);
-    }
-  }
-
-  [data-name="emergency_shutdowns"] {
-    &.event-icon {
-      color: #FF0000;
-    }
-
-    .event-sub-block {
-      background-color: rgb(from #FF0000 r g b / 0.2);
-    }
-  }
-
-  [data-name="waiting_for_schedule"] {
-    &.event-icon {
-      opacity: 0.6;
-      color: #FF9800;
-    }
-  }
-
-  [data-name="schedule_applies"] {
-    &.event-icon {
-      color: #FF0000;
-      opacity: 0.4;
-    }
-  }
-
-  [data-name="probable_outages"] {
-    &.event-icon {
-      color: #29B6F6;
-    }
-
-    .event-sub-block {
-      background-color: rgb(from #29B6F6 r g b / 0.2);
-    }
+  .event-sub-block {
+    background-color: rgb(from var(--color, var(--primary-text-color)) r g b / var(--opacity, 0.2));
   }
 ```
 
@@ -657,73 +720,94 @@ css: |
 
 <!-- END_CONFIG -->
 
-### Example 5: Neon
+### Neon
 
-![Calendar Week Grid Card Example 5: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_5_neon.png)
+![Calendar Week Grid Card Example: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/neon.png)
 
-<!-- CONFIG:yasno/example_5_neon -->
+<!-- CONFIG:yasno_v3/neon -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
-  weekday: 'short'
+  weekday: short
 secondary_date_format:
-  day: 'numeric'
-  month: 'short'
+  day: numeric
+  month: short
 time_format:
-  hour: '2-digit'
-  minute: '2-digit'
+  hour: 2-digit
+  minute: 2-digit
   hour12: false
-blank_icon: mdi:lightning-bolt
-all_day_icon: mdi:circle-outline
+time_range: false
+icons_mode: top
+icons_container: cell
 all_day: row
+theme_variables:
+  icon-opacity:
+    name: Icon Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
+  color:
+    name: Event Color
+    description: The color of the event.
+  opacity:
+    name: Opacity
+    description: The opacity of the event background (0.1 to 1.0).
+  background:
+    name: Background
+    description: The background of the event (color or repeating-linear-gradient).
+blank_event:
+  icon: mdi:lightning-bolt
+  theme_values:
+    icon-opacity: 0.7
+    color: var(--neon-green)
+    opacity: 0.01
+blank_all_day_event:
+  icon: mdi:circle-outline
 entities:
-  - name: planned_outages
+  - name: Planned Outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-  - name: probable_outages
+    theme_values:
+      color: '#FF5252'
+      opacity: 0.08
+      background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
+  - name: Probable Outages
     entity: calendar.probable_outages
     icon: mdi:alert-circle-outline
-  - name: emergency_shutdowns
+    theme_values:
+      color: '#FF9800'
+      opacity: 0.08
+      background: 'repeating-linear-gradient(45deg, rgb(from #FF9800 r g b / 0.08), rgb(from #FF9800 r g b / 0.08) 10px, rgb(from #FF9800 r g b / 0.15) 10px, rgb(from #FF9800 r g b / 0.15) 20px)'
+  - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-  - name: schedule_applies
+    theme_values:
+      color: '#FF8A80'
+      opacity: 0.2
+  - name: Schedule Applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:calendar-check
-  - name: waiting_for_schedule
+    theme_values:
+      color: '#29B6F6'
+      opacity: 0.05
+  - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    theme_values:
+      color: '#90A4AE'
+      opacity: 0.05
     hide:
-      - planned_outages
+      - Planned Outages
 css: |
   ha-card {
     --neon-green: #00E676;
     --neon-green-shadow: rgba(0, 230, 118, 0.3);
-    --neon-green-bg: rgba(0, 230, 118, 0.01);
-    --neon-grey: #B0BEC5;
-    --neon-grey-bg: rgba(255, 255, 255, 0.03);
-    --neon-orange: #FF9800;
-    --neon-orange-grad-1: rgba(255, 152, 0, 0.08);
-    --neon-orange-grad-2: rgba(255, 152, 0, 0.15);
-    --neon-red: #FF5252;
-    --neon-red-shadow: rgba(255, 82, 82, 0.3);
-    --neon-red-grad-1: rgba(244, 67, 54, 0.08);
-    --neon-red-grad-2: rgba(244, 67, 54, 0.15);
-    --neon-dark-red-bg: rgba(183, 28, 28, 0.2);
-    --neon-light-red: #FF8A80;
-    --neon-blue-grey: #90A4AE;
-    --neon-blue-grey-bg: rgba(120, 144, 156, 0.05);
-    --neon-light-blue-bg: rgba(3, 169, 244, 0.05);
-    --neon-light-blue: #29B6F6;
-    --shadow-color: rgba(0,0,0,0.1);
     --icon-size: 18px;
   }
 
@@ -732,80 +816,14 @@ css: |
     border-radius: 6px;
   }
 
-  .event-block {
-    background-color: var(--neon-green-bg);
-    border-radius: 6px;
+  .event-icon {
+    color: var(--color, var(--primary-text-color));
+    opacity: var(--icon-opacity, 1.0);
+    filter: drop-shadow(0 0 2px rgb(from var(--color, var(--primary-text-color)) r g b / 0.3));
   }
 
-  [data-type="blank"] {
-    &.event-icon {
-      color: var(--neon-green);
-      opacity: 0.7;
-      filter: drop-shadow(0 0 2px var(--neon-green-shadow));
-    }
-  }
-
-  [data-name="planned_outages"] {
-    &.event-icon {
-      color: var(--neon-red);
-      filter: drop-shadow(0 0 2px var(--neon-red-shadow));
-    }
-
-    .event-sub-block {
-      background: repeating-linear-gradient(
-        45deg, 
-        var(--neon-red-grad-1),
-        var(--neon-red-grad-1) 10px,
-        var(--neon-red-grad-2) 10px,
-        var(--neon-red-grad-2) 20px);
-    }
-  }
-
-  [data-name="emergency_shutdowns"] {
-    &.event-icon {
-      color: var(--neon-light-red);
-      opacity: 1;
-    }
-
-    .event-sub-block {
-      background-color: var(--neon-dark-red-bg);
-    }
-  }
-
-  [data-name="waiting_for_schedule"] {
-    &.event-icon {
-      color: var(--neon-blue-grey);
-    }
-
-    .event-sub-block {
-      background-color: var(--neon-blue-grey-bg);
-    }
-  }
-
-  [data-name="schedule_applies"] {
-    &.event-icon {
-      color: var(--neon-light-blue);
-    }
-
-    .event-sub-block {
-      background-color: var(--neon-light-blue-bg);
-    }
-  }
-
-  [data-name="probable_outages"] {
-    &.event-icon {
-      color: var(--neon-orange);
-      opacity: 0.9;
-    }
-
-    .event-sub-block {
-      background: repeating-linear-gradient(
-        45deg, 
-        var(--neon-orange-grad-1),
-        var(--neon-orange-grad-1) 10px, 
-        var(--neon-orange-grad-2) 10px, 
-        var(--neon-orange-grad-2) 20px);
-    }
+  .event-wrapper .event-sub-block {
+    background: var(--background, rgb(from var(--color, var(--primary-text-color)) r g b / var(--opacity, 0.1)));
   }
 ```
 
@@ -813,53 +831,81 @@ css: |
 
 <!-- END_CONFIG -->
 
-### Example 6: Soft UI
+### Soft UI
 
-![Calendar Week Grid Card Example 6: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_6_soft_ui.png)
+![Calendar Week Grid Card Example: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/soft_ui.png)
 
-<!-- CONFIG:yasno/example_6_soft_ui -->
+<!-- CONFIG:yasno_v3/soft_ui -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
-  weekday: 'short'
+  weekday: short
 secondary_date_format:
-  day: 'numeric'
-  month: 'short'
+  day: numeric
+  month: short
 time_format:
-  hour: '2-digit'
-  minute: '2-digit'
+  hour: 2-digit
+  minute: 2-digit
   hour12: false
+time_range: false
 icons_container: event
 icons_mode: all
-blank_icon: mdi:circle-outline
 all_day: row
+theme_variables:
+  color:
+    name: Event Color
+    description: The color of the event icon.
+  background:
+    name: Background
+    description: The background color of the event.
+blank_event:
+  icon: mdi:circle-outline
+  theme_values:
+    color: '#E0E0E0'
+    background: '#F5F5F5'
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
 entities:
-  - name: planned_outages
+  - name: Planned Outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:close-circle
-  - name: probable_outages
+    theme_values:
+      color: '#FFFFFF'
+      background: '#FF8A80'
+  - name: Probable Outages
     entity: calendar.probable_outages
     icon: mdi:close-circle
-  - name: emergency_shutdowns
+    theme_values:
+      color: '#1B5E20'
+      background: '#B9F6CA'
+  - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:alert-circle
-  - name: schedule_applies
+    theme_values:
+      color: '#FFFFFF'
+      background: '#FF80AB'
+  - name: Schedule Applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:circle-outline
-  - name: waiting_for_schedule
+    theme_values:
+      color: '#F57F17'
+      background: '#FFF176'
+  - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:clock-outline
+    theme_values:
+      color: '#006064'
+      background: '#80DEEA'
     hide:
-      - planned_outages
+      - Planned Outages
 css: |
   ha-card {
     --text-color: #444;
@@ -877,71 +923,22 @@ css: |
     gap: 8px;
   }
 
+  .cell-wrapper {
+    min-height: 28px;
+  }
+
   .cell {
-    height: 34px;
+    height:34px;
     border-radius: 17px;
   }
 
   .event-icon {
     --icon-size: 20px;
+    color: var(--color, var(--primary-text-color));
   }
 
   .event-block {
-    background-color: #F5F5F5;
-  }
-
-  ha-icon[data-type="blank"] {
-    color: #E0E0E0;
-  }
-
-  [data-name="planned_outages"] {
-    &.event-icon {
-      color: #FFFFFF;
-    }
-
-    .event-block {
-      background-color: #FF8A80;
-    }
-  }
-
-  [data-name="emergency_shutdowns"] {
-    &.event-icon {
-      color: #FFFFFF;
-    }
-
-    .event-block {
-      background-color: #FF80AB;
-    }
-  }
-
-  [data-name="waiting_for_schedule"] {
-    &.event-icon {
-      color: #006064;
-    }
-
-    .event-block {
-      background-color: #80DEEA;
-    }
-  }
-
-  [data-name="schedule_applies"] {
-    &.event-icon {
-      color: #F57F17;
-    }
-
-    .event-block {
-      background-color: #FFF176;
-    }
-  }
-
-  [data-name="probable_outages"] {
-    &.event-icon {
-      color: #1B5E20;
-    }
-
-    .event-block {
-      background-color: #B9F6CA;
-    }
+    background-color: var(--background, #F5F5F5);
   }
 ```
 
@@ -949,43 +946,70 @@ css: |
 
 <!-- END_CONFIG -->
 
-### Example 7: Yasno Legacy
+### Yasno Legacy
 
-![Calendar Week Grid Card Example 7: Yasno Legacy](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_7_yasno_legacy.png)
+![Calendar Week Grid Card Example: Yasno Legacy](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/yasno_legacy.png)
 
-<!-- CONFIG:yasno/example_7_yasno_legacy -->
+<!-- CONFIG:yasno_v3/yasno_legacy -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
+primary_date_format:
+  weekday: short
+secondary_date_format:
+  day: numeric
+  month: short
 time_format:
-  hour: '2-digit'
+  hour: 2-digit
   hour12: false
 time_range: true
 icons_container: event
 icons_mode: all
 all_day: row
+theme_variables:
+  color:
+    name: Event Color
+    description: The color of the event icon.
+  background:
+    name: Background
+    description: The background color of the event.
+  opacity:
+    name: Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
+blank_event:
+  icon: null
+  theme_values:
+    opacity: 0.3
 entities:
-  - name: planned_outages
+  - name: Planned Outages
     entity: calendar.planned_outages
     filter: Outage
+    type: highlight
     icon: mdi:flash-off
-  - name: probable_outages
+    theme_values:
+      color: var(--color-highlight-icon)
+      background: var(--color-highlight)
+  - name: Probable Outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
-  - name: emergency_shutdowns
+    theme_values:
+      color: var(--color-highlight-light-icon)
+  - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-  - name: waiting_for_schedule
+  - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    theme_values:
+      color: var(--color-highlight-light-icon)
+      opacity: 0.5
     hide:
-      - planned_outages
+      - Planned Outages
 css: |
   ha-card {
     --color-highlight: #FDD631;
@@ -1015,6 +1039,10 @@ css: |
     padding: 0 18px;
   }
 
+  .time-label.now {
+    color: var(--primary-text-color);
+  }
+
   .today, .now {
     &.day-header, &.time-label, .event-sub-block {
       background-color: rgb(from var(--color-highlight-light) r g b / 0.4);
@@ -1025,51 +1053,17 @@ css: |
     border-radius: 0px;
   }
 
-  [data-type="blank"] {
-    &.event-icon {
-      opacity: 0.3;
-    }
+  .event-icon {
+    color: var(--color, var(--primary-text-color));
+    opacity: var(--opacity, 1.0);
   }
 
-  [data-name="planned_outages"] {
-    .event-block {
-      background-color: var(--color-highlight);
-    }
-
-    &.event-icon {
-      color: var(--color-highlight-icon);
-    }
+  .event-block {
+    background-color: var(--background, var(--card-background-color));
   }
 
-  [data-name="waiting_for_schedule"] {
-    &.event-icon {
-      color: var(--color-highlight-light-icon);
-      opacity: 0.5;
-    }
-  }
-
-  [data-name="schedule_applies"] {
-    &.event-icon {
-      opacity: 0.4;
-      color: var(--color-highlight-icon);
-    }
-  }
-
-  [data-name="probable_outages"] {
-    &.event-icon {
-      color: var(--color-highlight-light-icon);
-    }
-  }
-
-  .grid-container > :nth-child(16n+9),
-  .grid-container > :nth-child(16n+10),
-  .grid-container > :nth-child(16n+11),
-  .grid-container > :nth-child(16n+12),
-  .grid-container > :nth-child(16n+13),
-  .grid-container > :nth-child(16n+14),
-  .grid-container > :nth-child(16n+15),
-  .grid-container > :nth-child(16n+16) {
-    .event-wrapper:not([data-name="planned_outages"]) .event-block, &.time-label {
+  .grid-container > .row-odd {
+    .event-wrapper:not([data-type="highlight"]) .event-block, .time-label {
       filter: contrast(1.05) brightness(0.95); 
     }
   }
@@ -1079,53 +1073,68 @@ css: |
 
 <!-- END_CONFIG -->
 
-### Example 8 (1): Google Calendar
+### Google Calendar
 
-![Calendar Week Grid Card Example 8 (1): Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_1_google_calendar.png)
+![Calendar Week Grid Card Example: Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/google_calendar.png)
 
-<!-- CONFIG:yasno/example_8_1_google_calendar -->
+<!-- CONFIG:yasno_v3/google_calendar -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
-  weekday: 'short'
+  weekday: short
 secondary_date_format:
-  day: 'numeric'
+  day: numeric
 time_format:
-  hour: '2-digit'
-  minute: '2-digit'
+  hour: 2-digit
+  minute: 2-digit
   hour12: false
 time_range: true
 icons_mode: all
 icons_container: event
 all_day: row
-all_day_label: STATUS
+theme_variables:
+  color:
+    name: Event Color
+    description: The color of the event.
+blank_event:
+  theme_values:
+    color: transparent
 entities:
-  - name: planned_outages
+  - name: Planned Outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-  - name: probable_outages
+    theme_values:
+      color: var(--error-color)
+  - name: Probable Outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
-  - name: emergency_shutdowns
+    theme_values:
+      color: var(--primary-color)
+  - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-  - name: schedule_applies
+    theme_values:
+      color: var(--error-color)
+  - name: Schedule Applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
-  - name: waiting_for_schedule
+    theme_values:
+      color: var(--success-color)
+  - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    theme_values:
+      color: var(--warning-color)
     hide:
-      - planned_outages
+      - Planned Outages
 css: |
   ha-card { 
     --grid-bg: var(--card-background-color, #FFF);
@@ -1135,11 +1144,6 @@ css: |
     --grid-event-text-color: var(--card-background-color, #fff);
     --grid-accent-color: var(--primary-color, #0b57d0);
     --grid-accent-text-color: var(--card-background-color, #fff);
-    --planned-outages-color: var(--error-color, #F3511E);
-    --probable-outages-color: var(--primary-color, #4285F4);
-    --emergency-shutdowns-color: var(--error-color, #D40101);
-    --schedule-applies-color: var(--success-color, #34B779);
-    --waiting-for-schedule-color: var(--warning-color, #F6BE28);
   }
 
   ha-card.theme-dark {
@@ -1150,11 +1154,6 @@ css: |
     --grid-event-text-color: var(--card-background-color, #131314);
     --grid-accent-color: var(--primary-color, #a8c7fa);
     --grid-accent-text-color: var(--card-background-color, #062e6f);
-    --planned-outages-color: var(--error-color, #E3683E);
-    --probable-outages-color: var(--primary-color, #678AE1);
-    --emergency-shutdowns-color: var(--error-color, #D95234);
-    --schedule-applies-color: var(--success-color, #56B080);
-    --waiting-for-schedule-color: var(--warning-color, #E6BA50);
   }
 
   ha-card {
@@ -1197,7 +1196,7 @@ css: |
   }
 
   .day-header {
-    padding-bottom: 16px;
+    padding-bottom: 12px;
   }
 
   .day-header.today {
@@ -1219,8 +1218,12 @@ css: |
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 8px;
-    width: 100%;
+    text-align: center;
+    margin-top: 4px;
+    padding: 6px;
+    aspect-ratio: 1/1;
+    line-height: 1.2;
+    min-width: fit-content;
   }
 
   .day-header.today .day-header-secondary {
@@ -1231,25 +1234,27 @@ css: |
     content: '';
     position: absolute;
     z-index: -1; 
-    width: 100%;
-    max-width: 30px;
-    aspect-ratio: 1/1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     border-radius: 50%;
     background-color: var(--grid-accent-color);
   }
 
   .time-label-wrapper {
     position: relative;
-    width: 45px;
   }
 
   .time-label {
-    position: absolute;
-    top: -5px;
+    display: block;
+    position: relative;
     font-size: 10px;
     line-height: 10px;
     color: var(--grid-secondary-text-color);
-    padding-right: 20px;
+    padding-right: 0;
+    margin-right: 20px;
+    text-align: right;
   }
 
   .time-label-all-day {
@@ -1260,18 +1265,23 @@ css: |
     display: none;
   }
 
-  .time-label-hour, 
-  .time-label-all-day {
-    position: absolute;
+  .time-label-hour-start,
+  .time-label-all-day,
+  .time-label-hour-end {
+    display: block;
   }
 
-  .time-label-hour-start, 
+  .time-label-hour:not(.time-label-hour-end), 
   .time-label-all-day {
-    top: 0;
+    position: relative;
+    top: -5px;
+    right: 0;
   }
 
   .time-label-hour-end {
-    bottom: -10px;
+    position: absolute;
+    right: 0;
+    bottom: -5px;
   }
 
   .time-label-wrapper:has(~ .time-label-wrapper) .time-label-hour-end {
@@ -1306,33 +1316,7 @@ css: |
   /* Default Event Styles */
 
   .event-sub-block {
-    background-color: var(--grid-primary-text-color);
-  }
-
-  [data-type="blank"] .event-sub-block {
-    background-color: transparent;
-  }
-
-  /* Specific Event Styles */
-
-  [data-name="planned_outages"] .event-sub-block {
-    background-color: var(--planned-outages-color);
-  }
-
-  [data-name="probable_outages"] .event-sub-block {
-    background-color: var(--probable-outages-color);
-  }
-
-  [data-name="emergency_shutdowns"] .event-sub-block {
-    background-color: var(--emergency-shutdowns-color);
-  }
-
-  [data-name="schedule_applies"] .event-sub-block {
-    background-color: var(--schedule-applies-color); 
-  }
-
-  [data-name="waiting_for_schedule"] .event-sub-block {
-    background-color: var(--waiting-for-schedule-color);
+    background-color: var(--color, var(--grid-primary-text-color));
   }
 ```
 
@@ -1340,53 +1324,68 @@ css: |
 
 <!-- END_CONFIG -->
 
-### Example 8 (2): Google Calendar Separated
+### Google Calendar Separated
 
-![Calendar Week Grid Card Example 8 (2): Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_2_google_calendar_separated.png)
+![Calendar Week Grid Card Example: Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/google_calendar_separated.png)
 
-<!-- CONFIG:yasno/example_8_2_google_calendar_separated -->
+<!-- CONFIG:yasno_v3/google_calendar_separated -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
-  weekday: 'short'
+  weekday: short
 secondary_date_format:
-  day: 'numeric'
+  day: numeric
 time_format:
-  hour: '2-digit'
-  minute: '2-digit'
+  hour: 2-digit
+  minute: 2-digit
   hour12: false
 time_range: true
 icons_mode: all
 icons_container: event
 all_day: row
-all_day_label: STATUS
+theme_variables:
+  color:
+    name: Event Color
+    description: The color of the event.
+blank_event:
+  theme_values:
+    color: transparent
 entities:
-  - name: planned_outages
+  - name: Planned Outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-  - name: probable_outages
+    theme_values:
+      color: var(--error-color)
+  - name: Probable Outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
-  - name: emergency_shutdowns
+    theme_values:
+      color: var(--primary-color)
+  - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-  - name: schedule_applies
+    theme_values:
+      color: var(--error-color)
+  - name: Schedule Applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
-  - name: waiting_for_schedule
+    theme_values:
+      color: var(--success-color)
+  - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    theme_values:
+      color: var(--warning-color)
     hide:
-      - planned_outages
+      - Planned Outages
 css: |
   ha-card { 
     --grid-bg: var(--card-background-color, #FFF);
@@ -1396,11 +1395,6 @@ css: |
     --grid-event-text-color: var(--card-background-color, #fff);
     --grid-accent-color: var(--primary-color, #0b57d0);
     --grid-accent-text-color: var(--card-background-color, #fff);
-    --planned-outages-color: var(--error-color, #F3511E);
-    --probable-outages-color: var(--primary-color, #4285F4);
-    --emergency-shutdowns-color: var(--error-color, #D40101);
-    --schedule-applies-color: var(--success-color, #34B779);
-    --waiting-for-schedule-color: var(--warning-color, #F6BE28);
   }
 
   ha-card.theme-dark {
@@ -1411,11 +1405,6 @@ css: |
     --grid-event-text-color: var(--card-background-color, #131314);
     --grid-accent-color: var(--primary-color, #a8c7fa);
     --grid-accent-text-color: var(--card-background-color, #062e6f);
-    --planned-outages-color: var(--error-color, #E3683E);
-    --probable-outages-color: var(--primary-color, #678AE1);
-    --emergency-shutdowns-color: var(--error-color, #D95234);
-    --schedule-applies-color: var(--success-color, #56B080);
-    --waiting-for-schedule-color: var(--warning-color, #E6BA50);
   }
 
   ha-card {
@@ -1456,7 +1445,7 @@ css: |
   }
 
   .day-header {
-    padding-bottom: 16px;
+    padding-bottom: 12px;
   }
 
   .day-header.today {
@@ -1478,8 +1467,12 @@ css: |
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 8px;
-    width: 100%;
+    text-align: center;
+    margin-top: 4px;
+    padding: 6px;
+    aspect-ratio: 1/1;
+    line-height: 1.2;
+    min-width: fit-content;
   }
 
   .day-header.today .day-header-secondary {
@@ -1490,25 +1483,27 @@ css: |
     content: '';
     position: absolute;
     z-index: -1; 
-    width: 100%;
-    max-width: 30px;
-    aspect-ratio: 1/1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     border-radius: 50%;
     background-color: var(--grid-accent-color);
   }
 
   .time-label-wrapper {
     position: relative;
-    width: 45px;
   }
 
   .time-label {
-    position: absolute;
-    top: -5px;
+    display: block;
+    position: relative;
     font-size: 10px;
     line-height: 10px;
     color: var(--grid-secondary-text-color);
-    padding-right: 20px;
+    padding-right: 0;
+    margin-right: 20px;
+    text-align: right;
   }
 
   .time-label-all-day {
@@ -1519,18 +1514,23 @@ css: |
     display: none;
   }
 
-  .time-label-hour, 
-  .time-label-all-day {
-    position: absolute;
+  .time-label-hour-start,
+  .time-label-all-day,
+  .time-label-hour-end {
+    display: block;
   }
 
-  .time-label-hour-start, 
+  .time-label-hour:not(.time-label-hour-end), 
   .time-label-all-day {
-    top: 0;
+    position: relative;
+    top: -5px;
+    right: 0;
   }
 
   .time-label-hour-end {
-    bottom: -10px;
+    position: absolute;
+    right: 0;
+    bottom: -5px;
   }
 
   .time-label-wrapper:has(~ .time-label-wrapper) .time-label-hour-end {
@@ -1577,33 +1577,7 @@ css: |
   /* Default Event Styles */
 
   .event-sub-block:after {
-    background-color: var(--grid-primary-text-color);
-  }
-
-  [data-type="blank"] .event-sub-block:after {
-    background-color: transparent;
-  }
-
-  /* Specific Event Styles */
-
-  [data-name="planned_outages"] .event-sub-block:after {
-    background-color: var(--planned-outages-color);
-  }
-
-  [data-name="probable_outages"] .event-sub-block:after {
-    background-color: var(--probable-outages-color);
-  }
-
-  [data-name="emergency_shutdowns"] .event-sub-block:after {
-    background-color: var(--emergency-shutdowns-color);
-  }
-
-  [data-name="schedule_applies"] .event-sub-block:after {
-    background-color: var(--schedule-applies-color); 
-  }
-
-  [data-name="waiting_for_schedule"] .event-sub-block:after {
-    background-color: var(--waiting-for-schedule-color);
+    background-color: var(--color, var(--grid-primary-text-color));
   }
 ```
 
@@ -1611,51 +1585,68 @@ css: |
 
 <!-- END_CONFIG -->
 
-### Example 8 (3): Google Calendar Original
+### Google Calendar Original
 
-![Calendar Week Grid Card Example 8 (3): Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_3_google_calendar_original.png)
+![Calendar Week Grid Card Example: Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/google_calendar_original.png)
 
-<!-- CONFIG:yasno/example_8_3_google_calendar_original -->
+<!-- CONFIG:yasno_v3/google_calendar_original -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
-  weekday: 'short'
+  weekday: short
 secondary_date_format:
-  day: 'numeric'
+  day: numeric
 time_format:
-  hour: '2-digit'
-  minute: '2-digit'
+  hour: 2-digit
+  minute: 2-digit
   hour12: false
+time_range: false
 icons_mode: all
 icons_container: event
 all_day: row
+theme_variables:
+  color:
+    name: Event Color
+    description: The color of the event.
+blank_event:
+  theme_values:
+    color: transparent
 entities:
-  - name: planned_outages
+  - name: Planned Outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-  - name: probable_outages
+    theme_values:
+      color: '#F3511E'
+  - name: Probable Outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
-  - name: emergency_shutdowns
+    theme_values:
+      color: '#4285F4'
+  - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-  - name: schedule_applies
+    theme_values:
+      color: '#D40101'
+  - name: Schedule Applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
-  - name: waiting_for_schedule
+    theme_values:
+      color: '#34B779'
+  - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    theme_values:
+      color: '#F6BE28'
     hide:
-      - planned_outages
+      - Planned Outages
 css: |
   ha-card { 
     --grid-bg: #FFF;
@@ -1665,11 +1656,6 @@ css: |
     --grid-event-text-color: #fff;
     --grid-accent-color: #0b57d0;
     --grid-accent-text-color: #fff;
-    --planned-outages-color: #F3511E;
-    --probable-outages-color: #4285F4;
-    --emergency-shutdowns-color: #D40101;
-    --schedule-applies-color: #34B779;
-    --waiting-for-schedule-color: #F6BE28;
   }
 
   ha-card.theme-dark {
@@ -1680,11 +1666,6 @@ css: |
     --grid-event-text-color: #131314;
     --grid-accent-color: #a8c7fa;
     --grid-accent-text-color: #062e6f;
-    --planned-outages-color: #E3683E;
-    --probable-outages-color: #678AE1;
-    --emergency-shutdowns-color: #D95234;
-    --schedule-applies-color: #56B080;
-    --waiting-for-schedule-color: #E6BA50;
   }
 
   ha-card {
@@ -1729,7 +1710,7 @@ css: |
   }
 
   .day-header {
-    padding-bottom: 16px;
+    padding-bottom: 12px;
   }
 
   .day-header.today {
@@ -1751,8 +1732,12 @@ css: |
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 8px;
-    width: 100%;
+    text-align: center;
+    margin-top: 4px;
+    padding: 6px;
+    aspect-ratio: 1/1;
+    line-height: 1.2;
+    min-width: fit-content;
   }
 
   .day-header.today .day-header-secondary {
@@ -1763,9 +1748,10 @@ css: |
     content: '';
     position: absolute;
     z-index: -1; 
-    width: 100%;
-    max-width: 30px;
-    aspect-ratio: 1/1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     border-radius: 50%;
     background-color: var(--grid-accent-color);
   }
@@ -1806,33 +1792,7 @@ css: |
   /* Default Event Styles */
 
   .event-sub-block {
-    background-color: var(--grid-primary-text-color);
-  }
-
-  [data-type="blank"] .event-sub-block {
-    background-color: transparent;
-  }
-
-  /* Specific Event Styles */
-
-  [data-name="planned_outages"] .event-sub-block {
-    background-color: var(--planned-outages-color);
-  }
-
-  [data-name="probable_outages"] .event-sub-block {
-    background-color: var(--probable-outages-color);
-  }
-
-  [data-name="emergency_shutdowns"] .event-sub-block {
-    background-color: var(--emergency-shutdowns-color);
-  }
-
-  [data-name="schedule_applies"] .event-sub-block {
-    background-color: var(--schedule-applies-color); 
-  }
-
-  [data-name="waiting_for_schedule"] .event-sub-block {
-    background-color: var(--waiting-for-schedule-color);
+    background-color: var(--color, var(--grid-primary-text-color));
   }
 ```
 
@@ -1840,51 +1800,68 @@ css: |
 
 <!-- END_CONFIG -->
 
-### Example 8 (4): Google Calendar Original Separated
+### Google Calendar Original Separated
 
-![Calendar Week Grid Card Example 8 (4): Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/main/media/images/example_8_4_google_calendar_original_separated.png)
+![Calendar Week Grid Card Example: Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/google_calendar_original_separated.png)
 
-<!-- CONFIG:yasno/example_8_4_google_calendar_original_separated -->
+<!-- CONFIG:yasno_v3/google_calendar_original_separated -->
 
 <details>
-<summary>Configuration</summary>
+<summary>YAML Configuration</summary>
 
 ```yaml
 type: custom:calendar-week-grid-card
-language: en
 primary_date_format:
-  weekday: 'short'
+  weekday: short
 secondary_date_format:
-  day: 'numeric'
+  day: numeric
 time_format:
-  hour: '2-digit'
-  minute: '2-digit'
+  hour: 2-digit
+  minute: 2-digit
   hour12: false
+time_range: false
 icons_mode: all
 icons_container: event
 all_day: row
+theme_variables:
+  color:
+    name: Event Color
+    description: The color of the event.
+blank_event:
+  theme_values:
+    color: transparent
 entities:
-  - name: planned_outages
+  - name: Planned Outages
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:flash-off
-  - name: probable_outages
+    theme_values:
+      color: '#F3511E'
+  - name: Probable Outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
-  - name: emergency_shutdowns
+    theme_values:
+      color: '#4285F4'
+  - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
-  - name: schedule_applies
+    theme_values:
+      color: '#D40101'
+  - name: Schedule Applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
-  - name: waiting_for_schedule
+    theme_values:
+      color: '#34B779'
+  - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
+    theme_values:
+      color: '#F6BE28'
     hide:
-      - planned_outages
+      - Planned Outages
 css: |
   ha-card {
     --grid-bg: #FFF;
@@ -1894,11 +1871,6 @@ css: |
     --grid-event-text-color: #fff;
     --grid-accent-color: #0b57d0;
     --grid-accent-text-color: #fff;
-    --planned-outages-color: #F3511E;
-    --probable-outages-color: #4285F4;
-    --emergency-shutdowns-color: #D40101;
-    --schedule-applies-color: #34B779;
-    --waiting-for-schedule-color: #F6BE28;
   }
 
   ha-card.theme-dark {
@@ -1909,11 +1881,6 @@ css: |
     --grid-event-text-color: #131314;
     --grid-accent-color: #a8c7fa;
     --grid-accent-text-color: #062e6f;
-    --planned-outages-color: #E3683E;
-    --probable-outages-color: #678AE1;
-    --emergency-shutdowns-color: #D95234;
-    --schedule-applies-color: #56B080;
-    --waiting-for-schedule-color: #E6BA50;
   }
 
   ha-card {
@@ -1957,7 +1924,7 @@ css: |
   }
 
   .day-header {
-    padding-bottom: 16px;
+    padding-bottom: 12px;
   }
 
   .day-header.today {
@@ -1979,8 +1946,12 @@ css: |
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 8px;
-    width: 100%;
+    text-align: center;
+    margin-top: 4px;
+    padding: 6px;
+    aspect-ratio: 1/1;
+    line-height: 1.2;
+    min-width: fit-content;
   }
 
   .day-header.today .day-header-secondary {
@@ -1991,9 +1962,10 @@ css: |
     content: '';
     position: absolute;
     z-index: -1; 
-    width: 100%;
-    max-width: 30px;
-    aspect-ratio: 1/1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     border-radius: 50%;
     background-color: var(--grid-accent-color);
   }
@@ -2046,33 +2018,7 @@ css: |
   /* Default Event Styles */
 
   .event-sub-block:after {
-    background-color: var(--grid-primary-text-color);
-  }
-
-  [data-type="blank"] .event-sub-block:after {
-    background-color: transparent;
-  }
-
-  /* Specific Event Styles */
-
-  [data-name="planned_outages"] .event-sub-block:after {
-    background-color: var(--planned-outages-color);
-  }
-
-  [data-name="probable_outages"] .event-sub-block:after {
-    background-color: var(--probable-outages-color);
-  }
-
-  [data-name="emergency_shutdowns"] .event-sub-block:after {
-    background-color: var(--emergency-shutdowns-color);
-  }
-
-  [data-name="schedule_applies"] .event-sub-block:after {
-    background-color: var(--schedule-applies-color); 
-  }
-
-  [data-name="waiting_for_schedule"] .event-sub-block:after {
-    background-color: var(--waiting-for-schedule-color);
+    background-color: var(--color, var(--grid-primary-text-color));
   }
 ```
 

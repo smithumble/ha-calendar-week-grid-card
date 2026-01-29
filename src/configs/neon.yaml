@@ -1,0 +1,163 @@
+type: custom:calendar-week-grid-card
+primary_date_format:
+  weekday: short
+secondary_date_format:
+  day: numeric
+  month: short
+time_format:
+  hour: 2-digit
+  minute: 2-digit
+  hour12: false
+time_range: false
+icons_mode: top
+icons_container: cell
+all_day: row
+theme_variables:
+  icon-opacity:
+    name: Icon Opacity
+    description: The opacity of the event icon (0.0 to 1.0).
+  color:
+    name: Event Color
+    description: The color of the event.
+  opacity:
+    name: Opacity
+    description: The opacity of the event background (0.1 to 1.0).
+  background:
+    name: Background
+    description: The background of the event (color or repeating-linear-gradient).
+theme_values_examples:
+  - color: '#FF5252'
+    background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
+  - color: '#FF9800'
+    background: 'repeating-linear-gradient(45deg, rgb(from #FF9800 r g b / 0.08), rgb(from #FF9800 r g b / 0.08) 10px, rgb(from #FF9800 r g b / 0.15) 10px, rgb(from #FF9800 r g b / 0.15) 20px)'
+  - color: '#FF8A80'
+    background: 'repeating-linear-gradient(45deg, rgb(from #FF8A80 r g b / 0.08), rgb(from #FF8A80 r g b / 0.08) 10px, rgb(from #FF8A80 r g b / 0.15) 10px, rgb(from #FF8A80 r g b / 0.15) 20px)'
+  - color: '#29B6F6'
+    background: 'repeating-linear-gradient(45deg, rgb(from #29B6F6 r g b / 0.08), rgb(from #29B6F6 r g b / 0.08) 10px, rgb(from #29B6F6 r g b / 0.15) 10px, rgb(from #29B6F6 r g b / 0.15) 20px)'
+blank_event:
+  icon: mdi:lightning-bolt
+  theme_values:
+    icon-opacity: 0.7
+    color: var(--neon-green)
+    opacity: 0.01
+blank_all_day_event:
+  icon: mdi:circle-outline
+entities: []
+entities_presets:
+  - name: yasno_en
+    title: Yasno (English)
+    entities:
+      - name: Planned Outages
+        entity: calendar.planned_outages
+        filter: Outage
+        icon: mdi:flash-off
+        theme_values:
+          color: '#FF5252'
+          opacity: 0.08
+          background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
+      - name: Probable Outages
+        entity: calendar.probable_outages
+        icon: mdi:alert-circle-outline
+        theme_values:
+          color: '#FF9800'
+          opacity: 0.08
+          background: 'repeating-linear-gradient(45deg, rgb(from #FF9800 r g b / 0.08), rgb(from #FF9800 r g b / 0.08) 10px, rgb(from #FF9800 r g b / 0.15) 10px, rgb(from #FF9800 r g b / 0.15) 20px)'
+      - name: Emergency Shutdowns
+        entity: calendar.planned_outages
+        filter: Emergency Shutdowns
+        icon: mdi:transmission-tower-off
+        theme_values:
+          color: '#FF8A80'
+          opacity: 0.2
+      - name: Schedule Applies
+        entity: calendar.planned_outages
+        filter: Schedule Applies
+        icon: mdi:calendar-check
+        theme_values:
+          color: '#29B6F6'
+          opacity: 0.05
+      - name: Waiting for Schedule
+        entity: calendar.planned_outages
+        filter: Waiting for Schedule
+        icon: mdi:timer-sand
+        theme_values:
+          color: '#90A4AE'
+          opacity: 0.05
+        hide:
+          - Planned Outages
+    calendars:
+      - template: calendar.planned_outages
+        title: Planned Outages Calendar
+        description: Planned Outages Calendar from ha-yasno-outages integration
+      - template: calendar.probable_outages
+        title: Probable Outages Calendar
+        description: Probable Outages Calendar from ha-yasno-outages integration
+  - name: yasno_uk
+    title: Yasno (Ukrainian)
+    entities:
+      - name: Заплановані відключення
+        entity: calendar.planned_outages
+        filter: Відключення
+        icon: mdi:flash-off
+        theme_values:
+          color: '#FF5252'
+          opacity: 0.08
+          background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
+      - name: Імовірні відключення
+        entity: calendar.probable_outages
+        icon: mdi:alert-circle-outline
+        theme_values:
+          color: '#FF9800'
+          opacity: 0.08
+          background: 'repeating-linear-gradient(45deg, rgb(from #FF9800 r g b / 0.08), rgb(from #FF9800 r g b / 0.08) 10px, rgb(from #FF9800 r g b / 0.15) 10px, rgb(from #FF9800 r g b / 0.15) 20px)'
+      - name: Аварійні відключення
+        entity: calendar.planned_outages
+        filter: Аварійні відключення
+        icon: mdi:transmission-tower-off
+        theme_values:
+          color: '#FF8A80'
+          opacity: 0.2
+      - name: Графік діє
+        entity: calendar.planned_outages
+        filter: Графік діє
+        icon: mdi:calendar-check
+        theme_values:
+          color: '#29B6F6'
+          opacity: 0.05
+      - name: Очікування графіка
+        entity: calendar.planned_outages
+        filter: Очікування графіка
+        icon: mdi:timer-sand
+        theme_values:
+          color: '#90A4AE'
+          opacity: 0.05
+        hide:
+          - Заплановані відключення
+    calendars:
+      - template: calendar.planned_outages
+        title: Календар запланованих відключень
+        description: Календар запланованих відключень з інтеграції ha-yasno-outages
+      - template: calendar.probable_outages
+        title: Календар імовірних відключень
+        description: Календар імовірних відключень з інтеграції ha-yasno-outages
+css: |
+  ha-card {
+    --neon-green: #00E676;
+    --neon-green-shadow: rgba(0, 230, 118, 0.3);
+    --icon-size: 18px;
+  }
+
+  .cell {
+    height: 28px;
+    border-radius: 6px;
+  }
+
+  .event-icon {
+    color: var(--color, var(--primary-text-color));
+    opacity: var(--icon-opacity, 1.0);
+    filter: drop-shadow(0 0 2px rgb(from var(--color, var(--primary-text-color)) r g b / 0.3));
+  }
+
+  .event-wrapper .event-sub-block {
+    background: var(--background, rgb(from var(--color, var(--primary-text-color)) r g b / var(--opacity, 0.1)));
+  }

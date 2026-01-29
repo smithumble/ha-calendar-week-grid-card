@@ -1,0 +1,167 @@
+type: custom:calendar-week-grid-card
+primary_date_format:
+  weekday: short
+secondary_date_format:
+  day: numeric
+  month: short
+time_format:
+  hour: 2-digit
+  minute: 2-digit
+  hour12: false
+time_range: false
+icons_container: event
+icons_mode: all
+all_day: row
+theme_variables:
+  color:
+    name: Event Color
+    description: The color of the event icon.
+  background:
+    name: Background
+    description: The background color of the event.
+theme_values_examples:
+  - color: '#FFFFFF'
+    background: '#FF8A80'
+  - color: '#1B5E20'
+    background: '#B9F6CA'
+  - color: '#FFFFFF'
+    background: '#FF80AB'
+  - color: '#F57F17'
+    background: '#FFF176'
+  - color: '#006064'
+    background: '#80DEEA'
+blank_event:
+  icon: mdi:circle-outline
+  theme_values:
+    color: '#E0E0E0'
+    background: '#F5F5F5'
+blank_all_day_event:
+  icon: mdi:checkbox-blank-circle
+entities: []
+entities_presets:
+  - name: yasno_en
+    title: Yasno (English)
+    entities:
+      - name: Planned Outages
+        entity: calendar.planned_outages
+        filter: Outage
+        icon: mdi:close-circle
+        theme_values:
+          color: '#FFFFFF'
+          background: '#FF8A80'
+      - name: Probable Outages
+        entity: calendar.probable_outages
+        icon: mdi:close-circle
+        theme_values:
+          color: '#1B5E20'
+          background: '#B9F6CA'
+      - name: Emergency Shutdowns
+        entity: calendar.planned_outages
+        filter: Emergency Shutdowns
+        icon: mdi:alert-circle
+        theme_values:
+          color: '#FFFFFF'
+          background: '#FF80AB'
+      - name: Schedule Applies
+        entity: calendar.planned_outages
+        filter: Schedule Applies
+        icon: mdi:circle-outline
+        theme_values:
+          color: '#F57F17'
+          background: '#FFF176'
+      - name: Waiting for Schedule
+        entity: calendar.planned_outages
+        filter: Waiting for Schedule
+        icon: mdi:clock-outline
+        theme_values:
+          color: '#006064'
+          background: '#80DEEA'
+        hide:
+          - Planned Outages
+    calendars:
+      - template: calendar.planned_outages
+        title: Planned Outages Calendar
+        description: Planned Outages Calendar from ha-yasno-outages integration
+      - template: calendar.probable_outages
+        title: Probable Outages Calendar
+        description: Probable Outages Calendar from ha-yasno-outages integration
+  - name: yasno_uk
+    title: Yasno (Ukrainian)
+    entities:
+      - name: Заплановані відключення
+        entity: calendar.planned_outages
+        filter: Відключення
+        icon: mdi:close-circle
+        theme_values:
+          color: '#FFFFFF'
+          background: '#FF8A80'
+      - name: Імовірні відключення
+        entity: calendar.probable_outages
+        icon: mdi:close-circle
+        theme_values:
+          color: '#1B5E20'
+          background: '#B9F6CA'
+      - name: Аварійні відключення
+        entity: calendar.planned_outages
+        filter: Аварійні відключення
+        icon: mdi:alert-circle
+        theme_values:
+          color: '#FFFFFF'
+          background: '#FF80AB'
+      - name: Графік діє
+        entity: calendar.planned_outages
+        filter: Графік діє
+        icon: mdi:circle-outline
+        theme_values:
+          color: '#F57F17'
+          background: '#FFF176'
+      - name: Очікування графіка
+        entity: calendar.planned_outages
+        filter: Очікування графіка
+        icon: mdi:clock-outline
+        theme_values:
+          color: '#006064'
+          background: '#80DEEA'
+        hide:
+          - Заплановані відключення
+    calendars:
+      - template: calendar.planned_outages
+        title: Календар запланованих відключень
+        description: Календар запланованих відключень з інтеграції ha-yasno-outages
+      - template: calendar.probable_outages
+        title: Календар імовірних відключень
+        description: Календар імовірних відключень з інтеграції ha-yasno-outages
+css: |
+  ha-card {
+    --text-color: #444;
+    --text-primary: var(--text-color);
+    --text-secondary: var(--text-color);
+  }
+
+  ha-card {
+    background: #FFFFFF;
+    border-radius: 24px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  }
+
+  .grid-container {
+    gap: 8px;
+  }
+
+  .cell-wrapper {
+    min-height: 28px;
+  }
+
+  .cell {
+    height:34px;
+    border-radius: 17px;
+  }
+
+  .event-icon {
+    --icon-size: 20px;
+    color: var(--color, var(--primary-text-color));
+  }
+
+  .event-block {
+    background-color: var(--background, #F5F5F5);
+  }
