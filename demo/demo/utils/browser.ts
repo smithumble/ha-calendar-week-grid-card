@@ -1,10 +1,10 @@
-import type { CardConfig } from '../../../src/types';
+import type { CardConfig, HomeAssistant } from '../../../src/types';
 import { Calendar } from './data';
 import { mockHaCard, mockHaIcon } from './mocks/ha-card';
 import { getSharedMockHass } from './mocks/ha-hass';
 
 export interface MockCard extends HTMLElement {
-  hass: unknown;
+  hass: HomeAssistant;
   setConfig: (config: CardConfig) => void;
 }
 
@@ -119,7 +119,7 @@ export function renderCardToContainer(
   const card = createCard();
 
   if (gridRows) {
-    (card as HTMLElement).style.gridRow = `span ${gridRows}`;
+    card.style.gridRow = `span ${gridRows}`;
   }
 
   container.appendChild(card);

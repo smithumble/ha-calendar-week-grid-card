@@ -67,8 +67,8 @@ export const screenshotConfig = {
         'dist/demo/assets/data', // providers data
         'dist/demo/assets/themes', // ha themes
       ],
-      relativeTo: 'dist',
-      absolute: true,
+      relativeTo: 'dist/screenshot',
+      absolute: false,
       verbose: true,
     }),
     typescript({

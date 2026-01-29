@@ -63,8 +63,8 @@ export const scheduleConfig = {
         'dist/demo/assets/data', // providers data
         'dist/demo/assets/themes', // ha themes
       ],
-      relativeTo: 'dist',
-      absolute: true,
+      relativeTo: 'dist/schedule',
+      absolute: false,
       verbose: true,
     }),
     typescript({

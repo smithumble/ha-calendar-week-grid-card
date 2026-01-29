@@ -11,6 +11,8 @@ import type {
   EntityConfig,
   EntitiesPreset,
   ThemeVariable,
+  EventCriteria,
+  ThemeValues,
 } from '../types';
 import styles from './styles.css';
 import { themes } from './themes';
@@ -37,10 +39,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
     return unsafeCSS(styles);
   }
 
-  @property({ attribute: false }) hass?: HomeAssistant & {
-    entities: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    devices: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-  };
+  @property({ attribute: false }) hass?: HomeAssistant;
   @state() private _config?: CardConfig;
   @state() private _timeFormatType: 'string' | 'object' = 'object';
   @state() private _expandedEntityIndex: number | null = null;
@@ -50,8 +49,10 @@ export class CalendarWeekGridCardEditor extends LitElement {
   @state() private _presetCalendarValues: Record<string, string> = {};
   private _debounceTimeouts: Map<string, ReturnType<typeof setTimeout>> =
     new Map();
-  private _pendingValues: Map<string, { target: HTMLElement; value: unknown }> =
-    new Map();
+  private _pendingValues: Map<
+    string,
+    { target: HTMLElement; value: string | boolean | number | null }
+  > = new Map();
 
   //-----------------------------------------------------------------------------
   // LIFECYCLE METHODS
@@ -942,9 +943,8 @@ export class CalendarWeekGridCardEditor extends LitElement {
     description: string,
   ): TemplateResult {
     const criteria =
-      (this.getConfigValue(configPath, []) as Array<
-        string | Record<string, unknown>
-      >) || [];
+      (this.getConfigValue(configPath, []) as Array<string | EventCriteria>) ||
+      [];
 
     return html`
       <div class="criteria-array-section">
@@ -965,12 +965,12 @@ export class CalendarWeekGridCardEditor extends LitElement {
    */
   _renderCriteriaItem(
     configPath: string,
-    item: string | Record<string, unknown>,
+    item: string | EventCriteria,
     itemIndex: number,
   ): TemplateResult {
     const isString = typeof item === 'string';
     const itemPath = `${configPath}.${itemIndex}`;
-    const itemObj = isString ? {} : (item as Record<string, unknown>);
+    const itemObj = isString ? {} : item;
 
     return html`
       <div class="criteria-item">
@@ -1033,9 +1033,8 @@ export class CalendarWeekGridCardEditor extends LitElement {
    */
   _addCriteriaItem(configPath: string): void {
     const criteria =
-      (this.getConfigValue(configPath, []) as Array<
-        string | Record<string, unknown>
-      >) || [];
+      (this.getConfigValue(configPath, []) as Array<string | EventCriteria>) ||
+      [];
     criteria.push('');
     this.setConfigValue(configPath, criteria);
   }
@@ -1045,9 +1044,8 @@ export class CalendarWeekGridCardEditor extends LitElement {
    */
   _removeCriteriaItem(configPath: string, itemIndex: number): void {
     const criteria =
-      (this.getConfigValue(configPath, []) as Array<
-        string | Record<string, unknown>
-      >) || [];
+      (this.getConfigValue(configPath, []) as Array<string | EventCriteria>) ||
+      [];
     criteria.splice(itemIndex, 1);
     if (criteria.length === 0) {
       this.setConfigValue(configPath, undefined);
@@ -1082,13 +1080,13 @@ export class CalendarWeekGridCardEditor extends LitElement {
       entityReg && entityReg.device_id
         ? this.hass.devices[entityReg.device_id]
         : null;
-    const deviceName = deviceReg
-      ? deviceReg.name_by_user || deviceReg.name
+    const deviceName: string = deviceReg
+      ? deviceReg.name_by_user || deviceReg.name || ''
       : '';
 
     // 3. Calculate the Calendar Name by removing the Device Name
     // We replace "DeviceName " (note the space) with empty string
-    const calendarName = fullString?.replace(deviceName, '').trim();
+    const calendarName = fullString.replace(deviceName, '').trim();
 
     return { calendarName, deviceName };
   }
@@ -1588,7 +1586,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
    */
   private _getExampleByEntityIndex(
     entityIndex: number,
-  ): Record<string, unknown> | undefined {
+  ): ThemeValues | undefined {
     if (!this._config) {
       return undefined;
     }
@@ -1627,7 +1625,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
    */
   private _applyThemeValuesToEntity(
     entity: string | EntityConfig,
-    example: Record<string, unknown>,
+    example: ThemeValues,
   ): string | EntityConfig {
     if (!this._config) {
       return entity;

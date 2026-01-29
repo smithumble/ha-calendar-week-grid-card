@@ -27,6 +27,7 @@ import type {
   RawEvent,
   CalendarEvent,
   EntitiesPreset,
+  ThemeValues,
 } from './types';
 import {
   getDays,
@@ -132,15 +133,11 @@ export class CalendarWeekGridCard extends LitElement {
           }
         });
 
-        THEME_HIDDEN_FIELDS.forEach((field) => {
-          delete config[field as keyof CardConfig];
-        });
-
         config.entities = yasnoEntities;
       }
     } else {
       // Default: map all calendar entities to config
-      const configEntities = this.mapEntitiesToConfig(
+      const configEntities = this.mapExamplesToEntities(
         calendarEntities,
         stubConfig.theme_values_examples,
       );
@@ -166,9 +163,9 @@ export class CalendarWeekGridCard extends LitElement {
   /**
    * Map calendar entities to configuration with cycling event examples
    */
-  private static mapEntitiesToConfig(
+  private static mapExamplesToEntities(
     entities: string[],
-    themeValuesExamples?: unknown[],
+    themeValuesExamples?: ThemeValues[],
   ): EntityConfig[] {
     const examples = themeValuesExamples || [];
     if (examples.length === 0) {
@@ -178,9 +175,7 @@ export class CalendarWeekGridCard extends LitElement {
     return entities.map((entity, index) => {
       const example = examples[index % examples.length];
       const themeValues =
-        typeof example === 'object' && example !== null
-          ? (example as Record<string, unknown>)
-          : {};
+        typeof example === 'object' && example !== null ? example : {};
       return {
         entity,
         theme_values: themeValues,
@@ -659,7 +654,7 @@ export class CalendarWeekGridCard extends LitElement {
         .filter(
           (e) => !filterText || (e.summary && e.summary.includes(filterText)),
         )
-        .map((e) => ({ ...e, ...item }) as unknown as RawEvent);
+        .map((e) => ({ ...e, ...item }) as RawEvent);
     } catch (e) {
       console.error(`CalendarWeekGridCard: Failed to fetch ${item.entity}`, e);
       return [];

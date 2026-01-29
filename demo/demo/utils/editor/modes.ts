@@ -62,13 +62,13 @@ export function switchEditorMode(
 /**
  * Update visual editor with current config
  */
-export function updateVisualEditor(visualEditor: HTMLElement | null): void {
+export function updateVisualEditor(visualEditor: MockCard | null): void {
   const config = getCurrentConfig();
   if (!visualEditor || !config) return;
 
   const mockHass = getSharedMockHass(getCurrentCalendars());
-  (visualEditor as unknown as MockCard).hass = mockHass;
-  (visualEditor as unknown as MockCard).setConfig(config);
+  visualEditor.hass = mockHass;
+  visualEditor.setConfig(config);
 }
 
 /**
