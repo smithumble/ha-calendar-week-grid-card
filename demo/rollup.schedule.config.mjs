@@ -62,6 +62,7 @@ export const scheduleConfig = {
       targets: [
         'dist/demo/assets/data', // providers data
         'dist/demo/assets/themes', // ha themes
+        'dist/demo/assets/icons', // mdi icons
       ],
       relativeTo: 'dist/schedule',
       absolute: false,

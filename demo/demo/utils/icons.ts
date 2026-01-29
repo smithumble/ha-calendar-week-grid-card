@@ -1,6 +1,20 @@
+import { ASSET_MANIFEST } from 'virtual:asset-manifest';
+
 // Cache for loaded icons
 const iconCache: Record<string, string> = {};
 const loadingPromises: Record<string, Promise<string>> = {};
+
+// Find icon file path in manifest
+function findIconPath(iconFile: string): string | null {
+  // Look for exact match: assets/icons/icon-name.svg
+  const exactPattern = `assets/icons/${iconFile}`;
+  const exactMatch = ASSET_MANIFEST.find((path) => path.endsWith(exactPattern));
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  return null;
+}
 
 // Load a single icon by name on-demand via HTTP
 export async function loadIcon(iconName: string): Promise<string> {
@@ -20,7 +34,13 @@ export async function loadIcon(iconName: string): Promise<string> {
     try {
       // Convert icon name from "mdi/icon-name" to "icon-name.svg"
       const iconFile = iconName.replace('mdi/', '') + '.svg';
-      const response = await fetch(`/demo/assets/icons/${iconFile}`);
+      const iconPath = findIconPath(iconFile);
+
+      if (!iconPath) {
+        throw new Error(`Icon ${iconName} not found in manifest`);
+      }
+
+      const response = await fetch(iconPath);
 
       if (!response.ok) {
         throw new Error(
@@ -48,9 +68,28 @@ export async function loadIcon(iconName: string): Promise<string> {
 
 // Create a proxy that loads icons on-demand
 function createIconMapProxy(): Record<string, string> {
+  // Check if a property name looks like a valid icon name
+  function isValidIconName(prop: string | symbol): prop is string {
+    // Only handle string properties
+    if (typeof prop !== 'string') {
+      return false;
+    }
+
+    // Icon names follow the pattern "mdi/icon-name" or are already cached
+    // Only intercept properties that match this pattern or are in cache
+    return (
+      prop.startsWith('mdi/') || prop in iconCache || prop in loadingPromises
+    );
+  }
+
   return new Proxy({} as Record<string, string>, {
-    get(target, prop: string) {
-      const iconName = prop as string;
+    get(target, prop: string | symbol) {
+      // Only handle properties that look like icon names
+      if (!isValidIconName(prop)) {
+        return undefined;
+      }
+
+      const iconName = prop;
 
       // Return cached icon if available
       if (iconCache[iconName]) {
@@ -65,7 +104,11 @@ function createIconMapProxy(): Record<string, string> {
 
       return iconCache[iconName] || '';
     },
-    has(target, prop: string) {
+    has(target, prop: string | symbol) {
+      // Only check for properties that look like icon names
+      if (!isValidIconName(prop)) {
+        return false;
+      }
       // Check if icon is cached or being loaded
       return prop in iconCache || prop in loadingPromises;
     },
