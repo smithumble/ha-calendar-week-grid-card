@@ -12,6 +12,7 @@ import {
   getProviderDefaultDataSource,
   getProviderDataSources,
   getProviderMockDate,
+  type DataSource,
 } from './data';
 import { updateConfigEditorWithVisual } from './editor/updates';
 import { setupSelectKeyboardNavigation } from './keyboard';
@@ -36,6 +37,23 @@ import {
 // ============================================================================
 
 /**
+ * Sort data sources by index if present, otherwise by value
+ */
+function sortDataSources(dataSources: DataSource[]): DataSource[] {
+  return [...dataSources].sort((a, b) => {
+    // If both have index, sort by index
+    if (a.index !== undefined && b.index !== undefined) {
+      return a.index - b.index;
+    }
+    // If only one has index, prioritize it
+    if (a.index !== undefined) return -1;
+    if (b.index !== undefined) return 1;
+    // If neither has index, sort by value
+    return a.value.localeCompare(b.value);
+  });
+}
+
+/**
  * Validate and clean a config value
  */
 function cleanConfigValue(configName: string): string | undefined {
@@ -48,14 +66,17 @@ function cleanConfigValue(configName: string): string | undefined {
 /**
  * Validate and clean a data source value
  */
-function cleanDataSourceValue(dataSource: string): string | undefined {
+async function cleanDataSourceValue(
+  dataSource: string,
+): Promise<string | undefined> {
   const provider = getCurrentProvider();
-  const dataSources = getProviderDataSources(provider);
+  const dataSources = await getProviderDataSources(provider);
+  const dataSourceValues = dataSources.map((ds) => ds.value);
 
   return cleanValue(
     dataSource,
-    dataSources,
-    getProviderDefaultDataSource(provider),
+    dataSourceValues,
+    await getProviderDefaultDataSource(provider),
   );
 }
 
@@ -119,11 +140,15 @@ function getProvidersToShow(
  */
 function populateSelect(
   select: HTMLSelectElement,
-  options: string[],
+  options: string[] | DataSource[],
   formatLabel: (value: string) => string = formatSelectorLabel,
 ): void {
   select.innerHTML = options
-    .map((value) => `<option value="${value}">${formatLabel(value)}</option>`)
+    .map((option) => {
+      const value = typeof option === 'string' ? option : option.value;
+      const name = typeof option === 'string' ? option : option.name;
+      return `<option value="${value}">${formatLabel(name)}</option>`;
+    })
     .join('');
 }
 
@@ -269,7 +294,7 @@ export async function selectorSelectDataSource(
   const dataSourceSelect = getSelectElement('data-source-select');
   if (!dataSourceSelect) return;
 
-  const cleanedDataSource = cleanDataSourceValue(dataSource);
+  const cleanedDataSource = await cleanDataSourceValue(dataSource);
   if (!cleanedDataSource) return;
 
   dataSourceSelect.value = cleanedDataSource;
@@ -383,10 +408,12 @@ export async function updateDataSourceSelect(provider: string): Promise<void> {
   const dataSourceSelect = getSelectElement('data-source-select');
   if (!dataSourceSelect) return;
 
-  const dataSources = getProviderDataSources(provider);
+  const dataSources = await getProviderDataSources(provider);
   if (dataSources.length === 0) return;
 
-  populateSelect(dataSourceSelect, dataSources);
+  // Sort data sources by index if present
+  const sortedDataSources = sortDataSources(dataSources);
+  populateSelect(dataSourceSelect, sortedDataSources);
 
   const urlDataSource = getFromURL('dataSource');
   const savedDataSource = getProviderValue(
@@ -394,14 +421,15 @@ export async function updateDataSourceSelect(provider: string): Promise<void> {
     'selected-data-source',
     'dataSource',
   );
-  const defaultDataSource = getProviderDefaultDataSource(provider);
+  const defaultDataSource = await getProviderDefaultDataSource(provider);
+  const dataSourceValues = dataSources.map((ds) => ds.value);
 
   const selectedDataSource =
-    urlDataSource && dataSources.includes(urlDataSource)
+    urlDataSource && dataSourceValues.includes(urlDataSource)
       ? urlDataSource
-      : savedDataSource && dataSources.includes(savedDataSource)
+      : savedDataSource && dataSourceValues.includes(savedDataSource)
         ? savedDataSource
-        : defaultDataSource && dataSources.includes(defaultDataSource)
+        : defaultDataSource && dataSourceValues.includes(defaultDataSource)
           ? defaultDataSource
           : '';
 

@@ -1,6 +1,6 @@
 import { THEME_HIDDEN_FIELDS } from '../../../../src/editor/utils/theme';
 import type { CardConfig } from '../../../../src/types';
-import type { Calendar } from '../data';
+import type { Calendar, DataSource } from '../data';
 
 /**
  * Demo preset name
@@ -22,7 +22,7 @@ export abstract class BaseProvider {
   /**
    * Get available data sources for this provider
    */
-  abstract getDataSources(): string[];
+  abstract getDataSources(): DataSource[] | Promise<DataSource[]>;
 
   /**
    * Get available config names
@@ -48,15 +48,14 @@ export abstract class BaseProvider {
   /**
    * Get default data source for this provider
    */
-  getDefaultDataSource(): string | undefined {
-    const dataSources = this.getDataSources();
-    if (
-      this.defaultDataSource &&
-      dataSources.includes(this.defaultDataSource)
-    ) {
+  async getDefaultDataSource(): Promise<string | undefined> {
+    const dataSources = await Promise.resolve(this.getDataSources());
+    const values = dataSources.map((ds) => ds.value);
+
+    if (this.defaultDataSource && values.includes(this.defaultDataSource)) {
       return this.defaultDataSource;
     }
-    return dataSources[0];
+    return values[0];
   }
 
   /**

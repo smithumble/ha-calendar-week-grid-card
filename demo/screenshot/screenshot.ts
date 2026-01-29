@@ -32,7 +32,8 @@ async function main() {
   selectProvider(selectedProvider);
 
   const defaultConfig = getProviderDefaultConfig(selectedProvider);
-  const defaultDataSource = getProviderDefaultDataSource(selectedProvider);
+  const defaultDataSource =
+    await getProviderDefaultDataSource(selectedProvider);
 
   const config = getFromURL('config') || defaultConfig || '';
   const dataSource = getFromURL('dataSource') || defaultDataSource || '';
