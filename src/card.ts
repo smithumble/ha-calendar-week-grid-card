@@ -651,9 +651,7 @@ export class CalendarWeekGridCard extends LitElement {
       const filterText = item.filter || this.config?.filter;
 
       return events
-        .filter(
-          (e) => !filterText || (e.summary && e.summary.includes(filterText)),
-        )
+        .filter((e) => !filterText || (e.summary && e.summary == filterText))
         .map((e) => ({ ...e, ...item }) as RawEvent);
     } catch (e) {
       console.error(`CalendarWeekGridCard: Failed to fetch ${item.entity}`, e);
