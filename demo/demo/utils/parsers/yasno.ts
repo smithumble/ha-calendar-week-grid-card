@@ -22,6 +22,7 @@ const STATUS_SUMMARY_MAP: Record<string, string> = {
   ScheduleApplies: 'Schedule Applies',
   WaitingForSchedule: 'Waiting for Schedule',
   EmergencyShutdowns: 'Emergency Shutdowns',
+  NoOutages: 'No Outages',
 };
 
 interface Slot {

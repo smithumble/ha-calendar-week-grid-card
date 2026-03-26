@@ -41,6 +41,12 @@ entities_presets:
         icon: mdi:flash-off
         theme_values:
           color: var(--primary-color)
+      - name: No Outages
+        entity: calendar.planned_outages
+        filter: No Outages
+        icon: mdi:flash
+        theme_values:
+          color: var(--success-color)
       - name: Emergency Shutdowns
         entity: calendar.planned_outages
         filter: Emergency Shutdowns
@@ -52,7 +58,7 @@ entities_presets:
         filter: Schedule Applies
         icon: mdi:flash-off
         theme_values:
-          color: var(--success-color)
+          color: var(--error-color)
       - name: Waiting for Schedule
         entity: calendar.planned_outages
         filter: Waiting for Schedule
@@ -82,6 +88,12 @@ entities_presets:
         icon: mdi:flash-off
         theme_values:
           color: var(--primary-color)
+      - name: Без відключень
+        entity: calendar.planned_outages
+        filter: Без відключень
+        icon: mdi:flash
+        theme_values:
+          color: var(--success-color)
       - name: Аварійні відключення
         entity: calendar.planned_outages
         filter: Аварійні відключення
@@ -93,7 +105,7 @@ entities_presets:
         filter: Графік діє
         icon: mdi:flash-off
         theme_values:
-          color: var(--success-color)
+          color: var(--error-color)
       - name: Очікування графіка
         entity: calendar.planned_outages
         filter: Очікування графіка
