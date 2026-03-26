@@ -404,6 +404,10 @@ entities:
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:check-circle-outline
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
   - name: Probable Outages
     entity: calendar.probable_outages
 ```
@@ -471,6 +475,13 @@ entities:
     theme_values:
       opacity: 0.1
       border-style: dashed
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      opacity: 0.1
+      border-style: dotted
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -577,6 +588,14 @@ entities:
       color: var(--warning-color)
       opacity: 0.1
       border-style: dashed
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: var(--success-color)
+      opacity: 0.1
+      border-style: dotted
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -590,7 +609,7 @@ entities:
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: var(--success-color)
+      color: var(--error-color)
       opacity: 0.1
       border-style: dotted
   - name: Waiting for Schedule
@@ -678,6 +697,13 @@ entities:
     theme_values:
       color: var(--primary-color)
       opacity: 0.2
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: var(--success-color)
+      opacity: 0.2
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -690,7 +716,7 @@ entities:
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: var(--success-color)
+      color: var(--error-color)
       opacity: 0.2
   - name: Waiting for Schedule
     entity: calendar.planned_outages
@@ -781,6 +807,13 @@ entities:
       color: '#FF9800'
       opacity: 0.08
       background: 'repeating-linear-gradient(45deg, rgb(from #FF9800 r g b / 0.08), rgb(from #FF9800 r g b / 0.08) 10px, rgb(from #FF9800 r g b / 0.15) 10px, rgb(from #FF9800 r g b / 0.15) 20px)'
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: '#29B6F6'
+      opacity: 0.05
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -793,8 +826,9 @@ entities:
     filter: Schedule Applies
     icon: mdi:calendar-check
     theme_values:
-      color: '#29B6F6'
-      opacity: 0.05
+      color: '#FF5252'
+      opacity: 0.08
+      background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -883,6 +917,13 @@ entities:
     theme_values:
       color: '#1B5E20'
       background: '#B9F6CA'
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:circle-outline
+    theme_values:
+      color: '#F57F17'
+      background: '#FFF176'
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -895,8 +936,8 @@ entities:
     filter: Schedule Applies
     icon: mdi:circle-outline
     theme_values:
-      color: '#F57F17'
-      background: '#FFF176'
+      color: '#FFFFFF'
+      background: '#FF8A80'
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -1001,6 +1042,12 @@ entities:
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: var(--color-highlight-light-icon)
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -1115,6 +1162,12 @@ entities:
     icon: mdi:flash-off
     theme_values:
       color: var(--primary-color)
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: var(--success-color)
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -1126,7 +1179,7 @@ entities:
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: var(--success-color)
+      color: var(--error-color)
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -1366,6 +1419,12 @@ entities:
     icon: mdi:flash-off
     theme_values:
       color: var(--primary-color)
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: var(--success-color)
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -1377,7 +1436,7 @@ entities:
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: var(--success-color)
+      color: var(--error-color)
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -1627,6 +1686,12 @@ entities:
     icon: mdi:flash-off
     theme_values:
       color: '#4285F4'
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: '#34B779'
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -1638,7 +1703,7 @@ entities:
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: '#34B779'
+      color: '#F3511E'
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -1842,6 +1907,12 @@ entities:
     icon: mdi:flash-off
     theme_values:
       color: '#4285F4'
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: '#34B779'
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -1853,7 +1924,7 @@ entities:
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: '#34B779'
+      color: '#F3511E'
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
