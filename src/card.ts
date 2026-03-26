@@ -243,6 +243,10 @@ export class CalendarWeekGridCard extends LitElement {
       this.config?.all_day === 'row' || this.config?.all_day === 'both';
 
     const daysCount = days.length;
+    const gridTemplateRows = this.getGridTemplateRows(
+      showAllDayRow,
+      hours.length,
+    );
 
     // Track row index for row-odd/row-even classes
     let currentRowIndex = 0;
@@ -253,10 +257,15 @@ export class CalendarWeekGridCard extends LitElement {
       'column-even': true,
     });
 
+    let gridStyle = `grid-template-columns: auto repeat(${daysCount}, minmax(0, 1fr));`;
+    if (gridTemplateRows) {
+      gridStyle += `grid-template-rows: ${gridTemplateRows};`;
+    }
+
     return html`
       <div
         class="grid-container"
-        style="grid-template-columns: auto repeat(${daysCount}, minmax(0, 1fr));"
+        style="${gridStyle}"
         data-icons-container="${this.config?.icons_container || 'cell'}"
         data-icons-mode="${this.config?.icons_mode || 'top'}"
         data-all-day="${this.config?.all_day || 'grid'}"
@@ -307,6 +316,20 @@ export class CalendarWeekGridCard extends LitElement {
 
     // Fallback to legacy layout_options for backward compatibility
     return this.config.layout_options?.grid_rows;
+  }
+
+  private getGridTemplateRows(
+    showAllDayRow: boolean,
+    hoursCount: number,
+  ): string | undefined {
+    const layoutFitEnabled = !!this.getGridRows();
+    if (!layoutFitEnabled) return undefined;
+
+    const remainingRowsCount = hoursCount + (showAllDayRow ? 1 : 0);
+    if (remainingRowsCount <= 0) return 'min-content';
+
+    // Keep date header compact and distribute remaining vertical space evenly.
+    return `min-content repeat(${remainingRowsCount}, minmax(0, 1fr))`;
   }
 
   private getDynamicStyles(): CSSResultGroup {
