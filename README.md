@@ -526,7 +526,7 @@ css: |
 
 ### Simple Colored
 
-![Calendar Week Grid Card Example: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/simple_colored.png)
+![Calendar Week Grid Card Example: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/a6f824740d51c02c6ea3be2329c15be3723fd089/media/images/simple_colored.png)
 
 <!-- CONFIG:yasno_v3/simple_colored -->
 
@@ -644,7 +644,7 @@ css: |
 
 ### Classic
 
-![Calendar Week Grid Card Example: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/classic.png)
+![Calendar Week Grid Card Example: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/a6f824740d51c02c6ea3be2329c15be3723fd089/media/images/classic.png)
 
 <!-- CONFIG:yasno_v3/classic -->
 
@@ -748,7 +748,7 @@ css: |
 
 ### Neon
 
-![Calendar Week Grid Card Example: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/neon.png)
+![Calendar Week Grid Card Example: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/a6f824740d51c02c6ea3be2329c15be3723fd089/media/images/neon.png)
 
 <!-- CONFIG:yasno_v3/neon -->
 
@@ -867,7 +867,7 @@ css: |
 
 ### Soft UI
 
-![Calendar Week Grid Card Example: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/soft_ui.png)
+![Calendar Week Grid Card Example: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/a6f824740d51c02c6ea3be2329c15be3723fd089/media/images/soft_ui.png)
 
 <!-- CONFIG:yasno_v3/soft_ui -->
 
@@ -1122,7 +1122,7 @@ css: |
 
 ### Google Calendar
 
-![Calendar Week Grid Card Example: Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/google_calendar.png)
+![Calendar Week Grid Card Example: Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/a6f824740d51c02c6ea3be2329c15be3723fd089/media/images/google_calendar.png)
 
 <!-- CONFIG:yasno_v3/google_calendar -->
 
@@ -1379,7 +1379,7 @@ css: |
 
 ### Google Calendar Separated
 
-![Calendar Week Grid Card Example: Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/google_calendar_separated.png)
+![Calendar Week Grid Card Example: Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/a6f824740d51c02c6ea3be2329c15be3723fd089/media/images/google_calendar_separated.png)
 
 <!-- CONFIG:yasno_v3/google_calendar_separated -->
 
@@ -1646,7 +1646,7 @@ css: |
 
 ### Google Calendar Original
 
-![Calendar Week Grid Card Example: Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/google_calendar_original.png)
+![Calendar Week Grid Card Example: Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/a6f824740d51c02c6ea3be2329c15be3723fd089/media/images/google_calendar_original.png)
 
 <!-- CONFIG:yasno_v3/google_calendar_original -->
 
@@ -1867,7 +1867,7 @@ css: |
 
 ### Google Calendar Original Separated
 
-![Calendar Week Grid Card Example: Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/google_calendar_original_separated.png)
+![Calendar Week Grid Card Example: Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/a6f824740d51c02c6ea3be2329c15be3723fd089/media/images/google_calendar_original_separated.png)
 
 <!-- CONFIG:yasno_v3/google_calendar_original_separated -->
 
