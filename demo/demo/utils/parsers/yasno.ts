@@ -41,6 +41,7 @@ interface PlannedGroup {
   today?: PlannedDay;
   tomorrow?: PlannedDay;
   updatedOn?: string;
+  [dayKey: string]: PlannedDay | string | undefined;
 }
 
 export interface PlannedData {
@@ -61,6 +62,16 @@ interface ProbableRegion {
 
 export interface ProbableData {
   [regionKey: string]: ProbableRegion;
+}
+
+function parseIsoDateToLocalDay(value?: string): Date | undefined {
+  if (!value) return undefined;
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return undefined;
+
+  const [, year, month, day] = match;
+  const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
 }
 
 function createEventFromSlot(
@@ -175,13 +186,20 @@ function parsePlannedSlotEvents(
 ): CalendarEvent[] {
   const events: CalendarEvent[] = [];
 
-  for (const dayKey of ['today', 'tomorrow'] as const) {
-    const dayData = plannedGroup[dayKey];
+  const plannedDayEntries = Object.entries(plannedGroup).filter(
+    ([, value]) => typeof value === 'object' && value !== null,
+  ) as Array<[string, PlannedDay]>;
 
-    if (!dayData || !dayData.slots) continue;
+  for (const [dayKey, dayData] of plannedDayEntries) {
+    if (!dayData.slots) continue;
 
-    const dayOffset = dayKey === 'tomorrow' ? 1 : 0;
-    const dayDate = getDayDate(baseDate, dayOffset);
+    const parsedDayDate = parseIsoDateToLocalDay(dayData.date);
+    const hasValidDate =
+      parsedDayDate instanceof Date && !Number.isNaN(parsedDayDate.getTime());
+    const fallbackDayOffset = dayKey === 'tomorrow' ? 1 : 0;
+    const dayDate = hasValidDate
+      ? parsedDayDate
+      : getDayDate(baseDate, fallbackDayOffset);
 
     dayData.slots.forEach((slot: Slot) => {
       if (slot.type === SLOT_TYPE_DEFINITE) {
@@ -199,16 +217,22 @@ function parseAllDayStatusEvents(
 ): CalendarEvent[] {
   const events: CalendarEvent[] = [];
 
-  for (const dayKey of ['today', 'tomorrow'] as const) {
-    const dayData = plannedGroup[dayKey];
+  const plannedDayEntries = Object.entries(plannedGroup).filter(
+    ([, value]) => typeof value === 'object' && value !== null,
+  ) as Array<[string, PlannedDay]>;
 
-    if (!dayData || !dayData?.status) continue;
+  for (const [dayKey, dayData] of plannedDayEntries) {
+    if (!dayData.status) continue;
 
-    const dayOffset = dayKey === 'tomorrow' ? 1 : 0;
-    const dayDate = getDayDate(baseDate, dayOffset);
+    const parsedDayDate = parseIsoDateToLocalDay(dayData.date);
+    const hasValidDate =
+      parsedDayDate instanceof Date && !Number.isNaN(parsedDayDate.getTime());
+    const fallbackDayOffset = dayKey === 'tomorrow' ? 1 : 0;
+    const dayDate = hasValidDate
+      ? parsedDayDate
+      : getDayDate(baseDate, fallbackDayOffset);
 
-    const status = dayData.status;
-    const summary = STATUS_SUMMARY_MAP[status];
+    const summary = STATUS_SUMMARY_MAP[dayData.status];
     if (!summary) continue;
 
     events.push(createAllDayEvent(dayDate, summary));

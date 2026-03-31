@@ -28,6 +28,14 @@ function getYasnoCalendarPaths(): Record<string, string> {
 }
 
 /**
+ * Get calendar JSON file paths from manifest
+ */
+function getYasnoImageCalendarPaths(): Record<string, string> {
+  const pattern = /assets\/data\/yasno_image\/calendars\/.*\.json$/;
+  return getPathsFromManifest(pattern);
+}
+
+/**
  * Get config YAML file paths from manifest
  */
 function getConfigPaths(configDir: string): Record<string, string> {
@@ -52,6 +60,7 @@ export class ProviderRegistry {
    */
   private initializeProviders(): void {
     const yasnoCalendarPaths = getYasnoCalendarPaths();
+    const yasnoImageCalendarPaths = getYasnoImageCalendarPaths();
 
     // Register dummy provider
     this.registerProvider(
@@ -65,10 +74,10 @@ export class ProviderRegistry {
       new YasnoProvider(
         'yasno_image',
         getConfigPaths('yasno_image'),
-        yasnoCalendarPaths,
+        yasnoImageCalendarPaths,
         {
           defaultConfig: 'image',
-          defaultDataSource: 'yasno_1',
+          defaultDataSource: 'yasno',
         },
       ),
     );
