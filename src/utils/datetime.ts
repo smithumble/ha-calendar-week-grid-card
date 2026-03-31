@@ -109,6 +109,24 @@ export function formatHour(
 }
 
 /**
+ * Format day label using Intl.DateTimeFormat
+ */
+export function formatDay(
+  date: Date,
+  dayFormat: Intl.DateTimeFormatOptions | undefined,
+  language?: string,
+  capitalize = true,
+): string {
+  const lang = language || 'en';
+  const formatOptions = dayFormat || { weekday: 'short' };
+  const formatter = new Intl.DateTimeFormat(lang, formatOptions);
+  const label = formatter.format(date);
+
+  if (!capitalize || label.length === 0) return label;
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+/**
  * Generate array of day information for the grid
  */
 export function getDays(
@@ -128,24 +146,13 @@ export function getDays(
 
   const lang = language || 'en';
 
-  // Primary date format (default: weekday:short)
-  const primaryFormat = primaryDateFormat || { weekday: 'short' };
-  const primaryFormatter = new Intl.DateTimeFormat(lang, primaryFormat);
-
-  // Secondary date format (optional)
-  const secondaryFormatter = secondaryDateFormat
-    ? new Intl.DateTimeFormat(lang, secondaryDateFormat)
-    : null;
-
   for (let i = 0; i < daysCount; i++) {
     const date = new Date(startDate);
     date.setDate(startDate.getDate() + i);
 
-    const primaryLabel = primaryFormatter.format(date);
-    const label = primaryLabel.charAt(0).toUpperCase() + primaryLabel.slice(1);
-
-    const secondaryLabel = secondaryFormatter
-      ? secondaryFormatter.format(date)
+    const label = formatDay(date, primaryDateFormat, lang, true);
+    const secondaryLabel = secondaryDateFormat
+      ? formatDay(date, secondaryDateFormat, lang, false)
       : undefined;
 
     // Check if this date is today

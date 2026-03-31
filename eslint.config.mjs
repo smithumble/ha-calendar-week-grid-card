@@ -48,5 +48,11 @@ export default defineConfig(
       },
     },
   },
+  {
+    files: ['**/*.test.ts', '**/*.spec.ts', 'src/test/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
   prettier,
 );
