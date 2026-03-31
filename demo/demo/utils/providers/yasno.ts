@@ -12,16 +12,6 @@ interface YasnoCalendarData {
   probable: ProbableData;
 }
 
-// Mapping of data source to Monday index in probable events data
-const DATA_SOURCE_MONDAY_INDEX: Record<string, number> = {
-  yasno_1: 2,
-  yasno_2: 2,
-  yasno_3: 0,
-  yasno_4: 0,
-  yasno_5: 0,
-  yasno_6: 0,
-};
-
 const YASNO_GROUP_KEY = '6.1';
 
 /**
@@ -128,14 +118,14 @@ export class YasnoProvider extends BaseProvider {
       return [];
     }
 
-    const mondayIndex = DATA_SOURCE_MONDAY_INDEX[dataSource] ?? 0;
+    const mockDate = this.getMockDate(dataSource);
+
     return parseYasnoData(
       calendarData.planned,
       calendarData.probable,
-      mondayIndex,
       YASNO_GROUP_KEY,
       YASNO_GROUP_KEY,
-      this.getMockDate(dataSource),
+      mockDate,
     ) as Calendar[];
   }
 

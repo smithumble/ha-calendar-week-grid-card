@@ -142,9 +142,9 @@ function mergeMultiDayEvents(events: CalendarEvent[]): CalendarEvent[] {
 function parseProbableEvents(
   probableGroup: ProbableGroup,
   baseDate: Date,
-  mondayIndex: number = 0,
 ): CalendarEvent[] {
   const events: CalendarEvent[] = [];
+  const baseWeekday = baseDate.getDay() - 1;
 
   const weekOffsets = [-7, 0, 7];
 
@@ -155,10 +155,7 @@ function parseProbableEvents(
       const slots = probableGroup?.slots?.[weekday.toString()];
       if (!slots) continue;
 
-      // Map weekday index from data to actual day offset
-      // If mondayIndex=0: weekday 0 -> day offset 0 (Monday), 1 -> 1 (Tuesday), etc.
-      // If mondayIndex=2: weekday 0 -> day offset 5 (Saturday), 1 -> 6 (Sunday), 2 -> 0 (Monday), etc.
-      const dayOffset = (weekday - mondayIndex + 7) % 7;
+      const dayOffset = (weekday - baseWeekday + 7) % 7;
       const dayDate = getDayDate(weekBaseDate, dayOffset);
 
       slots.forEach((slot: Slot) => {
@@ -223,7 +220,6 @@ function parseAllDayStatusEvents(
 export function parseYasnoData(
   plannedData: PlannedData,
   probableData: ProbableData,
-  mondayIndex: number = 0,
   plannedGroupKey: string = PLANNED_GROUP_KEY,
   probableGroupKey?: string,
   mockDate?: Date,
@@ -248,11 +244,7 @@ export function parseYasnoData(
     throw new Error(`Probable group "${groupKey}" not found`);
   }
 
-  const rawProbableEvents = parseProbableEvents(
-    probableGroup,
-    baseDate,
-    mondayIndex,
-  );
+  const rawProbableEvents = parseProbableEvents(probableGroup, baseDate);
   const rawPlannedSlotEvents = parsePlannedSlotEvents(plannedGroup, baseDate);
   const allDayEvents = parseAllDayStatusEvents(plannedGroup, baseDate);
 

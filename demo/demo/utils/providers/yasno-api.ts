@@ -176,17 +176,11 @@ export class YasnoApiProvider extends BaseProvider {
         this.fetchProbableOutages(),
       ]);
 
-      const mockDate = this.getMockDate(dataSource);
-      const currentDay = mockDate ? mockDate.getDay() : new Date().getDay();
-      const mondayIndex = currentDay - 1;
-
       return parseYasnoData(
         plannedData,
         probableData,
-        mondayIndex,
         plannedGroupKey,
         probableGroupKey,
-        mockDate,
       );
     } catch (error) {
       console.error(
