@@ -48,9 +48,9 @@ export class YasnoProvider extends BaseProvider {
 
     const dataSources = new Set<string>();
     for (const path of Object.keys(this.calendarPaths)) {
-      const match = path.match(/yasno_(\d+)\/(planned|probable)\.json$/);
+      const match = path.match(/([^/]+)\/(planned|probable)\.json$/);
       if (match) {
-        dataSources.add(`yasno_${match[1]}`);
+        dataSources.add(match[1]);
       }
     }
 
@@ -137,12 +137,22 @@ export class YasnoProvider extends BaseProvider {
 
     const plannedGroup =
       cached.planned[YASNO_GROUP_KEY] ?? Object.values(cached.planned)[0];
-    const todayDate = plannedGroup?.today?.date;
-    if (!todayDate) {
+    if (!plannedGroup) {
       return super.getMockDate(dataSource);
     }
 
-    const match = todayDate.match(
+    const plannedDayEntries = Object.values(plannedGroup).filter(
+      (value): value is { date?: string } =>
+        typeof value === 'object' && value !== null,
+    );
+    const firstDate = plannedDayEntries
+      .map((entry) => entry.date)
+      .find((date): date is string => Boolean(date));
+    if (!firstDate) {
+      return super.getMockDate(dataSource);
+    }
+
+    const match = firstDate.match(
       /^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}:\d{2}(Z|[+-]\d{2}:\d{2})?$/,
     );
     if (!match) {

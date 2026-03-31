@@ -102,7 +102,7 @@ const SCREENSHOT_CONFIGS: ScreenshotConfig[] = [
   },
   {
     provider: 'yasno_image',
-    dataSource: 'yasno_1',
+    dataSource: 'yasno',
     configName: 'image',
     fileName: 'image',
   },
