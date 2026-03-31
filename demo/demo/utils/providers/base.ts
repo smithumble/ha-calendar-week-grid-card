@@ -61,7 +61,8 @@ export abstract class BaseProvider {
   /**
    * Get mock date for this provider
    */
-  getMockDate(): Date | undefined {
+  getMockDate(dataSource: string): Date | undefined {
+    void dataSource;
     return new Date(MOCK_DATE_STR);
   }
 

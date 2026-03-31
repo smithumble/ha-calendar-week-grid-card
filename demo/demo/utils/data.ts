@@ -77,9 +77,12 @@ export async function getProviderDefaultDataSource(
 /**
  * Get mock date for a provider
  */
-export function getProviderMockDate(providerName: string): Date | undefined {
+export function getProviderMockDate(
+  providerName: string,
+  dataSource: string = '',
+): Date | undefined {
   const provider = providerRegistry.getProvider(providerName);
-  return provider?.getMockDate();
+  return provider?.getMockDate(dataSource);
 }
 
 /**

@@ -60,7 +60,8 @@ export class YasnoApiProvider extends BaseProvider {
   readonly name = 'yasno_api';
   private cacheTtlMs: number;
 
-  getMockDate(): Date | undefined {
+  getMockDate(dataSource: string): Date | undefined {
+    void dataSource;
     return undefined;
   }
 
@@ -175,7 +176,7 @@ export class YasnoApiProvider extends BaseProvider {
         this.fetchProbableOutages(),
       ]);
 
-      const mockDate = this.getMockDate();
+      const mockDate = this.getMockDate(dataSource);
       const currentDay = mockDate ? mockDate.getDay() : new Date().getDay();
       const mondayIndex = currentDay - 1;
 
