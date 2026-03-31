@@ -472,8 +472,14 @@ export class CalendarWeekGridCard extends LitElement {
     let cellEndTime: number;
 
     if (isAllDay) {
-      cellStartTime = cellDate.getTime();
-      cellEndTime = cellDate.getTime() + 1000 * 60 * 60 * 24; // 1 day
+      const dayStart = new Date(cellDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const nextDayStart = new Date(dayStart);
+      nextDayStart.setDate(nextDayStart.getDate() + 1);
+
+      // Use local midnight boundaries so DST transition days are sized correctly.
+      cellStartTime = dayStart.getTime();
+      cellEndTime = nextDayStart.getTime();
     } else {
       cellStartTime = cellDate.setHours(hour);
       cellEndTime = cellDate.setHours(hour + 1);
