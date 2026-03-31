@@ -2,7 +2,7 @@
 
 A custom Home Assistant card that displays calendar events in a week grid format. Check out the **[Demo](https://smithumble.github.io/ha-calendar-week-grid-card/)**
 
-![Calendar Week Grid Card Screenshot](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/8348663a917f20ba80d31c43ade7b22807b1b277/media/images/image.png)
+![Calendar Week Grid Card Screenshot](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/image.png)
 
 ## Installation
 
@@ -382,7 +382,7 @@ Themes from those examples are available in `Visual Editor` -> `Styling` -> `The
 
 ### Basic
 
-![Calendar Week Grid Card Example: Basic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/basic.png)
+![Calendar Week Grid Card Example: Basic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/basic.png)
 
 <!-- CONFIG:yasno_v3/basic -->
 
@@ -404,6 +404,10 @@ entities:
     entity: calendar.planned_outages
     filter: Outage
     icon: mdi:check-circle-outline
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
   - name: Probable Outages
     entity: calendar.probable_outages
 ```
@@ -414,7 +418,7 @@ entities:
 
 ### Simple
 
-![Calendar Week Grid Card Example: Simple](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/simple.png)
+![Calendar Week Grid Card Example: Simple](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/simple.png)
 
 <!-- CONFIG:yasno_v3/simple -->
 
@@ -471,6 +475,13 @@ entities:
     theme_values:
       opacity: 0.1
       border-style: dashed
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      opacity: 0.1
+      border-style: dotted
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -515,7 +526,7 @@ css: |
 
 ### Simple Colored
 
-![Calendar Week Grid Card Example: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/simple_colored.png)
+![Calendar Week Grid Card Example: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/simple_colored.png)
 
 <!-- CONFIG:yasno_v3/simple_colored -->
 
@@ -577,6 +588,14 @@ entities:
       color: var(--warning-color)
       opacity: 0.1
       border-style: dashed
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: var(--success-color)
+      opacity: 0.1
+      border-style: dotted
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -590,7 +609,7 @@ entities:
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: var(--success-color)
+      color: var(--error-color)
       opacity: 0.1
       border-style: dotted
   - name: Waiting for Schedule
@@ -625,7 +644,7 @@ css: |
 
 ### Classic
 
-![Calendar Week Grid Card Example: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/classic.png)
+![Calendar Week Grid Card Example: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/classic.png)
 
 <!-- CONFIG:yasno_v3/classic -->
 
@@ -678,6 +697,13 @@ entities:
     theme_values:
       color: var(--primary-color)
       opacity: 0.2
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: var(--success-color)
+      opacity: 0.2
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -690,7 +716,7 @@ entities:
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: var(--success-color)
+      color: var(--error-color)
       opacity: 0.2
   - name: Waiting for Schedule
     entity: calendar.planned_outages
@@ -722,7 +748,7 @@ css: |
 
 ### Neon
 
-![Calendar Week Grid Card Example: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/neon.png)
+![Calendar Week Grid Card Example: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/neon.png)
 
 <!-- CONFIG:yasno_v3/neon -->
 
@@ -781,6 +807,13 @@ entities:
       color: '#FF9800'
       opacity: 0.08
       background: 'repeating-linear-gradient(45deg, rgb(from #FF9800 r g b / 0.08), rgb(from #FF9800 r g b / 0.08) 10px, rgb(from #FF9800 r g b / 0.15) 10px, rgb(from #FF9800 r g b / 0.15) 20px)'
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: '#29B6F6'
+      opacity: 0.05
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -793,8 +826,9 @@ entities:
     filter: Schedule Applies
     icon: mdi:calendar-check
     theme_values:
-      color: '#29B6F6'
-      opacity: 0.05
+      color: '#FF5252'
+      opacity: 0.08
+      background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -833,7 +867,7 @@ css: |
 
 ### Soft UI
 
-![Calendar Week Grid Card Example: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/soft_ui.png)
+![Calendar Week Grid Card Example: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/soft_ui.png)
 
 <!-- CONFIG:yasno_v3/soft_ui -->
 
@@ -883,6 +917,13 @@ entities:
     theme_values:
       color: '#1B5E20'
       background: '#B9F6CA'
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:circle-outline
+    theme_values:
+      color: '#F57F17'
+      background: '#FFF176'
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -895,8 +936,8 @@ entities:
     filter: Schedule Applies
     icon: mdi:circle-outline
     theme_values:
-      color: '#F57F17'
-      background: '#FFF176'
+      color: '#FFFFFF'
+      background: '#FF8A80'
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -948,7 +989,7 @@ css: |
 
 ### Yasno Legacy
 
-![Calendar Week Grid Card Example: Yasno Legacy](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/yasno_legacy.png)
+![Calendar Week Grid Card Example: Yasno Legacy](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/yasno_legacy.png)
 
 <!-- CONFIG:yasno_v3/yasno_legacy -->
 
@@ -1001,6 +1042,12 @@ entities:
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: var(--color-highlight-light-icon)
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -1075,7 +1122,7 @@ css: |
 
 ### Google Calendar
 
-![Calendar Week Grid Card Example: Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/google_calendar.png)
+![Calendar Week Grid Card Example: Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/google_calendar.png)
 
 <!-- CONFIG:yasno_v3/google_calendar -->
 
@@ -1115,6 +1162,12 @@ entities:
     icon: mdi:flash-off
     theme_values:
       color: var(--primary-color)
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: var(--success-color)
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -1126,7 +1179,7 @@ entities:
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: var(--success-color)
+      color: var(--error-color)
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -1326,7 +1379,7 @@ css: |
 
 ### Google Calendar Separated
 
-![Calendar Week Grid Card Example: Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/google_calendar_separated.png)
+![Calendar Week Grid Card Example: Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/google_calendar_separated.png)
 
 <!-- CONFIG:yasno_v3/google_calendar_separated -->
 
@@ -1366,6 +1419,12 @@ entities:
     icon: mdi:flash-off
     theme_values:
       color: var(--primary-color)
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: var(--success-color)
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -1377,7 +1436,7 @@ entities:
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: var(--success-color)
+      color: var(--error-color)
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -1587,7 +1646,7 @@ css: |
 
 ### Google Calendar Original
 
-![Calendar Week Grid Card Example: Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/google_calendar_original.png)
+![Calendar Week Grid Card Example: Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/google_calendar_original.png)
 
 <!-- CONFIG:yasno_v3/google_calendar_original -->
 
@@ -1627,6 +1686,12 @@ entities:
     icon: mdi:flash-off
     theme_values:
       color: '#4285F4'
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: '#34B779'
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -1638,7 +1703,7 @@ entities:
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: '#34B779'
+      color: '#F3511E'
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
@@ -1802,7 +1867,7 @@ css: |
 
 ### Google Calendar Original Separated
 
-![Calendar Week Grid Card Example: Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/85b433c8407174e5dbe06f9f670eea00b65d9ddd/media/images/google_calendar_original_separated.png)
+![Calendar Week Grid Card Example: Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/google_calendar_original_separated.png)
 
 <!-- CONFIG:yasno_v3/google_calendar_original_separated -->
 
@@ -1842,6 +1907,12 @@ entities:
     icon: mdi:flash-off
     theme_values:
       color: '#4285F4'
+  - name: No Outages
+    entity: calendar.planned_outages
+    filter: No Outages
+    icon: mdi:flash
+    theme_values:
+      color: '#34B779'
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
@@ -1853,7 +1924,7 @@ entities:
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: '#34B779'
+      color: '#F3511E'
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule

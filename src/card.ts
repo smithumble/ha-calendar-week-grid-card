@@ -228,12 +228,7 @@ export class CalendarWeekGridCard extends LitElement {
 
     const days = this.getDays();
 
-    const startHour = this.config.start_hour ?? 0;
-    const endHour = this.config.end_hour ?? 24;
-    const hours = Array.from(
-      { length: endHour - startHour },
-      (_, i) => startHour + i,
-    );
+    const hours = this.getVisibleHours(days);
 
     const gridEvents = this.events;
     const allDayEvents = this.events.filter(
@@ -243,6 +238,10 @@ export class CalendarWeekGridCard extends LitElement {
       this.config?.all_day === 'row' || this.config?.all_day === 'both';
 
     const daysCount = days.length;
+    const gridTemplateRows = this.getGridTemplateRows(
+      showAllDayRow,
+      hours.length,
+    );
 
     // Track row index for row-odd/row-even classes
     let currentRowIndex = 0;
@@ -253,10 +252,15 @@ export class CalendarWeekGridCard extends LitElement {
       'column-even': true,
     });
 
+    let gridStyle = `grid-template-columns: auto repeat(${daysCount}, minmax(0, 1fr));`;
+    if (gridTemplateRows) {
+      gridStyle += `grid-template-rows: ${gridTemplateRows};`;
+    }
+
     return html`
       <div
         class="grid-container"
-        style="grid-template-columns: auto repeat(${daysCount}, minmax(0, 1fr));"
+        style="${gridStyle}"
         data-icons-container="${this.config?.icons_container || 'cell'}"
         data-icons-mode="${this.config?.icons_mode || 'top'}"
         data-all-day="${this.config?.all_day || 'grid'}"
@@ -307,6 +311,98 @@ export class CalendarWeekGridCard extends LitElement {
 
     // Fallback to legacy layout_options for backward compatibility
     return this.config.layout_options?.grid_rows;
+  }
+
+  private getGridTemplateRows(
+    showAllDayRow: boolean,
+    hoursCount: number,
+  ): string | undefined {
+    const layoutFitEnabled = !!this.getGridRows();
+    if (!layoutFitEnabled) return undefined;
+
+    const remainingRowsCount = hoursCount + (showAllDayRow ? 1 : 0);
+    if (remainingRowsCount <= 0) return 'min-content';
+
+    // Keep date header compact and distribute remaining vertical space evenly.
+    return `min-content repeat(${remainingRowsCount}, minmax(0, 1fr))`;
+  }
+
+  private getVisibleHours(days: DayInfo[]): number[] {
+    const rawStartHour = Number(this.config?.start_hour ?? 0);
+    const rawEndHour = Number(this.config?.end_hour ?? 24);
+    const startHour = Number.isFinite(rawStartHour) ? rawStartHour : 0;
+    const endHour = Number.isFinite(rawEndHour) ? rawEndHour : 24;
+    const boundedStartHour = Math.max(0, Math.min(23, startHour));
+    const boundedEndHour = Math.max(0, Math.min(24, endHour));
+
+    if (boundedEndHour <= boundedStartHour) {
+      return [];
+    }
+
+    const allHours = Array.from(
+      { length: boundedEndHour - boundedStartHour },
+      (_, i) => boundedStartHour + i,
+    );
+
+    if (!this.config?.trim_empty_hours) {
+      return allHours;
+    }
+
+    const hourHasAnyEvent = new Map<number, boolean>();
+    for (const hour of allHours) {
+      hourHasAnyEvent.set(hour, false);
+    }
+
+    const dayRanges = days.map((day) => {
+      const dayStart = new Date(day.date);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setDate(dayEnd.getDate() + 1);
+      return { start: dayStart.getTime(), end: dayEnd.getTime() };
+    });
+
+    const visibleEvents = this.hideEvents(this.events).filter(
+      (event) => event.type !== 'blank' && !event.isAllDay,
+    );
+
+    for (const event of visibleEvents) {
+      const eventStart = event.start.getTime();
+      const eventEnd = event.end.getTime();
+
+      for (const range of dayRanges) {
+        const clippedStart = Math.max(eventStart, range.start);
+        const clippedEnd = Math.min(eventEnd, range.end);
+        if (clippedEnd <= clippedStart) continue;
+
+        const startDate = new Date(clippedStart);
+        const endDate = new Date(clippedEnd - 1);
+        const eventStartHour = startDate.getHours();
+        const eventEndHour = endDate.getHours();
+
+        for (let hour = eventStartHour; hour <= eventEndHour; hour++) {
+          if (hour >= boundedStartHour && hour < boundedEndHour) {
+            hourHasAnyEvent.set(hour, true);
+          }
+        }
+      }
+    }
+
+    const firstHourWithEvent = allHours.find((hour) =>
+      hourHasAnyEvent.get(hour),
+    );
+    const lastHourWithEvent = [...allHours]
+      .reverse()
+      .find((hour) => hourHasAnyEvent.get(hour));
+
+    if (firstHourWithEvent == undefined || lastHourWithEvent == undefined) {
+      return [];
+    }
+
+    const trimmedHours = allHours.filter(
+      (hour) => hour >= firstHourWithEvent && hour <= lastHourWithEvent,
+    );
+
+    return trimmedHours;
   }
 
   private getDynamicStyles(): CSSResultGroup {
@@ -376,8 +472,14 @@ export class CalendarWeekGridCard extends LitElement {
     let cellEndTime: number;
 
     if (isAllDay) {
-      cellStartTime = cellDate.getTime();
-      cellEndTime = cellDate.getTime() + 1000 * 60 * 60 * 24; // 1 day
+      const dayStart = new Date(cellDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const nextDayStart = new Date(dayStart);
+      nextDayStart.setDate(nextDayStart.getDate() + 1);
+
+      // Use local midnight boundaries so DST transition days are sized correctly.
+      cellStartTime = dayStart.getTime();
+      cellEndTime = nextDayStart.getTime();
     } else {
       cellStartTime = cellDate.setHours(hour);
       cellEndTime = cellDate.setHours(hour + 1);
@@ -651,9 +753,7 @@ export class CalendarWeekGridCard extends LitElement {
       const filterText = item.filter || this.config?.filter;
 
       return events
-        .filter(
-          (e) => !filterText || (e.summary && e.summary.includes(filterText)),
-        )
+        .filter((e) => !filterText || (e.summary && e.summary == filterText))
         .map((e) => ({ ...e, ...item }) as RawEvent);
     } catch (e) {
       console.error(`CalendarWeekGridCard: Failed to fetch ${item.entity}`, e);

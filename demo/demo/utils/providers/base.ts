@@ -1,6 +1,7 @@
 import { THEME_HIDDEN_FIELDS } from '../../../../src/editor/utils/theme';
 import type { CardConfig } from '../../../../src/types';
 import type { Calendar, DataSource } from '../data';
+import { MOCK_DATE_STR } from '../datetime';
 
 /**
  * Demo preset name
@@ -17,7 +18,6 @@ export abstract class BaseProvider {
   protected defaultDataSource?: string;
 
   abstract readonly name: string;
-  abstract readonly mockDate?: Date;
 
   /**
    * Get available data sources for this provider
@@ -61,8 +61,9 @@ export abstract class BaseProvider {
   /**
    * Get mock date for this provider
    */
-  getMockDate(): Date | undefined {
-    return this.mockDate;
+  getMockDate(dataSource: string): Date | undefined {
+    void dataSource;
+    return new Date(MOCK_DATE_STR);
   }
 
   /**

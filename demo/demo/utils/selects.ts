@@ -251,6 +251,7 @@ export async function selectConfig(configName: string): Promise<void> {
 export async function selectDataSource(dataSource: string): Promise<void> {
   const provider = getCurrentProvider();
   await updateCalendars(dataSource, provider);
+  updateDateOverride(getProviderMockDate(provider, dataSource));
   saveToStorage(
     getProviderStorageKey(provider, 'selected-data-source'),
     dataSource,
@@ -263,7 +264,6 @@ export async function selectDataSource(dataSource: string): Promise<void> {
  */
 export function selectProvider(provider: string): void {
   setCurrentProvider(provider);
-  updateDateOverride(getProviderMockDate(provider));
 
   saveToStorage('selected-provider', provider);
   updateURLParams({ provider });

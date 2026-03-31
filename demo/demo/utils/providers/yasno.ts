@@ -1,5 +1,5 @@
 import type { Calendar, DataSource } from '../data';
-import { MOCK_DATE_STR } from '../datetime';
+import { MOCK_TIME_STR } from '../datetime';
 import {
   parseYasnoData,
   type PlannedData,
@@ -12,22 +12,13 @@ interface YasnoCalendarData {
   probable: ProbableData;
 }
 
-// Mapping of data source to Monday index in probable events data
-const DATA_SOURCE_MONDAY_INDEX: Record<string, number> = {
-  yasno_1: 2,
-  yasno_2: 2,
-  yasno_3: 0,
-  yasno_4: 0,
-  yasno_5: 0,
-  yasno_6: 0,
-};
+const YASNO_GROUP_KEY = '6.1';
 
 /**
  * Yasno data provider
  */
 export class YasnoProvider extends BaseProvider {
   readonly name: string;
-  readonly mockDate?: Date = new Date(MOCK_DATE_STR);
 
   private calendarPaths: Record<string, string> = {};
   private calendarsCache: Record<string, YasnoCalendarData> = {};
@@ -127,14 +118,40 @@ export class YasnoProvider extends BaseProvider {
       return [];
     }
 
-    const mondayIndex = DATA_SOURCE_MONDAY_INDEX[dataSource] ?? 0;
+    const mockDate = this.getMockDate(dataSource);
+
     return parseYasnoData(
       calendarData.planned,
       calendarData.probable,
-      mondayIndex,
-      '6.1',
-      undefined,
-      this.mockDate,
+      YASNO_GROUP_KEY,
+      YASNO_GROUP_KEY,
+      mockDate,
     ) as Calendar[];
+  }
+
+  getMockDate(dataSource: string): Date | undefined {
+    const cached = this.calendarsCache[dataSource];
+    if (!cached) {
+      return super.getMockDate(dataSource);
+    }
+
+    const plannedGroup =
+      cached.planned[YASNO_GROUP_KEY] ?? Object.values(cached.planned)[0];
+    const todayDate = plannedGroup?.today?.date;
+    if (!todayDate) {
+      return super.getMockDate(dataSource);
+    }
+
+    const match = todayDate.match(
+      /^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}:\d{2}(Z|[+-]\d{2}:\d{2})?$/,
+    );
+    if (!match) {
+      return super.getMockDate(dataSource);
+    }
+
+    const [, datePart, timezoneSuffix = ''] = match;
+    const mockDateStr = `${datePart}T${MOCK_TIME_STR}${timezoneSuffix}`;
+    const mockDate = new Date(mockDateStr);
+    return mockDate;
   }
 }

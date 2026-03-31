@@ -62,6 +62,13 @@ entities_presets:
           color: '#FF9800'
           opacity: 0.08
           background: 'repeating-linear-gradient(45deg, rgb(from #FF9800 r g b / 0.08), rgb(from #FF9800 r g b / 0.08) 10px, rgb(from #FF9800 r g b / 0.15) 10px, rgb(from #FF9800 r g b / 0.15) 20px)'
+      - name: No Outages
+        entity: calendar.planned_outages
+        filter: No Outages
+        icon: mdi:flash
+        theme_values:
+          color: '#29B6F6'
+          opacity: 0.05
       - name: Emergency Shutdowns
         entity: calendar.planned_outages
         filter: Emergency Shutdowns
@@ -74,8 +81,9 @@ entities_presets:
         filter: Schedule Applies
         icon: mdi:calendar-check
         theme_values:
-          color: '#29B6F6'
-          opacity: 0.05
+          color: '#FF5252'
+          opacity: 0.08
+          background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
       - name: Waiting for Schedule
         entity: calendar.planned_outages
         filter: Waiting for Schedule
@@ -110,6 +118,13 @@ entities_presets:
           color: '#FF9800'
           opacity: 0.08
           background: 'repeating-linear-gradient(45deg, rgb(from #FF9800 r g b / 0.08), rgb(from #FF9800 r g b / 0.08) 10px, rgb(from #FF9800 r g b / 0.15) 10px, rgb(from #FF9800 r g b / 0.15) 20px)'
+      - name: Без відключень
+        entity: calendar.planned_outages
+        filter: Без відключень
+        icon: mdi:flash
+        theme_values:
+          color: '#29B6F6'
+          opacity: 0.05
       - name: Аварійні відключення
         entity: calendar.planned_outages
         filter: Аварійні відключення
@@ -122,8 +137,9 @@ entities_presets:
         filter: Графік діє
         icon: mdi:calendar-check
         theme_values:
-          color: '#29B6F6'
-          opacity: 0.05
+          color: '#FF5252'
+          opacity: 0.08
+          background: 'repeating-linear-gradient(45deg, rgb(from #FF5252 r g b / 0.08), rgb(from #FF5252 r g b / 0.08) 10px, rgb(from #FF5252 r g b / 0.15) 10px, rgb(from #FF5252 r g b / 0.15) 20px)'
       - name: Очікування графіка
         entity: calendar.planned_outages
         filter: Очікування графіка

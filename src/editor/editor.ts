@@ -445,6 +445,10 @@ export class CalendarWeekGridCardEditor extends LitElement {
             <div class="helper-text">
               Hour to stop displaying (0-24, default: 24)
             </div>
+            ${this.addBooleanField('trim_empty_hours', 'Trim Empty Hours')}
+            <div class="helper-text">
+              Trim empty hours at the top and bottom across all visible days
+            </div>
             ${this.addBooleanField('time_range', 'Show Time Range')}
             <div class="helper-text">
               Display time as a range (e.g., "09 - 10" instead of "09")

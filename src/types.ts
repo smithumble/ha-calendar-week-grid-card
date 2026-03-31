@@ -132,6 +132,7 @@ export interface CardConfig {
   secondary_date_format?: Intl.DateTimeFormatOptions;
   time_format?: string | Intl.DateTimeFormatOptions;
   time_range?: boolean;
+  trim_empty_hours?: boolean;
   start_hour?: number;
   end_hour?: number;
   filter?: string;
