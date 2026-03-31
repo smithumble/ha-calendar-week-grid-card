@@ -1,0 +1,218 @@
+{
+  "25": {
+    "dsos": {
+      "902": {
+        "groups": {
+          "6.1": {
+            "slots": {
+              "0": [
+                {
+                  "start": 0,
+                  "end": 90,
+                  "type": "Definite"
+                },
+                {
+                  "start": 90,
+                  "end": 300,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 300,
+                  "end": 720,
+                  "type": "Definite"
+                },
+                {
+                  "start": 720,
+                  "end": 930,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 930,
+                  "end": 1350,
+                  "type": "Definite"
+                },
+                {
+                  "start": 1350,
+                  "end": 1440,
+                  "type": "NotPlanned"
+                }
+              ],
+              "1": [
+                {
+                  "start": 0,
+                  "end": 120,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 120,
+                  "end": 540,
+                  "type": "Definite"
+                },
+                {
+                  "start": 540,
+                  "end": 750,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 750,
+                  "end": 1170,
+                  "type": "Definite"
+                },
+                {
+                  "start": 1170,
+                  "end": 1380,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 1380,
+                  "end": 1440,
+                  "type": "Definite"
+                }
+              ],
+              "2": [
+                {
+                  "start": 0,
+                  "end": 360,
+                  "type": "Definite"
+                },
+                {
+                  "start": 360,
+                  "end": 570,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 570,
+                  "end": 990,
+                  "type": "Definite"
+                },
+                {
+                  "start": 990,
+                  "end": 1200,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 1200,
+                  "end": 1440,
+                  "type": "Definite"
+                }
+              ],
+              "3": [
+                {
+                  "start": 0,
+                  "end": 180,
+                  "type": "Definite"
+                },
+                {
+                  "start": 180,
+                  "end": 390,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 390,
+                  "end": 810,
+                  "type": "Definite"
+                },
+                {
+                  "start": 810,
+                  "end": 1020,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 1020,
+                  "end": 1440,
+                  "type": "Definite"
+                }
+              ],
+              "4": [
+                {
+                  "start": 0,
+                  "end": 210,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 210,
+                  "end": 630,
+                  "type": "Definite"
+                },
+                {
+                  "start": 630,
+                  "end": 840,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 840,
+                  "end": 1260,
+                  "type": "Definite"
+                },
+                {
+                  "start": 1260,
+                  "end": 1440,
+                  "type": "NotPlanned"
+                }
+              ],
+              "5": [
+                {
+                  "start": 0,
+                  "end": 30,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 30,
+                  "end": 450,
+                  "type": "Definite"
+                },
+                {
+                  "start": 450,
+                  "end": 660,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 660,
+                  "end": 1080,
+                  "type": "Definite"
+                },
+                {
+                  "start": 1080,
+                  "end": 1290,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 1290,
+                  "end": 1440,
+                  "type": "Definite"
+                }
+              ],
+              "6": [
+                {
+                  "start": 0,
+                  "end": 270,
+                  "type": "Definite"
+                },
+                {
+                  "start": 270,
+                  "end": 480,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 480,
+                  "end": 900,
+                  "type": "Definite"
+                },
+                {
+                  "start": 900,
+                  "end": 1110,
+                  "type": "NotPlanned"
+                },
+                {
+                  "start": 1110,
+                  "end": 1440,
+                  "type": "Definite"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
