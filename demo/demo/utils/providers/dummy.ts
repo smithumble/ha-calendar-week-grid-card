@@ -1,5 +1,4 @@
 import type { Calendar, DataSource } from '../data';
-import { MOCK_DATE_STR } from '../datetime';
 import { getDummyCalendars } from '../parsers/dummy';
 import { BaseProvider } from './base';
 
@@ -8,7 +7,6 @@ import { BaseProvider } from './base';
  */
 export class DummyProvider extends BaseProvider {
   readonly name = 'dummy';
-  readonly mockDate = new Date(MOCK_DATE_STR);
 
   constructor(
     configPaths: Record<string, string>,

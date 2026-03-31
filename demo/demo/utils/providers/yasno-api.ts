@@ -58,8 +58,11 @@ function calculateNumericIndex(value: string): number | null {
  */
 export class YasnoApiProvider extends BaseProvider {
   readonly name = 'yasno_api';
-  readonly mockDate?: Date;
   private cacheTtlMs: number;
+
+  getMockDate(): Date | undefined {
+    return undefined;
+  }
 
   constructor(
     configPaths: Record<string, string> = {},
@@ -172,9 +175,8 @@ export class YasnoApiProvider extends BaseProvider {
         this.fetchProbableOutages(),
       ]);
 
-      const currentDay = this.mockDate
-        ? this.mockDate.getDay()
-        : new Date().getDay();
+      const mockDate = this.getMockDate();
+      const currentDay = mockDate ? mockDate.getDay() : new Date().getDay();
       const mondayIndex = currentDay - 1;
 
       return parseYasnoData(
@@ -183,7 +185,7 @@ export class YasnoApiProvider extends BaseProvider {
         mondayIndex,
         plannedGroupKey,
         probableGroupKey,
-        this.mockDate,
+        mockDate,
       );
     } catch (error) {
       console.error(

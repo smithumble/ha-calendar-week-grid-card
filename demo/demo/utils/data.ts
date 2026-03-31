@@ -21,7 +21,6 @@ export interface ProviderData {
   calendars: Record<string, Calendar[]>;
   configs: ConfigItem[];
   dataSources: string[];
-  mockDate?: Date;
   defaultConfig?: string;
   defaultDataSource?: string;
 }
