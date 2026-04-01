@@ -1122,7 +1122,7 @@ css: |
 
 ### Google Calendar
 
-![Calendar Week Grid Card Example: Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/f035ad1704bbb49474a9126ec95dccbbae0cfb5b/media/images/google_calendar.png)
+![Calendar Week Grid Card Example: Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/e7943f2792569f43fda4e3b20e578e59cbb422cd/media/images/google_calendar.png)
 
 <!-- CONFIG:yasno_v3/google_calendar -->
 
@@ -1156,36 +1156,36 @@ entities:
     filter: Outage
     icon: mdi:flash-off
     theme_values:
-      color: var(--error-color)
+      color: var(--red-color, var(--error-color))
   - name: Probable Outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
     theme_values:
-      color: var(--primary-color)
+      color: var(--teal-color, var(--primary-color))
   - name: No Outages
     entity: calendar.planned_outages
     filter: No Outages
     icon: mdi:flash
     theme_values:
-      color: var(--success-color)
+      color: var(--green-color, var(--success-color))
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
     theme_values:
-      color: var(--error-color)
+      color: var(--red-color, var(--error-color))
   - name: Schedule Applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: var(--error-color)
+      color: var(--orange-color, var(--error-color))
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
     theme_values:
-      color: var(--warning-color)
+      color: var(--yellow-color, var(--warning-color))
     hide:
       - Planned Outages
 css: |
@@ -1390,7 +1390,7 @@ css: |
 
 ### Google Calendar Separated
 
-![Calendar Week Grid Card Example: Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/f035ad1704bbb49474a9126ec95dccbbae0cfb5b/media/images/google_calendar_separated.png)
+![Calendar Week Grid Card Example: Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/e7943f2792569f43fda4e3b20e578e59cbb422cd/media/images/google_calendar_separated.png)
 
 <!-- CONFIG:yasno_v3/google_calendar_separated -->
 
@@ -1424,36 +1424,36 @@ entities:
     filter: Outage
     icon: mdi:flash-off
     theme_values:
-      color: var(--error-color)
+      color: var(--red-color, var(--error-color))
   - name: Probable Outages
     entity: calendar.probable_outages
     icon: mdi:flash-off
     theme_values:
-      color: var(--primary-color)
+      color: var(--teal-color, var(--primary-color))
   - name: No Outages
     entity: calendar.planned_outages
     filter: No Outages
     icon: mdi:flash
     theme_values:
-      color: var(--success-color)
+      color: var(--green-color, var(--success-color))
   - name: Emergency Shutdowns
     entity: calendar.planned_outages
     filter: Emergency Shutdowns
     icon: mdi:transmission-tower-off
     theme_values:
-      color: var(--error-color)
+      color: var(--red-color, var(--error-color))
   - name: Schedule Applies
     entity: calendar.planned_outages
     filter: Schedule Applies
     icon: mdi:flash-off
     theme_values:
-      color: var(--error-color)
+      color: var(--orange-color, var(--error-color))
   - name: Waiting for Schedule
     entity: calendar.planned_outages
     filter: Waiting for Schedule
     icon: mdi:timer-sand
     theme_values:
-      color: var(--warning-color)
+      color: var(--yellow-color, var(--warning-color))
     hide:
       - Planned Outages
 css: |
