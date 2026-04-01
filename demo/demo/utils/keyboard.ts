@@ -18,10 +18,20 @@ const NAVIGATION_KEYS = [
 
 const KEYBOARD_NAV_ATTRIBUTE = 'data-keyboard-nav-attached';
 
+/** Real focused node; document.activeElement is the shadow host when focus is inside Shadow DOM. */
+function getDeepActiveElement(): Element | null {
+  let el: Element | null = document.activeElement;
+  while (el?.shadowRoot?.activeElement) {
+    el = el.shadowRoot.activeElement;
+  }
+  return el;
+}
+
 function isEditableElement(element: Element | null): boolean {
   if (!element) return false;
 
-  if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
+  const tag = element.tagName;
+  if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT') {
     return true;
   }
 
@@ -97,7 +107,7 @@ export function setupGlobalKeyboardNavigation(
       return;
     }
 
-    if (isEditableElement(document.activeElement)) {
+    if (isEditableElement(getDeepActiveElement())) {
       return;
     }
 
