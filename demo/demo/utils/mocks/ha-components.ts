@@ -4,6 +4,10 @@
 
 import type { HomeAssistant } from '../../../../src/types';
 
+/** Chevron background for mocked native select controls (ha-select and ha-entity-picker). */
+const MOCK_SELECT_DROPDOWN_ARROW_BG =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M6 8L0 0h12z' fill='%23666'/%3E%3C/svg%3E\")";
+
 /**
  * Mocks Home Assistant custom elements needed by the visual editor
  */
@@ -18,7 +22,6 @@ export function mockHaEditorComponents(): void {
   mockHaCodeEditor();
   mockHaButton();
   mockHaIconButton();
-  mockMwcListItem();
 }
 
 function mockHaTextField() {
@@ -130,15 +133,17 @@ function mockHaSelect() {
         private select: HTMLSelectElement;
         private _value: string | null = null;
         private _clearable: boolean = false;
+        private _options: Array<
+          string | { value: string; label?: string }
+        > | null = null;
         constructor() {
           super();
           this.select = document.createElement('select');
           this.attachShadow({ mode: 'open' });
         }
-        private _observer: MutationObserver | null = null;
 
         connectedCallback() {
-          if (this.shadowRoot && !this._observer) {
+          if (this.shadowRoot && !this.select.parentNode) {
             const label = this.getAttribute('label') || '';
             this.shadowRoot.innerHTML = `
               <style>
@@ -173,7 +178,7 @@ function mockHaSelect() {
                   -webkit-appearance: none;
                   -moz-appearance: none;
                   appearance: none;
-                  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M6 8L0 0h12z' fill='%23666'/%3E%3C/svg%3E");
+                  background-image: ${MOCK_SELECT_DROPDOWN_ARROW_BG};
                   background-repeat: no-repeat;
                   background-position: right 8px center;
                   background-size: 12px 8px;
@@ -191,7 +196,6 @@ function mockHaSelect() {
             `;
             this.shadowRoot.appendChild(this.select);
 
-            // Update options after a short delay to allow Lit to render children
             requestAnimationFrame(() => {
               requestAnimationFrame(() => {
                 this.updateOptions();
@@ -205,37 +209,41 @@ function mockHaSelect() {
 
             this.select.addEventListener('change', () => {
               this._value = this.select.value;
+              const raw = this.select.value;
+              const detailValue =
+                raw === '' && this._clearable ? undefined : raw;
               this.dispatchEvent(
-                new CustomEvent('change', { bubbles: true, composed: true }),
+                new CustomEvent('selected', {
+                  bubbles: true,
+                  composed: true,
+                  detail: { value: detailValue },
+                }),
               );
             });
             this.select.addEventListener('click', (e) => {
               e.stopPropagation();
             });
-
-            // Observe changes to child elements (mwc-list-item)
-            this._observer = new MutationObserver(() => {
-              this.updateOptions();
-            });
-            this._observer.observe(this, {
-              childList: true,
-              subtree: true,
-            });
           }
         }
 
-        disconnectedCallback() {
-          if (this._observer) {
-            this._observer.disconnect();
-            this._observer = null;
+        restoreNativeSelectValue(
+          select: HTMLSelectElement,
+          candidates: Array<string | null | undefined>,
+        ): void {
+          for (const v of candidates) {
+            if (
+              v &&
+              Array.from(select.options).some((opt) => opt.value === v)
+            ) {
+              select.value = v;
+              return;
+            }
           }
         }
 
         updateOptions() {
           if (!this.select) return;
 
-          // Get mwc-list-item children from light DOM
-          const listItems = Array.from(this.querySelectorAll('mwc-list-item'));
           const currentValue = this.select.value;
 
           this.select.innerHTML = '';
@@ -248,30 +256,35 @@ function mockHaSelect() {
             this.select.appendChild(emptyOption);
           }
 
-          // Add options from mwc-list-item elements
-          listItems.forEach((item) => {
-            const option = document.createElement('option');
-            option.value = item.getAttribute('value') || '';
-            option.textContent = item.textContent || option.value;
-            this.select.appendChild(option);
-          });
-
-          // Restore value if it still exists
-          if (
-            currentValue &&
-            Array.from(this.select.options).some(
-              (opt) => opt.value === currentValue,
-            )
-          ) {
-            this.select.value = currentValue;
-          } else if (
-            this._value &&
-            Array.from(this.select.options).some(
-              (opt) => opt.value === this._value,
-            )
-          ) {
-            this.select.value = this._value;
+          if (Array.isArray(this._options)) {
+            for (const entry of this._options) {
+              const option = document.createElement('option');
+              if (typeof entry === 'string') {
+                option.value = entry;
+                option.textContent = entry;
+              } else {
+                option.value = entry.value;
+                option.textContent = entry.label ?? entry.value;
+              }
+              this.select.appendChild(option);
+            }
           }
+
+          this.restoreNativeSelectValue(this.select, [
+            currentValue,
+            this._value,
+          ]);
+        }
+
+        get options() {
+          return this._options;
+        }
+
+        set options(
+          val: Array<string | { value: string; label?: string }> | null,
+        ) {
+          this._options = val;
+          this.updateOptions();
         }
 
         get value() {
@@ -451,7 +464,7 @@ function mockHaEntityPicker() {
                   -webkit-appearance: none;
                   -moz-appearance: none;
                   appearance: none;
-                  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M6 8L0 0h12z' fill='%23666'/%3E%3C/svg%3E");
+                  background-image: ${MOCK_SELECT_DROPDOWN_ARROW_BG};
                   background-repeat: no-repeat;
                   background-position: right 8px center;
                   background-size: 12px 8px;
@@ -982,23 +995,6 @@ function mockHaIconButton() {
               button.title = newVal || '';
             }
           }
-        }
-      },
-    );
-  }
-}
-
-function mockMwcListItem() {
-  // Mock mwc-list-item (used by ha-select)
-  if (!customElements.get('mwc-list-item')) {
-    customElements.define(
-      'mwc-list-item',
-      class extends HTMLElement {
-        constructor() {
-          super();
-        }
-        connectedCallback() {
-          // This is handled by the parent ha-select
         }
       },
     );

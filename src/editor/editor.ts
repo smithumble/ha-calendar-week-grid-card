@@ -51,7 +51,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
     new Map();
   private _pendingValues: Map<
     string,
-    { target: HTMLElement; value: string | boolean | number | null }
+    string | boolean | number | object | null
   > = new Map();
 
   //-----------------------------------------------------------------------------
@@ -134,6 +134,23 @@ export class CalendarWeekGridCardEditor extends LitElement {
   // INPUT/EVENT HANDLERS
   //-----------------------------------------------------------------------------
 
+  private _readControlValue(
+    target: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
+  ): string | boolean | number | null {
+    let value: string | boolean | number | null = target.value;
+    if (target.tagName === 'HA-SWITCH') {
+      value = (target as HTMLInputElement).checked;
+    }
+    if (
+      target.getAttribute('type') === 'number' &&
+      value !== '' &&
+      typeof value === 'string'
+    ) {
+      value = parseFloat(value);
+    }
+    return value;
+  }
+
   /**
    * Processes a value change from a target element
    * Extracted to be reusable for both immediate and debounced changes
@@ -144,30 +161,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
     const name = target.getAttribute('name');
     if (!name) return;
 
-    // Handle preset_selection immediately without debouncing
-    if (name === 'preset_selection') {
-      const value = target.value || '';
-      this._selectedPresetName = value;
-      this._presetCalendarValues = {};
-      return;
-    }
-
-    let processedValue: string | boolean | number | object | null =
-      target.value;
-
-    if (target.tagName === 'HA-SWITCH') {
-      processedValue = (target as HTMLInputElement).checked;
-    }
-
-    if (
-      target.getAttribute('type') === 'number' &&
-      processedValue !== '' &&
-      typeof processedValue === 'string'
-    ) {
-      processedValue = parseFloat(processedValue);
-    }
-
-    this._applyValueChange(name, processedValue);
+    this._applyValueChange(name, this._readControlValue(target));
   }
 
   /**
@@ -178,8 +172,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
     name: string,
     processedValue: string | boolean | number | object | null,
   ): void {
-    if (!name) return;
-
     // Create context for field handlers
     const context: FieldHandlerContext = {
       getConfigValue: this.getConfigValue.bind(this),
@@ -300,21 +292,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
     if (!name) return;
 
-    // Extract current value from target
-    let value: string | boolean | number | null = target.value;
-    if (target.tagName === 'HA-SWITCH') {
-      value = (target as HTMLInputElement).checked;
-    }
-    if (
-      target.getAttribute('type') === 'number' &&
-      value !== '' &&
-      typeof value === 'string'
-    ) {
-      value = parseFloat(value);
-    }
-
-    // Store the pending value
-    this._pendingValues.set(name, { target, value });
+    this._pendingValues.set(name, this._readControlValue(target));
 
     // Clear existing timeout for this field
     const existingTimeout = this._debounceTimeouts.get(name);
@@ -326,15 +304,11 @@ export class CalendarWeekGridCardEditor extends LitElement {
     const timeout = setTimeout(() => {
       this._debounceTimeouts.delete(name);
 
-      // Get the pending value for this field
       const pending = this._pendingValues.get(name);
-      if (!pending) return;
+      if (pending === undefined) return;
 
       this._pendingValues.delete(name);
-
-      // Process the value change directly with name and value
-      const value = pending.value as string | boolean | number | object | null;
-      this._applyValueChange(name, value);
+      this._applyValueChange(name, pending);
     }, 500);
 
     this._debounceTimeouts.set(name, timeout);
@@ -351,6 +325,32 @@ export class CalendarWeekGridCardEditor extends LitElement {
       | HTMLTextAreaElement;
 
     this._processValueChange(target);
+  }
+
+  /** Handle `ha-select` @selected (detail.value). */
+  private _haSelectSelected(event: CustomEvent<{ value?: string }>): void {
+    event.stopPropagation();
+    const selectHost = event.currentTarget as HTMLElement;
+    const name = selectHost.getAttribute('name');
+    if (!name) return;
+
+    const detailValue = event.detail?.value;
+
+    if (name === 'preset_selection') {
+      this._selectedPresetName =
+        detailValue === undefined || detailValue === null
+          ? ''
+          : String(detailValue);
+      this._presetCalendarValues = {};
+      return;
+    }
+
+    if (detailValue === undefined) {
+      this.setConfigValue(name, undefined);
+      return;
+    }
+
+    this._applyValueChange(name, String(detailValue));
   }
 
   /**
@@ -705,18 +705,11 @@ export class CalendarWeekGridCardEditor extends LitElement {
         name="${name}"
         label="${label ?? name}"
         .value="${value}"
+        .options="${options ?? []}"
         .clearable="${clearable ?? false}"
-        @change="${this._valueChanged}"
+        @selected="${this._haSelectSelected}"
         @closed="${(event: Event) => event.stopPropagation()}"
-      >
-        ${options?.map(
-          (option) => html`
-            <mwc-list-item value="${option.value}"
-              >${option.label}</mwc-list-item
-            >
-          `,
-        )}
-      </ha-select>
+      ></ha-select>
     `;
   }
 
@@ -1335,14 +1328,16 @@ export class CalendarWeekGridCardEditor extends LitElement {
     return selectedTheme.config.entities_presets;
   }
 
+  private _ensureDefaultPresetSelection(presets: EntitiesPreset[]): void {
+    if (!this._selectedPresetName && presets.length > 0) {
+      this._selectedPresetName = presets[0].name;
+    }
+  }
+
   _togglePresetForm(): void {
     this._showPresetForm = !this._showPresetForm;
     if (this._showPresetForm) {
-      // Auto-select first preset if none selected
-      const presets = this._getAvailablePresets();
-      if (!this._selectedPresetName && presets.length > 0) {
-        this._selectedPresetName = presets[0].name;
-      }
+      this._ensureDefaultPresetSelection(this._getAvailablePresets());
       this._presetCalendarValues = {};
     } else {
       // Clear state when closing
@@ -1360,10 +1355,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
       `;
     }
 
-    // Ensure a preset is selected (default to first one)
-    if (!this._selectedPresetName && presets.length > 0) {
-      this._selectedPresetName = presets[0].name;
-    }
+    this._ensureDefaultPresetSelection(presets);
 
     const selectedPreset = presets.find(
       (p) => p.name === this._selectedPresetName,
@@ -1384,23 +1376,14 @@ export class CalendarWeekGridCardEditor extends LitElement {
           name="preset_selection"
           label="Preset"
           .value="${this._selectedPresetName || ''}"
+          .options="${presets.map((p) => ({
+            value: p.name,
+            label: p.title,
+          }))}"
           .clearable="${false}"
-          @change="${this._valueChanged}"
-          @opened="${() => {
-            // Ensure state is synced when dropdown opens
-            const availablePresets = this._getAvailablePresets();
-            if (!this._selectedPresetName && availablePresets.length > 0) {
-              this._selectedPresetName = availablePresets[0].name;
-            }
-          }}"
+          @selected="${this._haSelectSelected}"
           @closed="${(event: Event) => event.stopPropagation()}"
-        >
-          ${presets.map(
-            (p) => html`
-              <mwc-list-item value="${p.name}">${p.title}</mwc-list-item>
-            `,
-          )}
-        </ha-select>
+        ></ha-select>
         ${selectedPreset && calendars.length > 0
           ? html`
               ${calendars.map(
