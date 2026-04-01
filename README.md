@@ -2,7 +2,7 @@
 
 A custom Home Assistant card that displays calendar events in a week grid format. Check out the **[Demo](https://smithumble.github.io/ha-calendar-week-grid-card/)**
 
-![Calendar Week Grid Card Screenshot](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/00cbbfa84c5b9da76bde80601547c7735a162f65/media/images/image.png)
+![Calendar Week Grid Card Screenshot](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/f035ad1704bbb49474a9126ec95dccbbae0cfb5b/media/images/image.png)
 
 ## Installation
 
@@ -1122,7 +1122,7 @@ css: |
 
 ### Google Calendar
 
-![Calendar Week Grid Card Example: Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/google_calendar.png)
+![Calendar Week Grid Card Example: Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/f035ad1704bbb49474a9126ec95dccbbae0cfb5b/media/images/google_calendar.png)
 
 <!-- CONFIG:yasno_v3/google_calendar -->
 
@@ -1390,7 +1390,7 @@ css: |
 
 ### Google Calendar Separated
 
-![Calendar Week Grid Card Example: Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/google_calendar_separated.png)
+![Calendar Week Grid Card Example: Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/f035ad1704bbb49474a9126ec95dccbbae0cfb5b/media/images/google_calendar_separated.png)
 
 <!-- CONFIG:yasno_v3/google_calendar_separated -->
 
@@ -1668,7 +1668,7 @@ css: |
 
 ### Google Calendar Original
 
-![Calendar Week Grid Card Example: Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/google_calendar_original.png)
+![Calendar Week Grid Card Example: Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/f035ad1704bbb49474a9126ec95dccbbae0cfb5b/media/images/google_calendar_original.png)
 
 <!-- CONFIG:yasno_v3/google_calendar_original -->
 
@@ -1900,7 +1900,7 @@ css: |
 
 ### Google Calendar Original Separated
 
-![Calendar Week Grid Card Example: Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/23742638af46612d2433093f36ccd4f80ba27da2/media/images/google_calendar_original_separated.png)
+![Calendar Week Grid Card Example: Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/f035ad1704bbb49474a9126ec95dccbbae0cfb5b/media/images/google_calendar_original_separated.png)
 
 <!-- CONFIG:yasno_v3/google_calendar_original_separated -->
 
