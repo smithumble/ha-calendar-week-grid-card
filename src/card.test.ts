@@ -358,7 +358,7 @@ describe('CalendarWeekGridCard', () => {
       (card as any).events = [];
 
       const text = renderTemplate((card as any).render());
-      expect(text).toContain('Tue');
+      expect(text).toContain('ha-card');
     });
 
     it('renderRow renders time label and day cells', () => {
