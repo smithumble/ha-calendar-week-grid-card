@@ -4,10 +4,6 @@
 
 import type { HomeAssistant } from '../../../../src/types';
 
-/** Chevron background for mocked native select controls (ha-select and ha-entity-picker). */
-const MOCK_SELECT_DROPDOWN_ARROW_BG =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M6 8L0 0h12z' fill='%23666'/%3E%3C/svg%3E\")";
-
 /**
  * Mocks Home Assistant custom elements needed by the visual editor
  */
@@ -136,6 +132,7 @@ function mockHaSelect() {
         private _options: Array<
           string | { value: string; label?: string }
         > | null = null;
+        private _listenersBound = false;
         constructor() {
           super();
           this.select = document.createElement('select');
@@ -143,9 +140,10 @@ function mockHaSelect() {
         }
 
         connectedCallback() {
-          if (this.shadowRoot && !this.select.parentNode) {
-            const label = this.getAttribute('label') || '';
-            this.shadowRoot.innerHTML = `
+          if (!this.shadowRoot) return;
+
+          const label = this.getAttribute('label') || '';
+          this.shadowRoot.innerHTML = `
               <style>
                 :host {
                   display: block;
@@ -159,6 +157,24 @@ function mockHaSelect() {
                   font-weight: 500;
                   color: var(--primary-text-color);
                   font-family: var(--mdc-typography-body1-font-family, Roboto, sans-serif);
+                }
+                .select-wrap {
+                  position: relative;
+                  width: 100%;
+                  max-width: 500px;
+                }
+                .select-wrap::after {
+                  content: '';
+                  position: absolute;
+                  right: 10px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  width: 0;
+                  height: 0;
+                  border-left: 5px solid transparent;
+                  border-right: 5px solid transparent;
+                  border-top: 6px solid var(--input-dropdown-icon-color, var(--secondary-text-color));
+                  pointer-events: none;
                 }
                 select {
                   width: 100%;
@@ -178,10 +194,6 @@ function mockHaSelect() {
                   -webkit-appearance: none;
                   -moz-appearance: none;
                   appearance: none;
-                  background-image: ${MOCK_SELECT_DROPDOWN_ARROW_BG};
-                  background-repeat: no-repeat;
-                  background-position: right 8px center;
-                  background-size: 12px 8px;
                 }
                 select:focus {
                   border-bottom-color: var(--primary-color);
@@ -193,20 +205,14 @@ function mockHaSelect() {
                 }
               </style>
               ${label ? `<label>${label}</label>` : ''}
+              <div class="select-wrap"></div>
             `;
-            this.shadowRoot.appendChild(this.select);
+          const wrap = this.shadowRoot.querySelector('.select-wrap');
+          if (!wrap) return;
+          wrap.appendChild(this.select);
 
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                this.updateOptions();
-                const value =
-                  this._value !== null
-                    ? this._value
-                    : this.getAttribute('value') || '';
-                if (value) this.select.value = value;
-              });
-            });
-
+          if (!this._listenersBound) {
+            this._listenersBound = true;
             this.select.addEventListener('change', () => {
               this._value = this.select.value;
               const raw = this.select.value;
@@ -224,6 +230,17 @@ function mockHaSelect() {
               e.stopPropagation();
             });
           }
+
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              this.updateOptions();
+              const value =
+                this._value !== null
+                  ? this._value
+                  : this.getAttribute('value') || '';
+              if (value) this.select.value = value;
+            });
+          });
         }
 
         restoreNativeSelectValue(
@@ -423,15 +440,17 @@ function mockHaEntityPicker() {
         private select: HTMLSelectElement;
         private _hass: HomeAssistant | null = null;
         private _value: string = '';
+        private _listenersBound = false;
         constructor() {
           super();
           this.select = document.createElement('select');
           this.attachShadow({ mode: 'open' });
         }
         connectedCallback() {
-          if (this.shadowRoot) {
-            const label = this.getAttribute('label') || '';
-            this.shadowRoot.innerHTML = `
+          if (!this.shadowRoot) return;
+
+          const label = this.getAttribute('label') || '';
+          this.shadowRoot.innerHTML = `
               <style>
                 :host {
                   display: block;
@@ -445,6 +464,24 @@ function mockHaEntityPicker() {
                   font-weight: 500;
                   color: var(--primary-text-color);
                   font-family: var(--mdc-typography-body1-font-family, Roboto, sans-serif);
+                }
+                .select-wrap {
+                  position: relative;
+                  width: 100%;
+                  max-width: 500px;
+                }
+                .select-wrap::after {
+                  content: '';
+                  position: absolute;
+                  right: 10px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  width: 0;
+                  height: 0;
+                  border-left: 5px solid transparent;
+                  border-right: 5px solid transparent;
+                  border-top: 6px solid var(--input-dropdown-icon-color, var(--secondary-text-color));
+                  pointer-events: none;
                 }
                 select {
                   width: 100%;
@@ -464,10 +501,6 @@ function mockHaEntityPicker() {
                   -webkit-appearance: none;
                   -moz-appearance: none;
                   appearance: none;
-                  background-image: ${MOCK_SELECT_DROPDOWN_ARROW_BG};
-                  background-repeat: no-repeat;
-                  background-position: right 8px center;
-                  background-size: 12px 8px;
                 }
                 select:focus {
                   border-bottom-color: var(--primary-color);
@@ -479,11 +512,16 @@ function mockHaEntityPicker() {
                 }
               </style>
               ${label ? `<label>${label}</label>` : ''}
+              <div class="select-wrap"></div>
             `;
-            this.shadowRoot.appendChild(this.select);
-            this.updateOptions();
-            const value = this._value || this.getAttribute('value') || '';
-            if (value) this.select.value = value;
+          const wrap = this.shadowRoot.querySelector('.select-wrap');
+          if (!wrap) return;
+          wrap.appendChild(this.select);
+          this.updateOptions();
+          const value = this._value || this.getAttribute('value') || '';
+          if (value) this.select.value = value;
+          if (!this._listenersBound) {
+            this._listenersBound = true;
             this.select.addEventListener('change', () => {
               this._value = this.select.value;
               this.dispatchEvent(
