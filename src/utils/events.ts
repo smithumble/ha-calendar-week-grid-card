@@ -60,6 +60,9 @@ export function hideEvents(
   events: Event[],
   normalizedEntities: EntityConfig[],
 ): Event[] {
+  const eventsOverlap = (a: Event, b: Event): boolean =>
+    a.start.getTime() < b.end.getTime() && b.start.getTime() < a.end.getTime();
+
   const entityHideMap = new Map<string, EventCriteria[]>();
 
   for (const entityConfig of normalizedEntities) {
@@ -92,7 +95,10 @@ export function hideEvents(
         if (targetEvent === event) continue;
 
         for (const criteria of hideCriteria) {
-          if (matchesCriteria(targetEvent, criteria)) {
+          if (
+            matchesCriteria(targetEvent, criteria) &&
+            eventsOverlap(event, targetEvent)
+          ) {
             eventsToRemove.add(targetEvent);
             break;
           }
