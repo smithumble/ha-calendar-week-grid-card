@@ -319,6 +319,89 @@ describe('CalendarWeekGridCard', () => {
       expect((card as any).getVisibleHours(days)).toEqual([]);
     });
 
+    it('keeps hours for offset date-time events', () => {
+      const card = createCard({
+        type: 'custom:calendar-week-grid-card',
+        start_hour: 8,
+        end_hour: 18,
+        trim_empty_hours: true,
+      });
+
+      (card as any).events = [
+        {
+          name: 'Outage',
+          type: 'calendar',
+          entity: 'calendar.planned_outages',
+          start: new Date(2026, 3, 8, 11, 0, 0, 0),
+          end: new Date(2026, 3, 8, 13, 0, 0, 0),
+          isAllDay: false,
+        },
+      ];
+
+      const dayDate = new Date(2026, 3, 8, 0, 0, 0, 0);
+      const days = [{ date: dayDate, label: 'Wed', isToday: false }];
+
+      expect((card as any).getVisibleHours(days)).toEqual([11, 12]);
+    });
+
+    it('does not trim away outage when hidden event is on another day', () => {
+      const card = createCard({
+        type: 'custom:calendar-week-grid-card',
+        start_hour: 8,
+        end_hour: 18,
+        trim_empty_hours: true,
+        entities: [
+          {
+            name: 'Planned Outages',
+            entity: 'calendar.planned_outages',
+            filter: 'Outage',
+          },
+          {
+            name: 'Waiting for Schedule',
+            entity: 'calendar.planned_outages',
+            filter: 'Waiting for Schedule',
+            hide: ['Planned Outages'],
+          },
+        ],
+      });
+
+      (card as any).events = [
+        {
+          name: 'Planned Outages',
+          type: 'calendar',
+          entity: 'calendar.planned_outages',
+          filter: 'Outage',
+          start: new Date(2026, 3, 8, 11, 0, 0, 0),
+          end: new Date(2026, 3, 8, 13, 0, 0, 0),
+          isAllDay: false,
+        },
+        {
+          name: 'Waiting for Schedule',
+          type: 'calendar',
+          entity: 'calendar.planned_outages',
+          filter: 'Waiting for Schedule',
+          start: new Date(2026, 3, 9, 0, 0, 0, 0),
+          end: new Date(2026, 3, 10, 0, 0, 0, 0),
+          isAllDay: true,
+        },
+      ];
+
+      const days = [
+        {
+          date: new Date(2026, 3, 8, 0, 0, 0, 0),
+          label: 'Wed',
+          isToday: false,
+        },
+        {
+          date: new Date(2026, 3, 9, 0, 0, 0, 0),
+          label: 'Thu',
+          isToday: false,
+        },
+      ];
+
+      expect((card as any).getVisibleHours(days)).toEqual([11, 12]);
+    });
+
     it('returns full range when trim_empty_hours is disabled', () => {
       const card = createCard({
         type: 'custom:calendar-week-grid-card',
