@@ -25,12 +25,14 @@ export interface HassConfig {
 
 export interface EntityRegistryEntry {
   device_id?: string;
+  disabled_by?: string | null;
   [key: string]: unknown;
 }
 
 export interface DeviceRegistryEntry {
   name?: string;
   name_by_user?: string;
+  disabled_by?: string | null;
   [key: string]: unknown;
 }
 
@@ -123,16 +125,20 @@ export interface EntitiesPreset {
   title: string;
   entities: (string | EntityConfig)[];
   calendars?: PresetCalendar[];
+  overrides?: Partial<Omit<CardConfig, 'type' | 'entities_presets'>>;
 }
 
 export interface CardConfig {
   type: string;
+  orientation?: 'vertical' | 'horizontal';
   language?: string;
   primary_date_format?: Intl.DateTimeFormatOptions;
   secondary_date_format?: Intl.DateTimeFormatOptions;
   time_format?: string | Intl.DateTimeFormatOptions;
   time_range?: boolean;
   trim_empty_hours?: boolean;
+  trim_empty_hours_start_limit?: number;
+  trim_empty_hours_end_limit?: number;
   start_hour?: number;
   end_hour?: number;
   filter?: string;
@@ -160,6 +166,8 @@ export interface CardConfig {
   entities?: (string | EntityConfig)[];
   entities_presets?: EntitiesPreset[];
   theme_variables?: Record<string, ThemeVariable>;
+  /** Built-in theme id when using a packaged theme; omit or use with matching default css */
+  theme?: string;
   css?: string;
   grid_options?: GridOptions;
   layout_options?: LayoutOptions;

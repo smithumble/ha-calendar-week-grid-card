@@ -23,6 +23,50 @@ export interface ThemeInfo {
   config: Partial<CardConfig>;
 }
 
+/** Normalizes CSS for equality checks (whitespace-insensitive). */
+export function normalizeCssForCompare(css: string): string {
+  return css
+    .replace(/\s+/g, ' ')
+    .replace(/\s*{\s*/g, '{')
+    .replace(/\s*}\s*/g, '}')
+    .replace(/\s*:\s*/g, ':')
+    .replace(/\s*;\s*/g, ';')
+    .replace(/;/g, '')
+    .trim();
+}
+
+/**
+ * CSS applied by the card: theme default when `theme` is set and `css` is absent
+ * or matches the theme default; otherwise `config.css` (legacy / custom).
+ */
+export function getEffectiveCardCss(
+  config: CardConfig,
+  themesList: ThemeInfo[],
+): string {
+  const overrideRaw = config.css ?? '';
+  const override = overrideRaw.trim();
+  const themeId = config.theme;
+  const theme = themeId ? themesList.find((t) => t.id === themeId) : undefined;
+  const defaultCss = (theme?.config.css as string) || '';
+
+  if (theme) {
+    if (!override) {
+      return defaultCss;
+    }
+    if (
+      normalizeCssForCompare(overrideRaw) === normalizeCssForCompare(defaultCss)
+    ) {
+      return defaultCss;
+    }
+    return overrideRaw;
+  }
+
+  if (override) {
+    return overrideRaw;
+  }
+  return '';
+}
+
 export class ThemeManager {
   private config: CardConfig;
   private themes: ThemeInfo[];
@@ -36,37 +80,38 @@ export class ThemeManager {
    * Detects which theme is currently selected based on CSS content
    */
   detectSelectedTheme(): string {
+    const storedTheme =
+      (ConfigManager.getValue(this.config, 'theme', '') as string) || '';
+    const validStored = this.themes.some((t) => t.id === storedTheme);
+
     const currentCss =
       (ConfigManager.getValue(this.config, 'css', '') as string) || '';
+    const normalizedCurrent = currentCss.trim()
+      ? normalizeCssForCompare(currentCss)
+      : '';
+
+    if (validStored) {
+      const themeDef = this.themes.find((t) => t.id === storedTheme)!;
+      const themeCss = (themeDef.config.css as string) || '';
+      const normTheme = normalizeCssForCompare(themeCss);
+      if (!normalizedCurrent || normalizedCurrent === normTheme) {
+        return storedTheme;
+      }
+    }
 
     if (!currentCss.trim()) {
       return 'custom';
     }
 
-    const normalizedCurrent = this.normalizeCss(currentCss);
-
     for (const theme of this.themes) {
       const themeCss = (theme.config.css as string) || '';
-      const normalizedTheme = this.normalizeCss(themeCss);
+      const normalizedTheme = normalizeCssForCompare(themeCss);
       if (normalizedCurrent === normalizedTheme) {
         return theme.id;
       }
     }
 
     return 'custom';
-  }
-
-  /**
-   * Normalizes CSS for comparison
-   */
-  private normalizeCss(css: string): string {
-    return css
-      .replace(/\s+/g, ' ')
-      .replace(/\s*{\s*/g, '{')
-      .replace(/\s*}\s*/g, '}')
-      .replace(/\s*:\s*/g, ':')
-      .replace(/\s*;\s*/g, ';')
-      .trim();
   }
 
   /**
@@ -354,12 +399,16 @@ export class ThemeManager {
     ];
     Object.entries(themeConfig).forEach(([key, value]) => {
       if (excludedKeys.includes(key)) return;
+      // Bundled stylesheet comes from `theme` id at runtime; do not persist theme package css
+      if (key === 'css' || key === 'theme') return;
       if (value === null || value === undefined) return;
       this.config = ConfigManager.setValue(this.config, key, value);
     });
 
     // Restore theme_values from archived values for all entities and event configs
-    return this.restoreAllThemeValues(themeId);
+    this.config = this.restoreAllThemeValues(themeId);
+    this.config = ConfigManager.setValue(this.config, 'theme', themeId);
+    return this.config;
   }
 
   /**

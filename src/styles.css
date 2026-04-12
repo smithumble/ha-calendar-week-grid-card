@@ -33,7 +33,7 @@ ha-card {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 8px 16px 16px 16px;
+  padding: 16px;
   overflow: hidden;
   color: var(--text-primary);
 }
@@ -56,6 +56,19 @@ Grid Structure
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.cell-wrapper {
+  container-type: inline-size;
+}
+
+.cell-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   height: 100%;
 }
 
@@ -66,10 +79,21 @@ Grid Structure
   justify-content: center;
   width: 100%;
   height: 100%;
-  padding-right: 8px;
   font-size: 12px;
   color: var(--text-secondary);
   white-space: nowrap;
+  padding: 2px 12px 2px 4px;
+}
+
+.grid-container[data-orientation='horizontal'] .time-label > * {
+  transform-origin: center;
+  transform: rotate(180deg);
+  writing-mode: vertical-lr;
+}
+
+.grid-container[data-orientation='horizontal'] .time-label {
+  padding: 4px 2px 12px 2px;
+  flex-direction: column;
 }
 
 .day-header {
@@ -80,12 +104,17 @@ Grid Structure
   justify-content: center;
   width: 100%;
   height: 100%;
-  padding: 8px 4px;
   gap: 2px;
   border-radius: 4px;
   font-size: 14px;
   font-weight: bold;
   text-align: center;
+  padding: 2px 4px 12px 4px;
+}
+
+.grid-container[data-orientation='horizontal'] .day-header {
+  padding: 4px 12px 4px 2px;
+  height: 100%;
 }
 
 .day-header-primary {
@@ -124,6 +153,10 @@ Cells
 }
 
 .grid-container[data-layout-fit='true'] .cell {
+  height: 100%;
+}
+
+.grid-container[data-orientation='horizontal'] .cell {
   height: 100%;
 }
 
@@ -218,24 +251,55 @@ Icons Configuration Logic
 /* ============================================================================
 Current Time Indicator
 ============================================================================ */
+.current-time-line-wrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
 
 .current-time-line {
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  margin-top: -1px;
   z-index: 5;
   background-color: var(--current-time-color);
   pointer-events: none;
+  width: 100%;
+  height: 2px;
+  transform: translate(0, -50%);
+}
+
+.grid-container[data-orientation='horizontal'] .current-time-line {
+  width: 2px;
+  height: 100%;
+  transform: translate(-50%, 0);
 }
 
 .current-time-circle {
   position: absolute;
-  left: -3px;
-  top: -2px;
-  width: 6px;
-  height: 6px;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background-color: var(--current-time-color);
+  top: 50%;
+  left: 0;
+}
+
+.grid-container[data-orientation='horizontal'] .current-time-circle {
+  top: 0;
+  left: 50%;
+}
+
+/* ============================================================================
+Horizontal Orientation Modifiers
+============================================================================ */
+
+.grid-container[data-orientation='horizontal'] .event-wrapper,
+.grid-container[data-orientation='horizontal'] .event-block,
+.grid-container[data-orientation='horizontal'] .event-sub-blocks,
+.grid-container[data-orientation='horizontal'] .event-sub-block,
+.grid-container[data-orientation='horizontal'] .cell-icons,
+.grid-container[data-orientation='horizontal'] .event-icon-overlay {
+  top: 0;
+  bottom: 0;
 }

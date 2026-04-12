@@ -7,9 +7,20 @@ html {
 }
 
 body {
+  --navbar-height: 60px;
+  --mobile-top-offset: 190px;
+  --editor-panel-width: 700px;
+  --editor-panel-border-color: rgba(255, 255, 255, 0.1);
+  --theme-padding-default: 80px;
+  --theme-padding-compact: 20px;
+  --card-max-width: 440px;
+  --cards-top-offset: var(--navbar-height);
+  --bottom-editor-height: 50vh;
+  --cards-min-height: calc(100vh - var(--cards-top-offset));
+  --cards-min-height-dynamic: calc(100dvh - var(--cards-top-offset));
   margin: 0;
   padding: 0;
-  padding-top: 60px;
+  padding-top: var(--navbar-height);
   overflow-x: hidden;
   font-family: 'Roboto', sans-serif;
   width: 100vw;
@@ -26,12 +37,13 @@ body {
   display: flex;
   flex-direction: row;
   width: 100%;
-  min-height: calc(100vh - 60px);
+  min-height: var(--cards-min-height);
+  min-height: var(--cards-min-height-dynamic);
   box-sizing: border-box;
 }
 
 body.with-editor {
-  padding-right: 700px;
+  padding-right: var(--editor-panel-width);
 }
 
 body.with-editor #cards-container {
@@ -44,7 +56,7 @@ body.with-editor #cards-container {
   top: 0;
   left: 0;
   right: 0;
-  min-height: 60px;
+  min-height: var(--navbar-height);
   background-color: var(--primary-background-color, rgb(40, 40, 40));
   backdrop-filter: blur(10px);
   display: flex;
@@ -136,12 +148,12 @@ body.with-editor #cards-container {
 
 .config-editor-panel {
   position: fixed;
-  top: 60px;
+  top: var(--navbar-height);
   right: 0;
-  width: 700px;
-  height: calc(100vh - 60px);
+  width: var(--editor-panel-width);
+  height: calc(100vh - var(--navbar-height));
   background-color: var(--primary-background-color, rgb(30, 30, 30));
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 1px solid var(--editor-panel-border-color);
   display: none;
   flex-direction: column;
   z-index: 999;
@@ -266,6 +278,38 @@ body.with-editor #cards-container {
   display: block;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+#config-editor-debug ha-formfield {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  min-height: 32px;
+}
+
+#config-editor-debug ha-code-editor {
+  flex: none;
+  min-height: 120px;
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  --ha-code-editor-min-height: 120px;
+  --ha-code-editor-max-height: 220px;
+}
+
+#config-editor-debug .config-editor-debug-content {
+  overflow-y: auto;
+}
+
+#config-editor-debug #config-editor-debug-override {
+  min-height: 180px;
+  --ha-code-editor-min-height: 180px;
+}
+
+#config-editor-debug #config-editor-debug-second-row-override {
+  min-height: 120px;
+  --ha-code-editor-min-height: 120px;
 }
 
 .config-editor-close {
@@ -420,21 +464,24 @@ body.with-editor #cards-container {
 .theme-container {
   flex: 1;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 20px;
   box-sizing: border-box;
   background-color: var(--primary-background-color, rgb(40, 40, 40));
   color: var(--primary-text-color);
   position: relative;
   min-width: 350px;
   overflow: hidden;
-  padding: 80px;
+  padding: var(--theme-padding-default);
 }
 
 body.with-editor .theme-container {
   flex: none;
-  min-height: auto;
-  padding: 20px;
+  min-height: calc(var(--cards-min-height) / 2);
+  min-height: calc(var(--cards-min-height-dynamic) / 2);
+  padding: var(--theme-padding-compact);
 }
 
 /* Label for the theme mode */
@@ -453,19 +500,32 @@ body.with-editor .theme-label {
 }
 
 #card-container-light,
-#card-container-dark {
+#card-container-dark,
+#card-container-light-horizontal,
+#card-container-dark-horizontal {
   width: 100%;
-  max-width: 440px;
+  max-width: var(--card-max-width);
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
   align-content: center;
 }
 
+#card-container-light-horizontal,
+#card-container-dark-horizontal {
+  display: none;
+}
+
+body.with-second-row #card-container-light-horizontal,
+body.with-second-row #card-container-dark-horizontal {
+  display: grid;
+}
+
 /* Responsive: Vertical layout for smaller screens */
 @media (max-width: 1000px) {
   body {
-    padding-top: 190px;
+    padding-top: var(--mobile-top-offset);
+    --cards-top-offset: var(--mobile-top-offset);
   }
 
   #cards-container {
@@ -509,21 +569,23 @@ body.with-editor .theme-label {
 
   .config-editor-panel {
     width: 100%;
-    height: 50vh;
+    height: var(--bottom-editor-height);
     top: auto;
     bottom: 0;
     border-left: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--editor-panel-border-color);
   }
 
   body.with-editor {
     padding-right: 0;
+    padding-bottom: var(--bottom-editor-height);
   }
 
   .theme-container {
     flex: none;
-    min-height: auto;
-    padding: 20px;
+    min-height: calc(var(--cards-min-height) / 2);
+    min-height: calc(var(--cards-min-height-dynamic) / 2);
+    padding: var(--theme-padding-compact);
   }
 
   .theme-label {

@@ -1,7 +1,7 @@
 import { fromZonedTime, formatInTimeZone } from 'date-fns-tz';
 
 // Fixed date: Monday, May 20, 2024
-export const MOCK_TIME_STR = '11:45:00';
+export const MOCK_TIME_STR = '12:45:00';
 export const MOCK_DATE_STR = '2024-05-20T' + MOCK_TIME_STR;
 
 // Timezone for mock events (default: Kyiv/Ukraine)

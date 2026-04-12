@@ -151,8 +151,12 @@ entities_presets:
         title: Календар імовірних відключень
         description: Календар імовірних відключень з інтеграції ha-yasno-outages
 css: |
+  .cell-wrapper {
+    container-type: inline-size;
+  }
+
   .event-block {
-    border-radius: 4px;
+    border-radius: min(4px, 20cqi);
   }
 
   .event-icon {

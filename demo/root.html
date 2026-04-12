@@ -2,13 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; url=demo/" />
     <title>Calendar Week Grid Card - Demo</title>
     <script>
-      window.location.href = 'demo/';
+      let path = window.location.pathname.replace(/\/index\.html$/i, '');
+      if (path.endsWith('/')) path = path.slice(0, -1);
+      window.location.replace(path + '/demo/');
     </script>
   </head>
   <body>
-    <p>Redirecting to <a href="demo/">demo</a>...</p>
+    <p>Redirecting to demo...</p>
   </body>
 </html>

@@ -3,6 +3,7 @@
  */
 
 import { applyEditedConfig, resetConfig } from './config';
+import { setupDebugEditor } from './debug';
 import { getEditorMode, switchEditorMode } from './modes';
 import { isConfigEditorSetup, setConfigEditorSetup } from './state';
 import { getEditorElements, setupScrollIndicator } from './ui';
@@ -44,8 +45,15 @@ function setupConfigEditor(): void {
   if (isConfigEditorSetup()) return;
   setConfigEditorSetup(true);
 
-  const { closeBtn, applyBtn, resetBtn, yamlBtn, visualBtn, textarea } =
-    getEditorElements();
+  const {
+    closeBtn,
+    applyBtn,
+    resetBtn,
+    yamlBtn,
+    visualBtn,
+    debugBtn,
+    textarea,
+  } = getEditorElements();
 
   // Setup button event listeners (toggle button is set up separately)
   if (closeBtn) {
@@ -68,6 +76,11 @@ function setupConfigEditor(): void {
     visualBtn.addEventListener('click', () => {
       switchEditorMode('visual');
       setupVisualEditor();
+    });
+  }
+  if (debugBtn) {
+    debugBtn.addEventListener('click', () => {
+      switchEditorMode('debug');
     });
   }
 
@@ -95,6 +108,9 @@ function setupConfigEditor(): void {
       }, 1000);
     });
   }
+
+  // Setup debug editor
+  setupDebugEditor();
 }
 
 /**

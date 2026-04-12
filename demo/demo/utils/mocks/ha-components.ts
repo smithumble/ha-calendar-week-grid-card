@@ -816,10 +816,13 @@ function mockHaCodeEditor() {
             this.shadowRoot.innerHTML = `
               <style>
                 :host {
-                  display: block;
+                  display: flex;
+                  flex-direction: column;
+                  min-height: 0;
                   width: 100%;
                   max-width: 100%;
                   margin: 8px 0;
+                  --ha-code-editor-min-height: 500px;
                 }
                 label {
                   display: block;
@@ -833,7 +836,8 @@ function mockHaCodeEditor() {
                   width: 100%;
                   max-width: 100%;
                   box-sizing: border-box;
-                  min-height: 500px;
+                  flex: 1 1 auto;
+                  min-height: var(--ha-code-editor-min-height);
                   padding: 8px 12px;
                   border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
                   font-family: 'Roboto Mono', 'Courier New', monospace;
@@ -850,6 +854,7 @@ function mockHaCodeEditor() {
               ${label ? `<label>${label}</label>` : ''}
             `;
             this.shadowRoot.appendChild(this.textarea);
+            this.textarea.placeholder = this.getAttribute('placeholder') || '';
             const value = this._value || this.getAttribute('value') || '';
             this.textarea.value = value;
             this.textarea.addEventListener('input', () => {
@@ -874,7 +879,7 @@ function mockHaCodeEditor() {
           }
         }
         static get observedAttributes() {
-          return ['value'];
+          return ['value', 'placeholder'];
         }
         attributeChangedCallback(name: string, _old: string, newVal: string) {
           if (name === 'value') {
@@ -882,6 +887,9 @@ function mockHaCodeEditor() {
             if (this.textarea) {
               this.textarea.value = this._value;
             }
+          }
+          if (name === 'placeholder' && this.textarea) {
+            this.textarea.placeholder = newVal || '';
           }
         }
       },

@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { CalendarWeekGridCard } from './card';
 import type { CardConfig, HomeAssistant } from './types';
 
-vi.mock('./configs/google_calendar_separated.yaml', () => ({
+vi.mock('./configs/google_calendar.yaml', () => ({
   default: {
     type: 'custom:calendar-week-grid-card',
     entities_presets: [
@@ -26,7 +26,7 @@ vi.mock('./configs/google_calendar_separated.yaml', () => ({
     theme_values_examples: [{ color: 'red' }, { color: 'blue' }],
   },
 }));
-vi.mock('./configs/google_calendar_separated.yaml?import', () => ({
+vi.mock('./configs/google_calendar.yaml?import', () => ({
   default: {
     type: 'custom:calendar-week-grid-card',
     entities_presets: [
@@ -52,6 +52,41 @@ vi.mock('./configs/google_calendar_separated.yaml?import', () => ({
 vi.mock('./styles.css', () => ({ default: '' }));
 vi.mock('./editor/editor', () => ({
   CalendarWeekGridCardEditor: class extends HTMLElement {},
+}));
+
+vi.mock('./editor/themes', () => ({
+  themes: [
+    {
+      id: 'google_calendar',
+      name: 'Google Calendar',
+      config: {
+        type: 'custom:calendar-week-grid-card',
+        entities_presets: [
+          {
+            name: 'yasno_en',
+            entities: [
+              { entity: 'calendar.planned_outages' },
+              { entity: 'calendar.probable_outages' },
+            ],
+          },
+          {
+            name: 'yasno_uk',
+            entities: [
+              { entity: 'calendar.planned_outages' },
+              { entity: 'calendar.probable_outages' },
+            ],
+          },
+        ],
+        theme_values_examples: [{ color: 'red' }, { color: 'blue' }],
+        css: '.from-google-theme{}',
+      },
+    },
+    {
+      id: 'test_theme',
+      name: 'Test',
+      config: { css: '.from-theme{}' },
+    },
+  ],
 }));
 
 let CalendarWeekGridCardClass: typeof CalendarWeekGridCard;
@@ -110,6 +145,14 @@ describe('CalendarWeekGridCard', () => {
             state: '20',
           },
         },
+        entities: {
+          'calendar.work': { device_id: 'device.work' },
+          'calendar.home': { device_id: 'device.home' },
+        },
+        devices: {
+          'device.work': { name: 'Work Device' },
+          'device.home': { name: 'Home Device' },
+        },
       });
 
       const config = CalendarWeekGridCardClass.getStubConfig(hass);
@@ -122,6 +165,92 @@ describe('CalendarWeekGridCard', () => {
       // Hidden editor-only fields should not be present in generated stub.
       expect(config).not.toHaveProperty('entities_presets');
       expect(config).not.toHaveProperty('theme_values_examples');
+      expect(config.theme).toBe('google_calendar');
+      expect(config).not.toHaveProperty('css');
+    });
+
+    it('keeps calendar entities when registry entry exists', () => {
+      const hass = createHass({
+        states: {
+          'calendar.work': { entity_id: 'calendar.work', state: 'on' },
+          'calendar.home': { entity_id: 'calendar.home', state: 'on' },
+          'calendar.hidden': { entity_id: 'calendar.hidden', state: 'on' },
+        },
+        entities: {
+          'calendar.work': { device_id: 'device.work' },
+          'calendar.home': { device_id: 'device.home' },
+          'calendar.hidden': { disabled_by: 'user' },
+        },
+        devices: {
+          'device.work': { name: 'Work Device' },
+          'device.home': { name: 'Home Device' },
+        },
+      });
+
+      const config = CalendarWeekGridCardClass.getStubConfig(hass);
+
+      expect(config.entities).toHaveLength(3);
+      expect(config.entities).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ entity: 'calendar.work' }),
+          expect.objectContaining({ entity: 'calendar.home' }),
+          expect.objectContaining({ entity: 'calendar.hidden' }),
+        ]),
+      );
+    });
+
+    it('filters out entities when registry is unavailable', () => {
+      const hass = createHass({
+        states: {
+          'calendar.work': { entity_id: 'calendar.work', state: 'on' },
+          'calendar.hidden': {
+            entity_id: 'calendar.hidden',
+            state: 'on',
+            attributes: { hidden_by: 'user' },
+          },
+          'calendar.disabled': {
+            entity_id: 'calendar.disabled',
+            state: 'on',
+            attributes: { disabled_by: 'integration' },
+          },
+        },
+        entities: {},
+      });
+
+      const config = CalendarWeekGridCardClass.getStubConfig(hass);
+      const entities = (config.entities || []) as Array<{ entity?: string }>;
+
+      expect(entities).toEqual([]);
+    });
+
+    it('keeps calendar entities regardless of parent device disabled state', () => {
+      const hass = createHass({
+        states: {
+          'calendar.work': { entity_id: 'calendar.work', state: 'on' },
+          'calendar.device_disabled': {
+            entity_id: 'calendar.device_disabled',
+            state: 'on',
+          },
+        },
+        entities: {
+          'calendar.work': { device_id: 'device.work' },
+          'calendar.device_disabled': { device_id: 'device.disabled' },
+        },
+        devices: {
+          'device.work': { name: 'Work Device' },
+          'device.disabled': { disabled_by: 'user' },
+        },
+      });
+
+      const config = CalendarWeekGridCardClass.getStubConfig(hass);
+      const entities = (config.entities || []) as Array<{ entity?: string }>;
+
+      expect(entities).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ entity: 'calendar.work' }),
+          expect.objectContaining({ entity: 'calendar.device_disabled' }),
+        ]),
+      );
     });
 
     it('uses yasno preset and replaces template entities when both yasno calendars exist', () => {
@@ -138,6 +267,20 @@ describe('CalendarWeekGridCard', () => {
           },
           'calendar.other': { entity_id: 'calendar.other', state: 'on' },
         },
+        entities: {
+          'calendar.yasno_kyiv_planned_outages': {
+            device_id: 'device.yasno.planned',
+          },
+          'calendar.yasno_kyiv_probable_outages': {
+            device_id: 'device.yasno.probable',
+          },
+          'calendar.other': { device_id: 'device.other' },
+        },
+        devices: {
+          'device.yasno.planned': { name: 'Yasno Planned' },
+          'device.yasno.probable': { name: 'Yasno Probable' },
+          'device.other': { name: 'Other Device' },
+        },
       });
 
       const config = CalendarWeekGridCardClass.getStubConfig(hass);
@@ -151,6 +294,8 @@ describe('CalendarWeekGridCard', () => {
             item.entity === 'calendar.yasno_kyiv_probable_outages',
         ),
       ).toBe(true);
+      expect(config.theme).toBe('google_calendar');
+      expect(config).not.toHaveProperty('css');
     });
   });
 
@@ -236,8 +381,8 @@ describe('CalendarWeekGridCard', () => {
         grid_options: { rows: 4 },
       });
 
-      const withAllDay = (card as any).getGridTemplateRows(true, 3);
-      const noRows = (card as any).getGridTemplateRows(false, 0);
+      const withAllDay = (card as any).getGridTemplateRows(4);
+      const noRows = (card as any).getGridTemplateRows(0);
 
       expect(withAllDay).toBe('min-content repeat(4, minmax(0, 1fr))');
       expect(noRows).toBe('min-content');
@@ -317,6 +462,40 @@ describe('CalendarWeekGridCard', () => {
       ];
 
       expect((card as any).getVisibleHours(days)).toEqual([]);
+    });
+
+    it('respects trim limits when there are no timed events', () => {
+      const card = createCard({
+        type: 'custom:calendar-week-grid-card',
+        start_hour: 8,
+        end_hour: 18,
+        trim_empty_hours: true,
+        trim_empty_hours_start_limit: 10,
+        trim_empty_hours_end_limit: 16,
+      });
+
+      (card as any).events = [
+        {
+          name: 'All day',
+          type: 'calendar',
+          entity: 'calendar.work',
+          start: new Date('2026-03-31T00:00:00'),
+          end: new Date('2026-04-01T00:00:00'),
+          isAllDay: true,
+        },
+      ];
+
+      const days = [
+        {
+          date: new Date('2026-03-31T00:00:00'),
+          label: 'Tue',
+          isToday: false,
+        },
+      ];
+
+      expect((card as any).getVisibleHours(days)).toEqual([
+        10, 11, 12, 13, 14, 15,
+      ]);
     });
 
     it('keeps hours for offset date-time events', () => {
@@ -412,6 +591,70 @@ describe('CalendarWeekGridCard', () => {
       expect((card as any).getVisibleHours([])).toEqual([20, 21, 22, 23]);
     });
 
+    it('respects trim_empty_hours_start_limit as max start hour', () => {
+      const card = createCard({
+        type: 'custom:calendar-week-grid-card',
+        start_hour: 8,
+        end_hour: 18,
+        trim_empty_hours: true,
+        trim_empty_hours_start_limit: 9,
+      });
+
+      (card as any).events = [
+        {
+          name: 'Event',
+          type: 'calendar',
+          entity: 'calendar.work',
+          start: new Date('2026-03-31T10:15:00'),
+          end: new Date('2026-03-31T12:30:00'),
+          isAllDay: false,
+        },
+      ];
+
+      const days = [
+        {
+          date: new Date('2026-03-31T00:00:00'),
+          label: 'Tue',
+          isToday: false,
+        },
+      ];
+
+      expect((card as any).getVisibleHours(days)).toEqual([9, 10, 11, 12]);
+    });
+
+    it('respects trim_empty_hours_end_limit as min end hour', () => {
+      const card = createCard({
+        type: 'custom:calendar-week-grid-card',
+        start_hour: 8,
+        end_hour: 18,
+        trim_empty_hours: true,
+        trim_empty_hours_end_limit: 16,
+      });
+
+      (card as any).events = [
+        {
+          name: 'Event',
+          type: 'calendar',
+          entity: 'calendar.work',
+          start: new Date('2026-03-31T10:15:00'),
+          end: new Date('2026-03-31T12:30:00'),
+          isAllDay: false,
+        },
+      ];
+
+      const days = [
+        {
+          date: new Date('2026-03-31T00:00:00'),
+          label: 'Tue',
+          isToday: false,
+        },
+      ];
+
+      expect((card as any).getVisibleHours(days)).toEqual([
+        10, 11, 12, 13, 14, 15,
+      ]);
+    });
+
     it('returns empty for invalid hour bounds', () => {
       const card = createCard({
         type: 'custom:calendar-week-grid-card',
@@ -442,6 +685,27 @@ describe('CalendarWeekGridCard', () => {
 
       const text = renderTemplate((card as any).render());
       expect(text).toContain('ha-card');
+    });
+
+    it('renderCardContent supports horizontal orientation', () => {
+      const card = createCard({
+        type: 'custom:calendar-week-grid-card',
+        orientation: 'horizontal',
+        days: 2,
+        start_hour: 10,
+        end_hour: 12,
+        all_day: 'row',
+      });
+      card.hass = createHass();
+      (card as any).lastFetched = Date.now();
+      (card as any).events = [];
+
+      const text = renderTemplate((card as any).renderCardContent());
+      expect(text).toContain('data-orientation="horizontal"');
+      expect(text).toContain(
+        'grid-template-columns: auto repeat(3, minmax(0, 1fr));',
+      );
+      expect(text).toContain('data-layout-fit="false"');
     });
 
     it('renderRow renders time label and day cells', () => {
@@ -553,7 +817,9 @@ describe('CalendarWeekGridCard', () => {
 
       const day = { date: new Date('2026-03-31'), label: 'Tue', isToday: true };
       const cell = (card as any).renderCell([event], day, 10, 1, 1);
-      expect(renderTemplate(cell)).toContain('cell-wrapper');
+      const html = renderTemplate(cell);
+      expect(html).toContain('cell-wrapper');
+      expect(html).toContain('cell-slot');
     });
   });
 

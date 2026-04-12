@@ -16,25 +16,33 @@ theme_variables:
   icon-opacity:
     name: Icon Opacity
     description: The opacity of the event icon (0.0 to 1.0).
+  color:
+    name: Event Color
+    description: The color of the event.
   opacity:
     name: Opacity
     description: The opacity of the event background (0.1 to 1.0).
-  border-opacity:
-    name: Border Opacity
-    description: The opacity of the event border (0.0 to 1.0).
   border-style:
     name: Border Style
     description: The border style of the event (solid, dashed, dotted, double).
+  border-opacity:
+    name: Border Opacity
+    description: The opacity of the event border (0.0 to 1.0).
 theme_values_examples:
-  - opacity: 0.3
+  - color: var(--error-color)
+    opacity: 0.1
     border-style: solid
-  - opacity: 0.1
+  - color: var(--warning-color)
+    opacity: 0.1
     border-style: dashed
-  - opacity: 0.2
+  - color: var(--error-color)
+    opacity: 0.2
     border-style: double
-  - opacity: 0.1
+  - color: var(--success-color)
+    opacity: 0.1
     border-style: dotted
-  - opacity: 0.1
+  - color: var(--info-color)
+    opacity: 0.1
     border-style: dotted
 blank_event:
   icon: mdi:checkbox-blank-circle-outline
@@ -54,12 +62,14 @@ entities_presets:
         filter: Outage
         icon: mdi:flash-off
         theme_values:
-          opacity: 0.3
+          color: var(--error-color)
+          opacity: 0.1
           border-style: solid
       - name: Probable Outages
         entity: calendar.probable_outages
         icon: mdi:alert-circle-outline
         theme_values:
+          color: var(--warning-color)
           opacity: 0.1
           border-style: dashed
       - name: No Outages
@@ -67,6 +77,7 @@ entities_presets:
         filter: No Outages
         icon: mdi:flash
         theme_values:
+          color: var(--success-color)
           opacity: 0.1
           border-style: dotted
       - name: Emergency Shutdowns
@@ -74,6 +85,7 @@ entities_presets:
         filter: Emergency Shutdowns
         icon: mdi:transmission-tower-off
         theme_values:
+          color: var(--error-color)
           opacity: 0.2
           border-style: double
       - name: Schedule Applies
@@ -81,6 +93,7 @@ entities_presets:
         filter: Schedule Applies
         icon: mdi:flash-off
         theme_values:
+          color: var(--error-color)
           opacity: 0.1
           border-style: dotted
       - name: Waiting for Schedule
@@ -88,6 +101,7 @@ entities_presets:
         filter: Waiting for Schedule
         icon: mdi:timer-sand
         theme_values:
+          color: var(--info-color)
           opacity: 0.1
           border-style: dotted
         hide:
@@ -107,12 +121,14 @@ entities_presets:
         filter: Відключення
         icon: mdi:flash-off
         theme_values:
-          opacity: 0.3
+          color: var(--error-color)
+          opacity: 0.1
           border-style: solid
       - name: Імовірні відключення
         entity: calendar.probable_outages
         icon: mdi:alert-circle-outline
         theme_values:
+          color: var(--warning-color)
           opacity: 0.1
           border-style: dashed
       - name: Без відключень
@@ -120,6 +136,7 @@ entities_presets:
         filter: Без відключень
         icon: mdi:flash
         theme_values:
+          color: var(--success-color)
           opacity: 0.1
           border-style: dotted
       - name: Аварійні відключення
@@ -127,6 +144,7 @@ entities_presets:
         filter: Аварійні відключення
         icon: mdi:transmission-tower-off
         theme_values:
+          color: var(--error-color)
           opacity: 0.2
           border-style: double
       - name: Графік діє
@@ -134,6 +152,7 @@ entities_presets:
         filter: Графік діє
         icon: mdi:flash-off
         theme_values:
+          color: var(--error-color)
           opacity: 0.1
           border-style: dotted
       - name: Очікування графіка
@@ -141,6 +160,7 @@ entities_presets:
         filter: Очікування графіка
         icon: mdi:timer-sand
         theme_values:
+          color: var(--info-color)
           opacity: 0.1
           border-style: dotted
         hide:
@@ -154,14 +174,15 @@ entities_presets:
         description: Календар імовірних відключень з інтеграції ha-yasno-outages
 css: |
   .event-block {
-    border-radius: min(4px, 20cqi);
-    border: 1px var(--border-style, dotted) rgb(from var(--primary-text-color) r g b / var(--border-opacity, 1.0));
+    border-radius: 4px;
+    border: 1px var(--border-style, dotted) rgb(from var(--color, var(--primary-text-color)) r g b / var(--border-opacity, 1.0));
   }
 
   .event-icon {
+    color: var(--color, var(--primary-text-color));
     opacity: var(--icon-opacity, 1.0);
   }
 
   .event-sub-block {
-    background-color: rgb(from var(--primary-text-color) r g b / var(--opacity, 0.1));
+    background-color: rgb(from var(--color, var(--primary-text-color)) r g b / var(--opacity, 0.1));
   }

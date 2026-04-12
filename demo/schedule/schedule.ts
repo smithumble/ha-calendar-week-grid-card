@@ -11,7 +11,7 @@ import { setStoragePrefix } from '../demo/utils/storage';
 import { loadTheme } from '../demo/utils/theme';
 
 const SCHEDULE_PROVIDER = 'yasno_api';
-const SCHEDULE_CONFIG = 'google_calendar_separated';
+const SCHEDULE_CONFIG = 'google_calendar';
 
 const DATA_SOURCE_SELECTOR_ID = 'data-source-select';
 const KEYBOARD_NAV_SELECTORS = [DATA_SOURCE_SELECTOR_ID];

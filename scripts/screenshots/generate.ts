@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { PNG } from 'pngjs';
 import puppeteer, { Browser, Page } from 'puppeteer';
 import { createServer as createViteServer, ViteDevServer } from 'vite';
+import { VITE_BASE_PATH } from '../../demo/vite.config.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,75 +36,57 @@ interface ParsedArgs {
 const SCREENSHOT_CONFIGS: ScreenshotConfig[] = [
   // Yasno provider configs
   {
-    provider: 'yasno_v3',
+    provider: 'yasno_v4',
     dataSource: 'yasno_1',
     configName: 'basic',
     fileName: 'basic',
   },
   {
-    provider: 'yasno_v3',
+    provider: 'yasno_v4',
     dataSource: 'yasno_1',
     configName: 'simple',
     fileName: 'simple',
   },
   {
-    provider: 'yasno_v3',
+    provider: 'yasno_v4',
     dataSource: 'yasno_1',
     configName: 'simple_colored',
     fileName: 'simple_colored',
   },
   {
-    provider: 'yasno_v3',
+    provider: 'yasno_v4',
     dataSource: 'yasno_1',
     configName: 'classic',
     fileName: 'classic',
   },
   {
-    provider: 'yasno_v3',
+    provider: 'yasno_v4',
     dataSource: 'yasno_1',
     configName: 'neon',
     fileName: 'neon',
   },
   {
-    provider: 'yasno_v3',
+    provider: 'yasno_v4',
     dataSource: 'yasno_1',
     configName: 'soft_ui',
     fileName: 'soft_ui',
   },
   {
-    provider: 'yasno_v3',
+    provider: 'yasno_v4',
     dataSource: 'yasno_1',
     configName: 'yasno_legacy',
     fileName: 'yasno_legacy',
   },
   {
-    provider: 'yasno_v3',
+    provider: 'yasno_v4',
     dataSource: 'yasno_1',
     configName: 'google_calendar',
     fileName: 'google_calendar',
   },
   {
-    provider: 'yasno_v3',
-    dataSource: 'yasno_1',
-    configName: 'google_calendar_separated',
-    fileName: 'google_calendar_separated',
-  },
-  {
-    provider: 'yasno_v3',
-    dataSource: 'yasno_1',
-    configName: 'google_calendar_original',
-    fileName: 'google_calendar_original',
-  },
-  {
-    provider: 'yasno_v3',
-    dataSource: 'yasno_1',
-    configName: 'google_calendar_original_separated',
-    fileName: 'google_calendar_original_separated',
-  },
-  {
     provider: 'yasno_image',
     dataSource: 'yasno',
-    configName: 'image',
+    configName: 'google_calendar',
     fileName: 'image',
   },
 ];
@@ -240,7 +223,7 @@ async function navigateToScreenshotPage(
   dataSource: string,
   serverPort: number,
 ): Promise<void> {
-  const url = `http://localhost:${serverPort}/screenshot/?provider=${encodeURIComponent(provider)}&config=${encodeURIComponent(configName)}&dataSource=${encodeURIComponent(dataSource)}`;
+  const url = `http://localhost:${serverPort}${VITE_BASE_PATH}/screenshot/?provider=${encodeURIComponent(provider)}&config=${encodeURIComponent(configName)}&dataSource=${encodeURIComponent(dataSource)}`;
   await page.goto(url, { waitUntil: 'networkidle0' });
 }
 

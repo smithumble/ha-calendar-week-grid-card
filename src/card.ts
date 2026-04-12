@@ -7,7 +7,6 @@ import {
   unsafeCSS,
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import googleCalendarSeparatedYamlConfig from './configs/google_calendar_separated.yaml';
 import {
   generateCssFromDeprecatedStyleConfig,
   getDeprecatedEventIcon,
@@ -15,7 +14,8 @@ import {
   getDeprecatedBlankIcon,
 } from './deprecated';
 import { CalendarWeekGridCardEditor } from './editor/editor';
-import { THEME_HIDDEN_FIELDS } from './editor/utils/theme';
+import { themes } from './editor/themes';
+import { getEffectiveCardCss, THEME_HIDDEN_FIELDS } from './editor/utils/theme';
 import styles from './styles.css';
 import type {
   HomeAssistant,
@@ -86,15 +86,22 @@ export class CalendarWeekGridCard extends LitElement {
    * Generate a stub configuration for the card editor
    */
   static getStubConfig(hass: HomeAssistant): CardConfig {
-    const stubConfig = googleCalendarSeparatedYamlConfig;
+    const defaultTheme = themes.find((theme) => theme.id === 'google_calendar');
+    const stubConfig = (defaultTheme?.config || {}) as Partial<CardConfig>;
 
     const config = {
       type: 'custom:calendar-week-grid-card',
       ...stubConfig,
     } as CardConfig;
 
-    // Check if yasno calendar entities are available
+    if (defaultTheme?.id) {
+      config.theme = defaultTheme.id;
+      delete config.css;
+    }
+
     const calendarEntities = this.findCalendarEntities(hass);
+
+    // Check if yasno calendar entity is available
     const plannedOutagesEntity = calendarEntities.find((entityId) =>
       /^calendar\.yasno_.*_planned_outages$/.test(entityId),
     );
@@ -102,18 +109,15 @@ export class CalendarWeekGridCard extends LitElement {
       /^calendar\.yasno_.*_probable_outages$/.test(entityId),
     );
 
-    // Determine preset name based on Home Assistant language
-    const language = hass.language || 'en';
-    const presetName = language.startsWith('uk') ? 'yasno_uk' : 'yasno_en';
-
-    // If both yasno entities exist, use yasno preset
-    if (
-      plannedOutagesEntity &&
-      probableOutagesEntity &&
-      stubConfig.entities_presets
-    ) {
+    // If yasno entity exists, use yasno preset
+    if (plannedOutagesEntity && stubConfig.entities_presets) {
+      // Determine preset name based on Home Assistant language
+      const language = hass.language || 'en';
+      const preferredPresetNames = language.startsWith('uk')
+        ? ['yasno_compact_uk', 'yasno_uk']
+        : ['yasno_compact_en', 'yasno_en'];
       const yasnoPreset = stubConfig.entities_presets.find(
-        (p: EntitiesPreset) => p.name === presetName,
+        (p: EntitiesPreset) => preferredPresetNames.includes(p.name),
       );
 
       if (yasnoPreset?.entities) {
@@ -127,12 +131,18 @@ export class CalendarWeekGridCard extends LitElement {
             // Replace entity field if it matches a template
             if (entity.entity === 'calendar.planned_outages') {
               entity.entity = plannedOutagesEntity;
-            } else if (entity.entity === 'calendar.probable_outages') {
+            } else if (
+              entity.entity === 'calendar.probable_outages' &&
+              probableOutagesEntity
+            ) {
               entity.entity = probableOutagesEntity;
             }
           }
         });
 
+        if (yasnoPreset.overrides) {
+          Object.assign(config, yasnoPreset.overrides);
+        }
         config.entities = yasnoEntities;
       }
     } else {
@@ -155,9 +165,14 @@ export class CalendarWeekGridCard extends LitElement {
    * Find all calendar entities in Home Assistant
    */
   private static findCalendarEntities(hass: HomeAssistant): string[] {
-    return Object.keys(hass.states).filter((key) =>
-      key.startsWith('calendar.'),
-    );
+    return Object.keys(hass.states).filter((entityId) => {
+      if (!entityId.startsWith('calendar.')) {
+        return false;
+      }
+
+      // It can be disabled and not present in entities object
+      return !!hass.entities?.[entityId];
+    });
   }
 
   /**
@@ -234,11 +249,27 @@ export class CalendarWeekGridCard extends LitElement {
     const allDayEvents = this.events.filter(
       (e) => e.isAllDay || e.type === 'blank',
     );
+
+    const orientation = this.config?.orientation || 'vertical';
+
+    if (orientation === 'horizontal') {
+      return this.renderHorizontalGrid(days, hours, gridEvents, allDayEvents);
+    }
+
+    return this.renderVerticalGrid(days, hours, gridEvents, allDayEvents);
+  }
+
+  private renderVerticalGrid(
+    days: DayInfo[],
+    hours: number[],
+    gridEvents: Event[],
+    allDayEvents: Event[],
+  ): TemplateResult {
     const showAllDayRow =
       this.config?.all_day === 'row' || this.config?.all_day === 'both';
-
     const daysCount = days.length;
-    const gridTemplateRows = this.getGridTemplateRows(
+    const gridTemplateColumns = this.getVerticalGridTemplateColumns(daysCount);
+    const gridTemplateRows = this.getVerticalGridTemplateRows(
       showAllDayRow,
       hours.length,
     );
@@ -252,7 +283,7 @@ export class CalendarWeekGridCard extends LitElement {
       'column-even': true,
     });
 
-    let gridStyle = `grid-template-columns: auto repeat(${daysCount}, minmax(0, 1fr));`;
+    let gridStyle = `grid-template-columns: ${gridTemplateColumns};`;
     if (gridTemplateRows) {
       gridStyle += `grid-template-rows: ${gridTemplateRows};`;
     }
@@ -264,6 +295,7 @@ export class CalendarWeekGridCard extends LitElement {
         data-icons-container="${this.config?.icons_container || 'cell'}"
         data-icons-mode="${this.config?.icons_mode || 'top'}"
         data-all-day="${this.config?.all_day || 'grid'}"
+        data-orientation="vertical"
         data-layout-fit="${!!this.getGridRows()}"
       >
         <!-- Header Row -->
@@ -296,6 +328,114 @@ export class CalendarWeekGridCard extends LitElement {
     `;
   }
 
+  private renderHorizontalGrid(
+    days: DayInfo[],
+    hours: number[],
+    gridEvents: Event[],
+    allDayEvents: Event[],
+  ): TemplateResult {
+    const showAllDayRow =
+      this.config?.all_day === 'row' || this.config?.all_day === 'both';
+
+    const gridTemplateColumns = this.getHorizontalGridTemplateColumns(
+      showAllDayRow,
+      hours.length,
+    );
+    const gridTemplateRows = this.getHorizontalGridTemplateRows(days.length);
+
+    let gridStyle = `grid-template-columns: ${gridTemplateColumns};`;
+    if (gridTemplateRows) {
+      gridStyle += `grid-template-rows: ${gridTemplateRows};`;
+    }
+
+    let currentRowIndex = 0;
+    const headerRowClasses = this.buildClassList({
+      'row-odd': currentRowIndex % 2 === 1,
+      'row-even': currentRowIndex % 2 === 0,
+      'column-even': true,
+    });
+
+    return html`
+      <div
+        class="grid-container"
+        style="${gridStyle}"
+        data-icons-container="${this.config?.icons_container || 'cell'}"
+        data-icons-mode="${this.config?.icons_mode || 'top'}"
+        data-all-day="${this.config?.all_day || 'grid'}"
+        data-orientation="horizontal"
+        data-layout-fit="false"
+      >
+        <div class="${headerRowClasses}"></div>
+        ${showAllDayRow
+          ? html`
+              <div class="time-label-wrapper ${headerRowClasses}">
+                <div class="time-label ${headerRowClasses}">
+                  ${this.renderAllDayLabel(this.config?.all_day_label)}
+                </div>
+              </div>
+            `
+          : ''}
+        ${hours.map((hour) => {
+          const isNow = new Date().getHours() === hour;
+          const classes = this.buildClassList({
+            now: isNow,
+            'row-odd': currentRowIndex % 2 === 1,
+            'row-even': currentRowIndex % 2 === 0,
+          });
+
+          return html`
+            <div class="time-label-wrapper ${classes}">
+              <div class="time-label ${classes}">
+                ${this.renderTimeLabel(hour)}
+              </div>
+            </div>
+          `;
+        })}
+        ${days.map((day) => {
+          currentRowIndex++;
+          const rowClasses = this.buildClassList({
+            'row-odd': currentRowIndex % 2 === 1,
+            'row-even': currentRowIndex % 2 === 0,
+            'column-even': true,
+          });
+
+          let colIndex = 0;
+
+          return html`
+            <div class="day-header-wrapper ${rowClasses}">
+              <div class="day-header ${day.isToday ? 'today' : ''}">
+                <div class="day-header-primary">${day.label}</div>
+                ${day.secondaryLabel
+                  ? html`<div class="day-header-secondary">
+                      ${day.secondaryLabel}
+                    </div>`
+                  : ''}
+              </div>
+            </div>
+            ${showAllDayRow
+              ? this.renderCell(
+                  allDayEvents,
+                  day,
+                  undefined,
+                  currentRowIndex,
+                  ++colIndex,
+                )
+              : ''}
+            ${hours.map((hour) =>
+              this.renderCell(
+                gridEvents,
+                day,
+                hour,
+                currentRowIndex,
+                ++colIndex,
+              ),
+            )}
+          `;
+        })}
+      </div>
+    `;
+  }
+
   // ============================================================================
   // Style Helpers
   // ============================================================================
@@ -313,18 +453,45 @@ export class CalendarWeekGridCard extends LitElement {
     return this.config.layout_options?.grid_rows;
   }
 
-  private getGridTemplateRows(
-    showAllDayRow: boolean,
-    hoursCount: number,
-  ): string | undefined {
+  private getGridTemplateRows(extraRowsCount: number): string | undefined {
     const layoutFitEnabled = !!this.getGridRows();
     if (!layoutFitEnabled) return undefined;
 
-    const remainingRowsCount = hoursCount + (showAllDayRow ? 1 : 0);
-    if (remainingRowsCount <= 0) return 'min-content';
+    if (extraRowsCount <= 0) return 'min-content';
 
-    // Keep date header compact and distribute remaining vertical space evenly.
-    return `min-content repeat(${remainingRowsCount}, minmax(0, 1fr))`;
+    return `min-content repeat(${extraRowsCount}, minmax(0, 1fr))`;
+  }
+
+  private getGridTemplateColumns(extraColumnsCount: number): string {
+    return `auto repeat(${extraColumnsCount}, minmax(0, 1fr))`;
+  }
+
+  private getVerticalGridTemplateColumns(daysCount: number): string {
+    const extraColumnsCount = daysCount;
+    return this.getGridTemplateColumns(extraColumnsCount);
+  }
+
+  private getVerticalGridTemplateRows(
+    showAllDayRow: boolean,
+    hoursCount: number,
+  ): string | undefined {
+    const allDayColumns = showAllDayRow ? 1 : 0;
+    const extraRowsCount = hoursCount + allDayColumns;
+    return this.getGridTemplateRows(extraRowsCount);
+  }
+
+  private getHorizontalGridTemplateColumns(
+    showAllDayRow: boolean,
+    hoursCount: number,
+  ): string {
+    const allDayColumns = showAllDayRow ? 1 : 0;
+    const extraColumnsCount = allDayColumns + hoursCount;
+    return this.getGridTemplateColumns(extraColumnsCount);
+  }
+
+  private getHorizontalGridTemplateRows(daysCount: number): string | undefined {
+    const extraRowsCount = daysCount;
+    return this.getGridTemplateRows(extraRowsCount);
   }
 
   private getVisibleHours(days: DayInfo[]): number[] {
@@ -394,12 +561,48 @@ export class CalendarWeekGridCard extends LitElement {
       .reverse()
       .find((hour) => hourHasAnyEvent.get(hour));
 
+    const rawMaxStartHour = this.config?.trim_empty_hours_start_limit;
+    const rawMinEndHour = this.config?.trim_empty_hours_end_limit;
+    const maxStartHour =
+      typeof rawMaxStartHour === 'number' && Number.isFinite(rawMaxStartHour)
+        ? Math.max(
+            boundedStartHour,
+            Math.min(boundedEndHour - 1, rawMaxStartHour),
+          )
+        : undefined;
+    const minEndHour =
+      typeof rawMinEndHour === 'number' && Number.isFinite(rawMinEndHour)
+        ? Math.max(
+            boundedStartHour + 1,
+            Math.min(boundedEndHour, rawMinEndHour),
+          )
+        : undefined;
+
     if (firstHourWithEvent == undefined || lastHourWithEvent == undefined) {
-      return [];
+      const fallbackStartHour =
+        maxStartHour != undefined ? maxStartHour : boundedStartHour;
+      const fallbackEndHour =
+        minEndHour != undefined ? minEndHour - 1 : fallbackStartHour - 1;
+
+      return allHours.filter(
+        (hour) => hour >= fallbackStartHour && hour <= fallbackEndHour,
+      );
     }
 
+    const effectiveStartHour =
+      maxStartHour != undefined
+        ? Math.max(boundedStartHour, Math.min(firstHourWithEvent, maxStartHour))
+        : firstHourWithEvent;
+    const effectiveEndHour =
+      minEndHour != undefined
+        ? Math.min(
+            boundedEndHour - 1,
+            Math.max(lastHourWithEvent, minEndHour - 1),
+          )
+        : lastHourWithEvent;
+
     const trimmedHours = allHours.filter(
-      (hour) => hour >= firstHourWithEvent && hour <= lastHourWithEvent,
+      (hour) => hour >= effectiveStartHour && hour <= effectiveEndHour,
     );
 
     return trimmedHours;
@@ -408,8 +611,9 @@ export class CalendarWeekGridCard extends LitElement {
   private getDynamicStyles(): CSSResultGroup {
     if (!this.config) return unsafeCSS('');
 
-    if (this.config.css) {
-      return unsafeCSS(this.config.css);
+    const effective = getEffectiveCardCss(this.config, themes);
+    if (effective.trim()) {
+      return unsafeCSS(effective);
     }
 
     // Deprecated: generate CSS from config objects
@@ -517,9 +721,16 @@ export class CalendarWeekGridCard extends LitElement {
 
     return html`
       <div class="cell-wrapper ${cellClasses}">
-        <div class="cell ${cellClasses}">
-          ${this.renderEvents(cellEvents, cellStartTime, cellEndTime, isAllDay)}
-          ${this.renderCellIcons(cellEvents, isAllDay)}
+        <div class="cell-slot">
+          <div class="cell ${cellClasses}">
+            ${this.renderEvents(
+              cellEvents,
+              cellStartTime,
+              cellEndTime,
+              isAllDay,
+            )}
+            ${this.renderCellIcons(cellEvents, isAllDay)}
+          </div>
         </div>
         ${isAllDay ? '' : this.renderCurrentTimeLine(day, hour)}
       </div>
@@ -569,8 +780,13 @@ export class CalendarWeekGridCard extends LitElement {
 
     const mergedBlocks = mergeVisibleBlocks(blocks, event, cellEvents);
 
-    const wrapperStyle = `top: ${dimensions.topPct}%; height: ${dimensions.heightPct}%;`;
-    const innerStyle = `top: ${dimensions.innerTopPct}%; height: ${dimensions.innerHeightPct}%;`;
+    const orientation = this.config?.orientation || 'vertical';
+    const isHorizontal = orientation === 'horizontal';
+    const startProperty = isHorizontal ? 'left' : 'top';
+    const lengthProperty = isHorizontal ? 'width' : 'height';
+
+    const wrapperStyle = `${startProperty}: ${dimensions.startPct}%; ${lengthProperty}: ${dimensions.lengthPct}%;`;
+    const innerStyle = `${startProperty}: ${dimensions.innerStartPct}%; ${lengthProperty}: ${dimensions.innerLengthPct}%;`;
 
     const eventClasses = this.buildClassList({
       'all-day': !!event.isAllDay,
@@ -615,14 +831,24 @@ export class CalendarWeekGridCard extends LitElement {
     cellStartTime: number,
     duration: number,
   ): TemplateResult {
-    const { topPct, heightPct } = calculateSubBlockPosition(
+    const orientation = this.config?.orientation || 'vertical';
+    const isHorizontal = orientation === 'horizontal';
+    const { startPct, lengthPct } = calculateSubBlockPosition(
       block,
       cellStartTime,
       duration,
     );
-    const style = `top: ${topPct}%; height: ${heightPct}%;`;
+    const style = isHorizontal
+      ? `left: ${startPct}%; width: ${lengthPct}%; top: 0%; height: 100%;`
+      : `top: ${startPct}%; height: ${lengthPct}%; left: 0%; width: 100%;`;
 
-    return html`<div class="event-sub-block" style="${style}"></div>`;
+    const full = lengthPct === 100;
+
+    return html`<div
+      class="event-sub-block"
+      data-full="${full}"
+      style="${style}"
+    ></div>`;
   }
 
   private renderEventIcon(
@@ -823,13 +1049,19 @@ export class CalendarWeekGridCard extends LitElement {
     if (now.getHours() !== hour) return '';
 
     const minutes = now.getMinutes();
-    const topPct = (minutes / 60) * 100;
+    const startPct = (minutes / 60) * 100;
 
-    const style = `top: ${topPct}%;`;
+    const orientation = this.config?.orientation || 'vertical';
+    const isHorizontal = orientation === 'horizontal';
+    const startProperty = isHorizontal ? 'left' : 'top';
+
+    const style = `${startProperty}: ${startPct}%;`;
 
     return html`
-      <div class="current-time-line" style="${style}">
-        <div class="current-time-circle"></div>
+      <div class="current-time-line-wrapper">
+        <div class="current-time-line" style="${style}">
+          <div class="current-time-circle"></div>
+        </div>
       </div>
     `;
   }

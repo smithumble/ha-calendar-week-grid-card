@@ -7,6 +7,7 @@ import copy from 'rollup-plugin-copy';
 import { cardConfig } from '../rollup.config.mjs';
 import {
   assetsManifest,
+  syncCopyTargets,
   watchFiles,
   PROJECT_ROOT,
   ENVIRONMENT,
@@ -40,7 +41,7 @@ export const demoConfig = {
       ],
       verbose: true,
     }),
-    copy({
+    syncCopyTargets({
       targets: [
         {
           src: 'node_modules/@mdi/svg/svg',
@@ -48,13 +49,9 @@ export const demoConfig = {
           rename: 'icons',
         },
       ],
-      hook: 'buildStart',
-      copySync: true,
-      copyOnce: true,
-      overwrite: false,
       verbose: true,
     }),
-    copy({
+    syncCopyTargets({
       targets: [
         {
           src: 'demo/demo/assets/data',
@@ -66,12 +63,9 @@ export const demoConfig = {
         },
         {
           src: 'src/configs',
-          dest: 'dist/demo/assets/data/yasno_v3',
+          dest: 'dist/demo/assets/data/yasno_v4',
         },
       ],
-      hook: 'buildStart',
-      copySync: true,
-      copyOnce: false,
       verbose: true,
     }),
     copy({

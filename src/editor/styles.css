@@ -25,6 +25,25 @@ ha-icon-picker {
   margin-bottom: 8px;
 }
 
+.helper-text.warning {
+  margin-top: 8px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--primary-text-color);
+  background-color: var(--warning-color, rgba(255, 152, 0, 0.14));
+  border: 1px solid
+    color-mix(in srgb, var(--warning-color, #ff9800) 60%, transparent);
+  border-left: 4px solid var(--warning-color, #ff9800);
+  border-radius: 6px;
+}
+
+.helper-text.warning .warning-title {
+  display: block;
+  margin-bottom: 8px;
+}
+
 h3 {
   margin: 24px 0 6px 0;
   font-size: 14px;
