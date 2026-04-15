@@ -1,9 +1,11 @@
+import { ASSET_MANIFEST } from 'virtual:asset-manifest/demo';
 import { setupBrowserEnv } from './utils/browser';
 import { getAllProviderNames } from './utils/data';
 import { allowDebugConfigOverrideInApp } from './utils/editor/override';
 import { setupEditorToggleButton } from './utils/editor/panel';
 import { loadIcons } from './utils/icons';
 import { setupGlobalKeyboardNavigation } from './utils/keyboard';
+import { setAssetManifest } from './utils/manifest';
 import {
   setupProviderSelector,
   setupConfigSelector,
@@ -11,6 +13,8 @@ import {
 } from './utils/selects';
 import { setStoragePrefix } from './utils/storage';
 import { loadTheme } from './utils/theme';
+
+setAssetManifest(ASSET_MANIFEST);
 
 const AVAILABLE_PROVIDERS_DEV = getAllProviderNames();
 const AVAILABLE_PROVIDERS_PROD = ['yasno_v4'];

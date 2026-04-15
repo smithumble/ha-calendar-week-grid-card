@@ -23,6 +23,14 @@ declare module '*.yml' {
   export default content;
 }
 
-declare module 'virtual:asset-manifest' {
+declare module 'virtual:asset-manifest/demo' {
+  export const ASSET_MANIFEST: string[];
+}
+
+declare module 'virtual:asset-manifest/schedule' {
+  export const ASSET_MANIFEST: string[];
+}
+
+declare module 'virtual:asset-manifest/screenshot' {
   export const ASSET_MANIFEST: string[];
 }

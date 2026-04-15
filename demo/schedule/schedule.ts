@@ -1,6 +1,8 @@
 import { setupGlobalKeyboardNavigation } from 'demo/utils/keyboard';
+import { ASSET_MANIFEST } from 'virtual:asset-manifest/schedule';
 import { setupBrowserEnv } from '../demo/utils/browser';
 import { loadIcons } from '../demo/utils/icons';
+import { setAssetManifest } from '../demo/utils/manifest';
 import {
   updateDataSourceSelect,
   setupDataSourceSelector,
@@ -9,6 +11,8 @@ import {
 } from '../demo/utils/selects';
 import { setStoragePrefix } from '../demo/utils/storage';
 import { loadTheme } from '../demo/utils/theme';
+
+setAssetManifest(ASSET_MANIFEST);
 
 const SCHEDULE_PROVIDER = 'yasno_api';
 const SCHEDULE_CONFIG = 'google_calendar';

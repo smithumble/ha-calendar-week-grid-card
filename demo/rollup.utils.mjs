@@ -44,7 +44,12 @@ export const getFilesPaths = (srcPath) => {
   }
 };
 
-// Create a rollup plugin to watch asset files
+/**
+ * Rollup plugin: registers directories under PROJECT_ROOT so Rollup watches all nested files during watch mode.
+ * @param {object} options
+ * @param {string | string[]} options.targets Asset directories under PROJECT_ROOT.
+ * @param {boolean} [options.verbose] Log watched paths and watch failures.
+ */
 export const watchFiles = (options) => ({
   name: 'watch-files',
   buildStart() {
@@ -160,127 +165,177 @@ const resolveCopyTarget = (target) => {
   };
 };
 
-export const syncCopyTargets = (options) => ({
-  name: 'sync-copy-targets',
-  buildStart() {
-    const { targets, verbose = false } = options;
-    const targetList = Array.isArray(targets) ? targets : [targets];
-    const resolvedTargets = targetList.map((target) =>
-      resolveCopyTarget(target),
-    );
-    const expectedFiles = new Set();
-    const copiedFiles = [];
-    const removedFiles = [];
-    const watchedPaths = [];
+/**
+ * Rollup plugin: on each `buildStart`, copies `src` to `dest` (file or tree), removes destination files no longer in the expected set, and watches sources.
+ * @param {object} options
+ * @param {{ src: string, dest: string, rename?: string } | { src: string, dest: string, rename?: string }[]} options.targets Copy specs under PROJECT_ROOT (`src` path; `dest` directory; optional `rename` basename for the copied root file or folder).
+ * @param {boolean} [options.verbose] Log watched roots, copy count, and pruned files.
+ * @param {boolean} [options.copyOnce] If true in watch mode, run the full copy/prune/watch registration only on the first `buildStart` (skips later rebuilds).
+ */
+export const syncCopyTargets = (options) => {
+  let copyOnceDoneInWatch = false;
+  return {
+    name: 'sync-copy-targets',
+    buildStart() {
+      const { targets, verbose = false, copyOnce = false } = options;
 
-    for (const { outputFiles } of resolvedTargets) {
-      for (const { destinationFilePath } of outputFiles) {
-        expectedFiles.add(destinationFilePath);
+      if (copyOnce && ROLLUP_WATCH && copyOnceDoneInWatch) {
+        return;
       }
-    }
-
-    for (const { sourcePath, outputFiles } of resolvedTargets) {
-      if (existsSync(sourcePath)) {
-        this.addWatchFile(sourcePath);
-        watchedPaths.push(relative(PROJECT_ROOT, sourcePath));
-      }
-
-      for (const { sourceFilePath, destinationFilePath } of outputFiles) {
-        mkdirSync(dirname(destinationFilePath), { recursive: true });
-        copyFileSync(sourceFilePath, destinationFilePath);
-        this.addWatchFile(sourceFilePath);
-        copiedFiles.push(relative(PROJECT_ROOT, destinationFilePath));
-      }
-    }
-
-    for (const { destinationRootPath } of resolvedTargets) {
-      if (!existsSync(destinationRootPath)) {
-        continue;
-      }
-
-      const existingDestinationFiles = globSync(
-        resolve(destinationRootPath, '**/*'),
-        {
-          absolute: true,
-          nodir: true,
-        },
+      const targetList = Array.isArray(targets) ? targets : [targets];
+      const resolvedTargets = targetList.map((target) =>
+        resolveCopyTarget(target),
       );
+      const expectedFiles = new Set();
+      const copiedFiles = [];
+      const removedFiles = [];
+      const watchedPaths = [];
 
-      for (const destinationFilePath of existingDestinationFiles) {
-        if (!expectedFiles.has(destinationFilePath)) {
-          rmSync(destinationFilePath, { force: true });
-          removeEmptyDirectories(
-            dirname(destinationFilePath),
-            destinationRootPath,
-          );
-          removedFiles.push(relative(PROJECT_ROOT, destinationFilePath));
+      for (const { outputFiles } of resolvedTargets) {
+        for (const { destinationFilePath } of outputFiles) {
+          expectedFiles.add(destinationFilePath);
         }
       }
-    }
 
-    if (verbose) {
-      if (watchedPaths.length > 0) {
-        console.log(
-          green(
-            `sync copy watching:\n  ${greenBright(bold(watchedPaths.join('\n  ')))}`,
-          ),
-        );
+      for (const { sourcePath, outputFiles } of resolvedTargets) {
+        if (existsSync(sourcePath)) {
+          this.addWatchFile(sourcePath);
+          watchedPaths.push(relative(PROJECT_ROOT, sourcePath));
+        }
+
+        for (const { sourceFilePath, destinationFilePath } of outputFiles) {
+          mkdirSync(dirname(destinationFilePath), { recursive: true });
+          copyFileSync(sourceFilePath, destinationFilePath);
+          this.addWatchFile(sourceFilePath);
+          copiedFiles.push(relative(PROJECT_ROOT, destinationFilePath));
+        }
       }
-      console.log(
-        green(
-          `sync copied ${greenBright(bold(String(copiedFiles.length)))} files`,
-        ),
-      );
-      if (removedFiles.length > 0) {
-        console.log(
-          red(`sync removed:\n  ${redBright(bold(removedFiles.join('\n  ')))}`),
+
+      for (const { destinationRootPath } of resolvedTargets) {
+        if (!existsSync(destinationRootPath)) {
+          continue;
+        }
+
+        const existingDestinationFiles = globSync(
+          resolve(destinationRootPath, '**/*'),
+          {
+            absolute: true,
+            nodir: true,
+          },
         );
-      }
-    }
-  },
-});
 
-// Create a rollup plugin to generate asset manifest as virtual module
-export const assetsManifest = (options) => ({
-  name: 'asset-manifest',
-  resolveId(source) {
-    // Create virtual module for asset manifest
-    if (source === 'virtual:asset-manifest') {
-      return source;
-    }
-    return null;
-  },
-  load(id) {
-    // Generate asset manifest virtual module
-    if (id === 'virtual:asset-manifest') {
-      const { targets, relativeTo, absolute = false, verbose = true } = options;
-      const targetList = Array.isArray(targets) ? targets : [targets];
-      const resolvedRelativeTo = resolve(PROJECT_ROOT, relativeTo);
-      const manifest = [];
-
-      for (const target of targetList) {
-        const targetPath = resolve(PROJECT_ROOT, target);
-        const allFiles = getFilesPaths(targetPath);
-
-        for (const file of allFiles) {
-          let relativeAssetPath = relative(resolvedRelativeTo, file);
-          if (absolute) {
-            relativeAssetPath = '/' + relativeAssetPath;
+        for (const destinationFilePath of existingDestinationFiles) {
+          if (!expectedFiles.has(destinationFilePath)) {
+            rmSync(destinationFilePath, { force: true });
+            removeEmptyDirectories(
+              dirname(destinationFilePath),
+              destinationRootPath,
+            );
+            removedFiles.push(relative(PROJECT_ROOT, destinationFilePath));
           }
-          manifest.push(relativeAssetPath);
         }
       }
 
       if (verbose) {
+        if (watchedPaths.length > 0) {
+          console.log(
+            green(
+              `sync copy watching:\n  ${greenBright(bold(watchedPaths.join('\n  ')))}`,
+            ),
+          );
+        }
+        console.log(
+          green(
+            `sync copied ${greenBright(bold(String(copiedFiles.length)))} files`,
+          ),
+        );
+        if (removedFiles.length > 0) {
+          console.log(
+            red(
+              `sync removed:\n  ${redBright(bold(removedFiles.join('\n  ')))}`,
+            ),
+          );
+        }
+      }
+
+      if (copyOnce && ROLLUP_WATCH) {
+        copyOnceDoneInWatch = true;
+      }
+    },
+  };
+};
+
+const DEFAULT_ASSET_MANIFEST_VIRTUAL_PREFIX = 'virtual:asset-manifest/';
+
+/**
+ * Rollup plugin: resolves `virtual:asset-manifest/<name>` to a module exporting `ASSET_MANIFEST` (relative paths from each variant’s `relativeTo`).
+ * @param {object} options
+ * @param {string | string[]} options.targets Asset directories under PROJECT_ROOT (e.g. dist/demo/assets/data).
+ * @param {{ name: string, relativeTo: string }[]} options.variants Virtual module id `virtual:asset-manifest/<name>` and path prefix for each app output folder.
+ * @param {string} [options.virtualPrefix] Defaults to `virtual:asset-manifest/`.
+ * @param {boolean} [options.verbose] Log manifest generation per variant.
+ */
+export const assetsManifest = (options) => {
+  const {
+    targets,
+    variants,
+    verbose = true,
+    virtualPrefix = DEFAULT_ASSET_MANIFEST_VIRTUAL_PREFIX,
+  } = options;
+
+  if (!Array.isArray(variants) || variants.length === 0) {
+    throw new Error(
+      'assetsManifest: `variants` must be a non-empty array of { name, relativeTo }',
+    );
+  }
+
+  const targetList = Array.isArray(targets) ? targets : [targets];
+
+  const buildManifestForRelativeTo = (relativeToDir) => {
+    const resolvedRelativeTo = resolve(PROJECT_ROOT, relativeToDir);
+    const manifest = [];
+    for (const target of targetList) {
+      const targetPath = resolve(PROJECT_ROOT, target);
+      const allFiles = getFilesPaths(targetPath);
+      for (const file of allFiles) {
+        manifest.push(relative(resolvedRelativeTo, file));
+      }
+    }
+    return manifest;
+  };
+
+  return {
+    name: 'asset-manifest',
+    resolveId(source) {
+      if (!source.startsWith(virtualPrefix)) {
+        return null;
+      }
+      const name = source.slice(virtualPrefix.length);
+      if (!variants.some((v) => v.name === name)) {
+        return null;
+      }
+      return `\0asset-manifest:${name}`;
+    },
+    load(id) {
+      if (!id.startsWith('\0asset-manifest:')) {
+        return null;
+      }
+      const name = id.slice('\0asset-manifest:'.length);
+      const variant = variants.find((v) => v.name === name);
+      if (!variant) {
+        return null;
+      }
+      const manifest = buildManifestForRelativeTo(variant.relativeTo);
+
+      if (verbose) {
         console.log(
           green(`generated:\n `),
-          green(`${greenBright(bold('asset manifest'))} with`),
+          green(`${greenBright(bold(`asset manifest (${name})`))} with`),
           green(`${greenBright(bold(manifest.length))} files`),
         );
       }
 
       return `export const ASSET_MANIFEST = ${JSON.stringify(manifest, null, 2)};`;
-    }
-    return null;
-  },
-});
+    },
+  };
+};

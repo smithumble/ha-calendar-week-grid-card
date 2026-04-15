@@ -9,6 +9,7 @@ import {
   getCurrentConfig,
   renderCurrentCards,
 } from 'demo/utils/state';
+import { ASSET_MANIFEST } from 'virtual:asset-manifest/screenshot';
 import type { CardConfig } from '../../src/types';
 import { setupBrowserEnv, renderCardToContainer } from '../demo/utils/browser';
 import {
@@ -16,8 +17,11 @@ import {
   getProviderDefaultDataSource,
 } from '../demo/utils/data';
 import { loadIcons } from '../demo/utils/icons';
+import { setAssetManifest } from '../demo/utils/manifest';
 import { setStoragePrefix, getFromURL } from '../demo/utils/storage';
 import { loadTheme } from '../demo/utils/theme';
+
+setAssetManifest(ASSET_MANIFEST);
 
 function renderHorizontalOverrideCards(): void {
   const config = getCurrentConfig();

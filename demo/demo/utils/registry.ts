@@ -1,4 +1,4 @@
-import { ASSET_MANIFEST } from 'virtual:asset-manifest';
+import { getAssetManifest } from './manifest';
 import { BaseProvider } from './providers/base';
 import { DummyProvider } from './providers/dummy';
 import { YasnoProvider } from './providers/yasno';
@@ -8,7 +8,7 @@ import { YasnoApiProvider } from './providers/yasno-api';
  * Search manifest for files matching a pattern
  */
 function findAssetsInManifest(pattern: RegExp): string[] {
-  return ASSET_MANIFEST.filter((path) => pattern.test(path));
+  return getAssetManifest().filter((path) => pattern.test(path));
 }
 
 /**
@@ -169,5 +169,24 @@ export class ProviderRegistry {
   }
 }
 
-// Singleton instance
-export const providerRegistry = new ProviderRegistry();
+let providerRegistrySingleton: ProviderRegistry | null = null;
+
+function getProviderRegistrySingleton(): ProviderRegistry {
+  if (!providerRegistrySingleton) {
+    providerRegistrySingleton = new ProviderRegistry();
+  }
+  return providerRegistrySingleton;
+}
+
+/**
+ * Lazily constructs the registry so it runs after entry `setAssetManifest(...)`
+ * (Rollup may evaluate shared chunks before the entry’s manifest side effect).
+ */
+export const providerRegistry = {
+  getProvider(name: string): BaseProvider | undefined {
+    return getProviderRegistrySingleton().getProvider(name);
+  },
+  getAllProviderNames(): string[] {
+    return getProviderRegistrySingleton().getAllProviderNames();
+  },
+};
