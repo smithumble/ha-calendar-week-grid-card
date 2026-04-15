@@ -11,18 +11,18 @@ export const VITE_BASE_PATH = '/ha-calendar-week-grid-card';
 /**
  * Coalesce rapid Rollup writes (entry + chunk + HTML).
  */
-const FULL_RELOAD_DEBOUNCE_MS = 300;
+const HMR_DEBOUNCE_MS = 300;
 
-function debounceHmrBurstPlugin(delayMs: number): Plugin {
+function debounceHmrPayloadsPlugin(delayMs: number): Plugin {
   return {
-    name: 'debounce-hmr-burst',
+    name: 'debounce-hmr-payloads',
     enforce: 'post',
     configureServer(server) {
       return () => {
         const originalSend = server.ws.send.bind(server.ws);
         let timer: ReturnType<typeof setTimeout> | undefined;
 
-        const schedule = (payload: HotPayload) => {
+        server.ws.send = (payload: HotPayload) => {
           if (timer !== undefined) {
             clearTimeout(timer);
           }
@@ -30,19 +30,6 @@ function debounceHmrBurstPlugin(delayMs: number): Plugin {
             timer = undefined;
             originalSend(payload);
           }, delayMs);
-        };
-
-        server.ws.send = (payload: HotPayload) => {
-          if (
-            payload.type === 'full-reload' ||
-            payload.type === 'update' ||
-            payload.type === 'prune'
-          ) {
-            schedule(payload);
-            return;
-          }
-
-          originalSend(payload);
         };
       };
     },
@@ -52,9 +39,10 @@ function debounceHmrBurstPlugin(delayMs: number): Plugin {
 export default defineConfig({
   root: resolve(__dirname, '../dist'),
   clearScreen: false,
+  logLevel: 'silent',
   appType: 'mpa',
   base: `${VITE_BASE_PATH}/`,
-  plugins: [debounceHmrBurstPlugin(FULL_RELOAD_DEBOUNCE_MS)],
+  plugins: [debounceHmrPayloadsPlugin(HMR_DEBOUNCE_MS)],
   // Enable serving static assets from the root directory
   publicDir: false,
   server: {

@@ -73,7 +73,7 @@ export class ProviderRegistry {
         getConfigPaths('yasno_v1'),
         getYasnoCalendarPaths(),
         {
-          defaultConfig: 'classic',
+          defaultConfig: 'basic',
           defaultDataSource: 'yasno_1',
         },
       ),
@@ -85,7 +85,7 @@ export class ProviderRegistry {
         getConfigPaths('yasno_v2'),
         getYasnoCalendarPaths(),
         {
-          defaultConfig: 'google_calendar',
+          defaultConfig: 'basic',
           defaultDataSource: 'yasno_1',
         },
       ),
@@ -97,7 +97,7 @@ export class ProviderRegistry {
         getConfigPaths('yasno_v3'),
         getYasnoCalendarPaths(),
         {
-          defaultConfig: 'google_calendar',
+          defaultConfig: 'basic',
           defaultDataSource: 'yasno_1',
         },
       ),

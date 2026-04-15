@@ -1,17 +1,24 @@
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import commonjs from '@rollup/plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import typescript from '@rollup/plugin-typescript';
 import copy from 'rollup-plugin-copy';
 import { cardConfig } from '../rollup.config.mjs';
-import {
-  assetsManifest,
-  syncCopyTargets,
-  watchFiles,
-  PROJECT_ROOT,
-  ENVIRONMENT,
-} from './rollup.utils.mjs';
+import { assetsManifest } from './rollup.plugin.assets-manifest.mjs';
+import { sync } from './rollup.plugin.sync.mjs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const PROJECT_ROOT = resolve(__dirname, '..');
+
+const ROLLUP_WATCH = !!process.env.ROLLUP_WATCH;
+const NODE_ENV = process.env.NODE_ENV;
+const DEFAULT_ENV = ROLLUP_WATCH ? 'development' : 'production';
+const ENVIRONMENT = NODE_ENV || DEFAULT_ENV;
+
+const SYNC_COPY_REBUILD_TRIGGER_PATH = 'dist/demo/.sync-copy-targets-trigger';
 
 function createDemosConfig() {
   return {
@@ -46,6 +53,7 @@ function createDemosConfig() {
         'demo/schedule/**',
         'demo/screenshot/**',
         'src/configs/**',
+        SYNC_COPY_REBUILD_TRIGGER_PATH,
       ],
       clearScreen: false,
     },
@@ -53,38 +61,6 @@ function createDemosConfig() {
       replace({
         'process.env.NODE_ENV': JSON.stringify(ENVIRONMENT),
         preventAssignment: true,
-      }),
-      watchFiles({
-        targets: ['demo/', 'src/configs'],
-        verbose: true,
-      }),
-      syncCopyTargets({
-        targets: [
-          {
-            src: 'node_modules/@mdi/svg/svg',
-            dest: 'dist/demo/assets',
-            rename: 'icons',
-          },
-        ],
-        verbose: true,
-        copyOnce: true,
-      }),
-      syncCopyTargets({
-        targets: [
-          {
-            src: 'demo/demo/assets/data',
-            dest: 'dist/demo/assets',
-          },
-          {
-            src: 'demo/demo/assets/themes',
-            dest: 'dist/demo/assets',
-          },
-          {
-            src: 'src/configs',
-            dest: 'dist/demo/assets/data/yasno_v4',
-          },
-        ],
-        verbose: true,
       }),
       copy({
         targets: [
@@ -130,11 +106,34 @@ function createDemosConfig() {
         copyOnce: false,
         verbose: true,
       }),
+      sync({
+        targets: [
+          {
+            src: 'node_modules/@mdi/svg/svg/**',
+            dest: 'dist/demo/assets/icons',
+            syncOnce: true,
+          },
+          {
+            src: 'demo/demo/assets/data',
+            dest: 'dist/demo/assets',
+          },
+          {
+            src: 'demo/demo/assets/themes',
+            dest: 'dist/demo/assets',
+          },
+          {
+            src: 'src/configs',
+            dest: 'dist/demo/assets/data/yasno_v4',
+          },
+        ],
+        verbose: true,
+        rebuildTriggerPath: SYNC_COPY_REBUILD_TRIGGER_PATH,
+      }),
       assetsManifest({
         targets: [
-          'dist/demo/assets/data',
-          'dist/demo/assets/themes',
-          'dist/demo/assets/icons',
+          { path: 'dist/demo/assets/data' },
+          { path: 'dist/demo/assets/themes' },
+          { path: 'dist/demo/assets/icons', discoverOnce: true },
         ],
         variants: [
           { name: 'demo', relativeTo: 'dist/demo' },
