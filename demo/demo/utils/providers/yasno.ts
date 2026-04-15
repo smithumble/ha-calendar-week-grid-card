@@ -6,6 +6,7 @@ import {
   type ProbableData,
 } from '../parsers/yasno';
 import { BaseProvider } from './base';
+import { CardConfig } from '@/types';
 
 interface YasnoCalendarData {
   planned: PlannedData;
@@ -32,6 +33,7 @@ export class YasnoProvider extends BaseProvider {
       defaultConfig?: string;
       defaultDataSource?: string;
     },
+    configOverrides?: Partial<CardConfig>,
   ) {
     super();
     this.name = name;
@@ -39,6 +41,7 @@ export class YasnoProvider extends BaseProvider {
     this.calendarPaths = calendarPaths;
     this.defaultConfig = options?.defaultConfig;
     this.defaultDataSource = options?.defaultDataSource;
+    this.configOverrides = configOverrides;
   }
 
   getDataSources(): DataSource[] {

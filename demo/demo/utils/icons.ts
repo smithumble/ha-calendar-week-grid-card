@@ -1,4 +1,4 @@
-import { ASSET_MANIFEST } from 'virtual:asset-manifest';
+import { getAssetManifest } from './manifest';
 
 // Cache for loaded icons
 const iconCache: Record<string, string> = {};
@@ -8,7 +8,9 @@ const loadingPromises: Record<string, Promise<string>> = {};
 function findIconPath(iconFile: string): string | null {
   // Look for exact match: assets/icons/icon-name.svg
   const exactPattern = `assets/icons/${iconFile}`;
-  const exactMatch = ASSET_MANIFEST.find((path) => path.endsWith(exactPattern));
+  const exactMatch = getAssetManifest().find((path) =>
+    path.endsWith(exactPattern),
+  );
   if (exactMatch) {
     return exactMatch;
   }

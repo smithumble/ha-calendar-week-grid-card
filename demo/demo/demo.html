@@ -47,6 +47,13 @@
           >
             Visual
           </button>
+          <button
+            id="config-editor-mode-debug"
+            class="mode-toggle-btn"
+            data-mode="debug"
+          >
+            Debug
+          </button>
         </div>
         <button
           class="config-editor-close"
@@ -67,6 +74,49 @@
         <div id="config-editor-visual" class="editor-mode">
           <div id="visual-editor-container"></div>
         </div>
+        <div id="config-editor-debug" class="editor-mode" style="display: none">
+          <div
+            class="config-editor-debug-content"
+            style="
+              display: flex;
+              flex-direction: column;
+              height: 100%;
+              padding: 16px;
+              box-sizing: border-box;
+              gap: 8px;
+            "
+          >
+            <ha-formfield label="Enable config override">
+              <ha-switch id="config-editor-debug-override-enabled"></ha-switch>
+            </ha-formfield>
+            <ha-code-editor
+              id="config-editor-debug-override"
+              label="Config override (YAML)"
+              mode="yaml"
+              placeholder="Top level keys to override in all configs"
+            ></ha-code-editor>
+            <ha-formfield label="Enable second row cards">
+              <ha-switch
+                id="config-editor-debug-second-row-enabled"
+              ></ha-switch>
+            </ha-formfield>
+            <ha-formfield label="Enable second row config override">
+              <ha-switch
+                id="config-editor-debug-second-row-override-enabled"
+              ></ha-switch>
+            </ha-formfield>
+            <ha-code-editor
+              id="config-editor-debug-second-row-override"
+              label="Second row config override (YAML)"
+              mode="yaml"
+              placeholder="Top level keys to override for second row cards"
+            ></ha-code-editor>
+            <div
+              class="config-editor-error"
+              id="config-editor-debug-error"
+            ></div>
+          </div>
+        </div>
       </div>
       <div class="config-editor-actions">
         <button id="config-editor-reset">Reset</button>
@@ -77,10 +127,12 @@
       <div class="theme-container theme-dark">
         <div class="theme-label">Dark</div>
         <div id="card-container-dark"></div>
+        <div id="card-container-dark-horizontal"></div>
       </div>
       <div class="theme-container theme-light">
         <div class="theme-label">Light</div>
         <div id="card-container-light"></div>
+        <div id="card-container-light-horizontal"></div>
       </div>
     </div>
     <script type="module" src="../calendar-week-grid-card.js"></script>

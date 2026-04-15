@@ -2,7 +2,7 @@
 
 A custom Home Assistant card that displays calendar events in a week grid format. Check out the **[Demo](https://smithumble.github.io/ha-calendar-week-grid-card/)**
 
-![Calendar Week Grid Card Screenshot](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/f0c825d73c103cf1da5140b0afabab36ee335657/media/images/image.png)
+![Calendar Week Grid Card Screenshot](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/e2164d8a39b663cf03c35ec4f4ef53bc4031478c/media/images/image.png)
 
 ## Installation
 
@@ -63,7 +63,7 @@ type: module
 
 This card supports Home Assistant's visual editor, providing an intuitive interface to configure all card options without writing YAML.
 
-![Visual Editor](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/0526ac20f24fff839f00ae539c7acd0ba5ee475e/media/images/editor.png)
+![Visual Editor](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/e2164d8a39b663cf03c35ec4f4ef53bc4031478c/media/images/editor.png)
 
 Simply click the **Configure** button when editing your dashboard to access the visual editor.
 
@@ -82,30 +82,38 @@ All configuration options available in YAML are accessible through the visual ed
 <details>
 <summary>YAML Configuration Options</summary>
 
-| Name                    | Type          | Required | Description                                                                                                                                         |
-| ----------------------- | ------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`                  | string        | **Yes**  | `custom:calendar-week-grid-card`                                                                                                                    |
-| `entities`              | list          | **Yes**  | List of calendar entities or objects.                                                                                                               |
-| `language`              | string        | No       | Language code for days (e.g., `en`, `fr`).                                                                                                          |
-| `primary_date_format`   | object        | No       | Primary date format options for day headers. Default: `{ weekday: 'short' }`. See [Date Format](#date-format).                                      |
-| `secondary_date_format` | object        | No       | Secondary date format options for day headers (displayed below primary). Optional. See [Date Format](#date-format).                                 |
-| `time_format`           | string/object | No       | Time format pattern (string) or options (object). Default: `h A` (string) or `{ hour: 'numeric' }` (object). See [Time Format](#time-format).       |
-| `time_range`            | boolean       | No       | Display time as a range (e.g., "09 - 10" instead of "09"). Default: `false`.                                                                        |
-| `start_hour`            | number        | No       | First hour to display (0-23). Default: 0.                                                                                                           |
-| `end_hour`              | number        | No       | Last hour to display (0-23). Default: 24.                                                                                                           |
-| `filter`                | string        | No       | Global filter text for event summary.                                                                                                               |
-| `icons_container`       | string        | No       | Where to render icons: `cell` (in the cell) or `event` (in event blocks). Default: `cell`.                                                          |
-| `icons_mode`            | string        | No       | Which events show icons: `top` (only main event) or `all` (all events). Default: `top`.                                                             |
-| `event`                 | object        | No       | Default event configuration with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                                        |
-| `blank_event`           | object        | No       | Configuration for cells with no events with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                             |
-| `blank_all_day_event`   | object        | No       | Configuration for all-day cells with no events with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                     |
-| `all_day`               | string        | No       | Where to display all-day events: `grid` (in the grid), `row` (in a separate row), or `both` (in both the grid and a separate row). Default: `grid`. |
-| `all_day_label`         | string        | No       | Label text for the all-day row in the time column. Default: empty string.                                                                           |
-| `theme_variables`       | object        | No       | Theme variables definition for the visual editor. See [Theme Variables](#theme-variables).                                                          |
-| `theme_values_examples` | array         | No       | Example theme values for the visual editor. See [Theme Variables](#theme-variables).                                                                |
-| `week_start`            | string        | No       | Day of the week to start the calendar: `today`, `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, or `saturday`. Default: `today`.  |
-| `days`                  | number        | No       | Number of days to display. Default: `7`.                                                                                                            |
-| `css`                   | string        | No       | CSS styles for the card.                                                                                                                            |
+| Name                           | Type          | Required | Description                                                                                                                                          |
+| ------------------------------ | ------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`                         | string        | **Yes**  | `custom:calendar-week-grid-card`                                                                                                                     |
+| `entities`                     | list          | **Yes**  | List of calendar entities or objects.                                                                                                                |
+| `entities_presets`             | array         | No       | Named bundles of entities (and optional calendar templates) for the visual editor and packaged themes. See [Entities presets](#entities-presets).    |
+| `language`                     | string        | No       | Language code for days (e.g., `en`, `fr`).                                                                                                           |
+| `primary_date_format`          | object        | No       | Primary date format options for day headers. Default: `{ weekday: 'short' }`. See [Date Format](#date-format).                                       |
+| `secondary_date_format`        | object        | No       | Secondary date format options for day headers (displayed below primary). Optional. See [Date Format](#date-format).                                  |
+| `time_format`                  | string/object | No       | Time format pattern (string) or options (object). Default: `h A` (string) or `{ hour: 'numeric' }` (object). See [Time Format](#time-format).        |
+| `time_range`                   | boolean       | No       | Display time as a range (e.g., "09 - 10" instead of "09"). Default: `false`.                                                                         |
+| `orientation`                  | string        | No       | Grid orientation: `vertical` (days as columns) or `horizontal` (days as rows). Default: `vertical`.                                                  |
+| `start_hour`                   | number        | No       | First hour to display (0-23). Default: 0.                                                                                                            |
+| `end_hour`                     | number        | No       | Last hour to display (0-23). Default: 24.                                                                                                            |
+| `trim_empty_hours`             | boolean       | No       | When `true`, hide hour rows that have no timed events (within `start_hour`/`end_hour`). Default: `false`.                                            |
+| `trim_empty_hours_start_limit` | number        | No       | Optional: caps how early the trimmed range may start (hour 0–23, clamped to the visible range).                                                      |
+| `trim_empty_hours_end_limit`   | number        | No       | Optional: caps how late the trimmed range may end (hour 1–24, clamped to the visible range).                                                         |
+| `filter`                       | string        | No       | Global filter text for event summary.                                                                                                                |
+| `icons_container`              | string        | No       | Where to render icons: `cell` (in the cell) or `event` (in event blocks). Default: `cell`.                                                           |
+| `icons_mode`                   | string        | No       | Which events show icons: `top` (only main event) or `all` (all events). Default: `top`.                                                              |
+| `event`                        | object        | No       | Default event configuration with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                                         |
+| `blank_event`                  | object        | No       | Configuration for cells with no events with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                              |
+| `blank_all_day_event`          | object        | No       | Configuration for all-day cells with no events with `icon` and `theme_values`. See [Event Configuration](#event-configuration).                      |
+| `all_day`                      | string        | No       | Where to display all-day events: `grid` (in the grid), `row` (in a separate row), or `both` (in both the grid and a separate row). Default: `grid`.  |
+| `all_day_label`                | string        | No       | Label text for the all-day row in the time column. Default: empty string.                                                                            |
+| `theme_variables`              | object        | No       | Theme variables definition for the visual editor. See [Theme Variables](#theme-variables).                                                           |
+| `theme_values_examples`        | array         | No       | Example theme values for the visual editor. See [Theme Variables](#theme-variables).                                                                 |
+| `theme`                        | string        | No       | Id of a packaged theme (bundled CSS). See [Packaged theme](#packaged-theme).                                                                         |
+| `week_start`                   | string        | No       | Day of the week to start the calendar: `today`, `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, or `saturday`. Default: `today`.   |
+| `days`                         | number        | No       | Number of days to display. Default: `7`.                                                                                                             |
+| `grid_options`                 | object        | No       | Home Assistant grid layout: `{ rows?: number \| 'auto', columns?: number \| 'auto' }`. The card uses `rows` for vertical sizing; default is stretch. |
+| `layout_options`               | object        | No       | **Deprecated.** Prefer `grid_options`. `{ grid_rows?: number }` is treated as `grid_options.rows`.                                                   |
+| `css`                          | string        | No       | CSS styles for the card.                                                                                                                             |
 
 ### Date Format
 
@@ -308,19 +316,48 @@ theme_values_examples:
     border-style: dashed
 ```
 
+#### Packaged theme
+
+The optional `theme` field sets the **id of a packaged theme** (CSS bundled with this card). Use it when you want the same defaults and editor behavior as that theme without pasting its `css`—for example, themes offered under **Styling → Theme** in the visual editor. If you rely entirely on custom `css`, you can omit `theme`.
+
+### Entities presets
+
+`entities_presets` defines named **entity bundles** used by the visual editor (and by packaged themes) so users can pick a preset and optionally map template calendars to real entities.
+
+Each preset is an object with:
+
+| Name        | Type   | Required | Description                                                                                                                |
+| ----------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `name`      | string | **Yes**  | Stable id for the preset (used for selection).                                                                             |
+| `title`     | string | **Yes**  | Human-readable label in the editor.                                                                                        |
+| `entities`  | list   | **Yes**  | Same shape as top-level `entities` (strings or [entity objects](#entity-configuration)).                                   |
+| `calendars` | list   | No       | Template slots for the editor: each item has `template` (placeholder entity id), `title`, and optional `description`.      |
+| `overrides` | object | No       | Partial card options applied when this preset is selected (same keys as card config except `type` and `entities_presets`). |
+
+```yaml
+entities_presets:
+  - name: work_week
+    title: Work calendars
+    entities:
+      - entity: calendar.work
+      - name: Personal
+        entity: calendar.personal
+```
+
 ### Entity Configuration
 
-| Name           | Type   | Required | Description                                                                        |
-| -------------- | ------ | -------- | ---------------------------------------------------------------------------------- |
-| `name`         | string | No       | Friendly name for the entity.                                                      |
-| `entity`       | string | **Yes**  | The entity_id of the calendar.                                                     |
-| `filter`       | string | No       | Filter text for events.                                                            |
-| `icon`         | string | No       | Icon for the entity.                                                               |
-| `type`         | string | No       | Type identifier for the entity.                                                    |
-| `theme_values` | object | No       | Theme values to apply. These can reference variables defined in `theme_variables`. |
-| `under`        | array  | No       | Events to render underneath this one. See [Event Layering](#event-layering).       |
-| `over`         | array  | No       | Events to render on top of this one. See [Event Layering](#event-layering).        |
-| `hide`         | array  | No       | Events to hide when this event is present. See [Event Hiding](#event-hiding).      |
+| Name                   | Type   | Required | Description                                                                                                                    |
+| ---------------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `name`                 | string | No       | Friendly name for the entity.                                                                                                  |
+| `entity`               | string | **Yes**  | The entity_id of the calendar.                                                                                                 |
+| `filter`               | string | No       | Filter text for events.                                                                                                        |
+| `icon`                 | string | No       | Icon for the entity.                                                                                                           |
+| `type`                 | string | No       | Type identifier for the entity.                                                                                                |
+| `theme_values`         | object | No       | Theme values to apply. These can reference variables defined in `theme_variables`.                                             |
+| `theme_values_archive` | object | No       | Per-theme snapshots of `theme_values` when switching themes in the editor. Usually maintained by the editor, not hand-written. |
+| `under`                | array  | No       | Events to render underneath this one. See [Event Layering](#event-layering).                                                   |
+| `over`                 | array  | No       | Events to render on top of this one. See [Event Layering](#event-layering).                                                    |
+| `hide`                 | array  | No       | Events to hide when this event is present. See [Event Hiding](#event-hiding).                                                  |
 
 ### Data Attributes
 
@@ -382,9 +419,9 @@ Themes from those examples are available in `Visual Editor` -> `Styling` -> `The
 
 ### Basic
 
-![Calendar Week Grid Card Example: Basic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/d59b15d8c2ce542963cd0fb72e37f8ec829b3d0b/media/images/basic.png)
+![Calendar Week Grid Card Example: Basic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/e2164d8a39b663cf03c35ec4f4ef53bc4031478c/media/images/basic.png)
 
-<!-- CONFIG:yasno_v3/basic -->
+<!-- CONFIG:yasno_v4/basic -->
 
 <details>
 <summary>YAML Configuration</summary>
@@ -418,9 +455,9 @@ entities:
 
 ### Simple
 
-![Calendar Week Grid Card Example: Simple](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/d59b15d8c2ce542963cd0fb72e37f8ec829b3d0b/media/images/simple.png)
+![Calendar Week Grid Card Example: Simple](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/e2164d8a39b663cf03c35ec4f4ef53bc4031478c/media/images/simple.png)
 
-<!-- CONFIG:yasno_v3/simple -->
+<!-- CONFIG:yasno_v4/simple -->
 
 <details>
 <summary>YAML Configuration</summary>
@@ -507,7 +544,7 @@ entities:
       - Planned Outages
 css: |
   .event-block {
-    border-radius: 4px;
+    border-radius: min(4px, 20cqi);
     border: 1px var(--border-style, dotted) rgb(from var(--primary-text-color) r g b / var(--border-opacity, 1.0));
   }
 
@@ -526,9 +563,9 @@ css: |
 
 ### Simple Colored
 
-![Calendar Week Grid Card Example: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/d59b15d8c2ce542963cd0fb72e37f8ec829b3d0b/media/images/simple_colored.png)
+![Calendar Week Grid Card Example: Simple Colored](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/e2164d8a39b663cf03c35ec4f4ef53bc4031478c/media/images/simple_colored.png)
 
-<!-- CONFIG:yasno_v3/simple_colored -->
+<!-- CONFIG:yasno_v4/simple_colored -->
 
 <details>
 <summary>YAML Configuration</summary>
@@ -624,7 +661,7 @@ entities:
       - Planned Outages
 css: |
   .event-block {
-    border-radius: 4px;
+    border-radius: min(4px, 20cqi);
     border: 1px var(--border-style, dotted) rgb(from var(--color, var(--primary-text-color)) r g b / var(--border-opacity, 1.0));
   }
 
@@ -644,9 +681,9 @@ css: |
 
 ### Classic
 
-![Calendar Week Grid Card Example: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/d59b15d8c2ce542963cd0fb72e37f8ec829b3d0b/media/images/classic.png)
+![Calendar Week Grid Card Example: Classic](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/e2164d8a39b663cf03c35ec4f4ef53bc4031478c/media/images/classic.png)
 
-<!-- CONFIG:yasno_v3/classic -->
+<!-- CONFIG:yasno_v4/classic -->
 
 <details>
 <summary>YAML Configuration</summary>
@@ -728,8 +765,12 @@ entities:
     hide:
       - Planned Outages
 css: |
+  .cell-wrapper {
+    container-type: inline-size;
+  }
+
   .event-block {
-    border-radius: 4px;
+    border-radius: min(4px, 20cqi);
   }
 
   .event-icon {
@@ -748,9 +789,9 @@ css: |
 
 ### Neon
 
-![Calendar Week Grid Card Example: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/d59b15d8c2ce542963cd0fb72e37f8ec829b3d0b/media/images/neon.png)
+![Calendar Week Grid Card Example: Neon](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/e2164d8a39b663cf03c35ec4f4ef53bc4031478c/media/images/neon.png)
 
-<!-- CONFIG:yasno_v3/neon -->
+<!-- CONFIG:yasno_v4/neon -->
 
 <details>
 <summary>YAML Configuration</summary>
@@ -847,7 +888,7 @@ css: |
 
   .cell {
     height: 28px;
-    border-radius: 6px;
+    border-radius: min(6px, 20cqi);
   }
 
   .event-icon {
@@ -867,9 +908,9 @@ css: |
 
 ### Soft UI
 
-![Calendar Week Grid Card Example: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/d59b15d8c2ce542963cd0fb72e37f8ec829b3d0b/media/images/soft_ui.png)
+![Calendar Week Grid Card Example: Soft UI](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/e2164d8a39b663cf03c35ec4f4ef53bc4031478c/media/images/soft_ui.png)
 
-<!-- CONFIG:yasno_v3/soft_ui -->
+<!-- CONFIG:yasno_v4/soft_ui -->
 
 <details>
 <summary>YAML Configuration</summary>
@@ -961,15 +1002,16 @@ css: |
   }
 
   .grid-container {
-    gap: 8px;
+    gap: 0px;
   }
 
-  .cell-wrapper {
-    min-height: 28px;
+  .cell-slot {
+    padding: max(2px, 8cqi);
   }
 
   .cell {
-    height:34px;
+    min-height: 28px;
+    height: 34px;
     border-radius: 17px;
   }
 
@@ -989,9 +1031,9 @@ css: |
 
 ### Yasno Legacy
 
-![Calendar Week Grid Card Example: Yasno Legacy](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/d59b15d8c2ce542963cd0fb72e37f8ec829b3d0b/media/images/yasno_legacy.png)
+![Calendar Week Grid Card Example: Yasno Legacy](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/e2164d8a39b663cf03c35ec4f4ef53bc4031478c/media/images/yasno_legacy.png)
 
-<!-- CONFIG:yasno_v3/yasno_legacy -->
+<!-- CONFIG:yasno_v4/yasno_legacy -->
 
 <details>
 <summary>YAML Configuration</summary>
@@ -1082,8 +1124,36 @@ css: |
     background-color: var(--card-background-color);
   }
 
-  .time-label {
-    padding: 0 18px;
+  .grid-container[data-orientation='vertical'] .time-label-wrapper {
+    margin: 0;
+  }
+
+  .grid-container[data-orientation='horizontal'] .time-label-wrapper {
+    margin: 0;
+  }
+
+  .grid-container[data-orientation='vertical'] .time-label {
+    padding: 2px 10px;
+  }
+
+  .grid-container[data-orientation='horizontal'] .time-label {
+    padding: 10px 2px;
+  }
+
+  .grid-container[data-orientation='vertical'] .day-header-wrapper {
+    margin: 0;
+  }
+
+  .grid-container[data-orientation='horizontal'] .day-header-wrapper {
+    margin: 0;
+  }
+
+  .grid-container[data-orientation='vertical'] .day-header {
+    padding: 10px 4px;
+  }
+
+  .grid-container[data-orientation='horizontal'] .day-header {
+    padding: 4px 10px;
   }
 
   .time-label.now {
@@ -1122,277 +1192,9 @@ css: |
 
 ### Google Calendar
 
-![Calendar Week Grid Card Example: Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/d59b15d8c2ce542963cd0fb72e37f8ec829b3d0b/media/images/google_calendar.png)
+![Calendar Week Grid Card Example: Google Calendar](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/e2164d8a39b663cf03c35ec4f4ef53bc4031478c/media/images/google_calendar.png)
 
-<!-- CONFIG:yasno_v3/google_calendar -->
-
-<details>
-<summary>YAML Configuration</summary>
-
-```yaml
-type: custom:calendar-week-grid-card
-primary_date_format:
-  weekday: short
-secondary_date_format:
-  day: numeric
-time_format:
-  hour: 2-digit
-  minute: 2-digit
-  hour12: false
-time_range: true
-icons_mode: all
-icons_container: event
-all_day: row
-theme_variables:
-  color:
-    name: Event Color
-    description: The color of the event.
-blank_event:
-  theme_values:
-    color: transparent
-entities:
-  - name: Planned Outages
-    entity: calendar.planned_outages
-    filter: Outage
-    icon: mdi:flash-off
-    theme_values:
-      color: var(--red-color, var(--error-color))
-  - name: Probable Outages
-    entity: calendar.probable_outages
-    icon: mdi:flash-off
-    theme_values:
-      color: var(--teal-color, var(--primary-color))
-  - name: No Outages
-    entity: calendar.planned_outages
-    filter: No Outages
-    icon: mdi:flash
-    theme_values:
-      color: var(--green-color, var(--success-color))
-  - name: Emergency Shutdowns
-    entity: calendar.planned_outages
-    filter: Emergency Shutdowns
-    icon: mdi:transmission-tower-off
-    theme_values:
-      color: var(--red-color, var(--error-color))
-  - name: Schedule Applies
-    entity: calendar.planned_outages
-    filter: Schedule Applies
-    icon: mdi:flash-off
-    theme_values:
-      color: var(--orange-color, var(--error-color))
-  - name: Waiting for Schedule
-    entity: calendar.planned_outages
-    filter: Waiting for Schedule
-    icon: mdi:timer-sand
-    theme_values:
-      color: var(--yellow-color, var(--warning-color))
-    hide:
-      - Planned Outages
-css: |
-  ha-card { 
-    --grid-bg: var(--card-background-color, #FFF);
-    --grid-border-color: var(--divider-color, #dde3ea);
-    --grid-primary-text-color: var(--primary-text-color, #1f1f1f);
-    --grid-secondary-text-color: var(--secondary-text-color, #444746);
-    --grid-event-text-color: var(--card-background-color, #fff);
-    --grid-accent-color: var(--primary-color, #0b57d0);
-    --grid-accent-text-color: var(--card-background-color, #fff);
-  }
-
-  ha-card.theme-dark {
-    --grid-bg: var(--card-background-color, #202124);
-    --grid-border-color: var(--divider-color, #3c4043);
-    --grid-primary-text-color: var(--primary-text-color, #e3e3e3);
-    --grid-secondary-text-color: var(--secondary-text-color, #c4c7c5);
-    --grid-event-text-color: var(--card-background-color, #131314);
-    --grid-accent-color: var(--primary-color, #a8c7fa);
-    --grid-accent-text-color: var(--card-background-color, #062e6f);
-  }
-
-  ha-card {
-    background-color: var(--grid-bg);
-    font-family: 'Google Sans', Roboto, Arial, sans-serif;
-  }
-
-  /* Grid Styling */
-
-  .grid-container {
-    gap: 0px;
-  }
-
-  .time-label-wrapper::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 10px;
-  }
-
-  .time-label-wrapper + .cell-wrapper,
-  .cell-wrapper + .cell-wrapper,
-  .time-label-wrapper::after {
-    border-bottom: 1px solid var(--grid-border-color);
-  }
-
-  .time-label-wrapper + .cell-wrapper,
-  .cell-wrapper + .cell-wrapper {
-    border-left: 1px solid var(--grid-border-color);
-    padding-right: 4px;
-    padding-bottom: 4px;
-  }
-
-  .cell {
-    position: relative;
-    top: -1px;
-    left: -1px;
-    height: 24px;
-  }
-
-  .day-header {
-    padding-bottom: 12px;
-  }
-
-  .day-header.today {
-    color: var(--grid-accent-color);
-  }
-
-  .day-header-primary {
-    text-transform: uppercase;
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--grid-secondary-text-color);
-  }
-
-  .day-header-secondary {
-    position: relative;
-    font-size: 16px;
-    font-weight: 400;
-    color: var(--grid-primary-text-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    margin-top: 4px;
-    padding: 8px;
-    box-sizing: border-box;
-    width: fit-content;
-    max-width: 100%;
-    min-width: 2em;
-    min-height: 2em;
-    align-self: center;
-    aspect-ratio: 1;
-    line-height: 1.2;
-    overflow-wrap: normal;
-    word-break: normal;
-  }
-
-  .day-header.today .day-header-secondary {
-    color: var(--grid-accent-text-color);
-    isolation: isolate;
-  }
-
-  .day-header.today .day-header-secondary:before {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    left: 50%;
-    top: 50%;
-    width: 100%;
-    aspect-ratio: 1;
-    height: auto;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background-color: var(--grid-accent-color);
-    pointer-events: none;
-  }
-
-  .time-label-wrapper {
-    position: relative;
-  }
-
-  .time-label {
-    display: block;
-    position: relative;
-    font-size: 10px;
-    line-height: 10px;
-    color: var(--grid-secondary-text-color);
-    padding-right: 0;
-    margin-right: 20px;
-    text-align: right;
-  }
-
-  .time-label-all-day {
-    font-size: 8px;
-  }
-
-  .time-label-hour-separator {
-    display: none;
-  }
-
-  .time-label-hour-start,
-  .time-label-all-day,
-  .time-label-hour-end {
-    display: block;
-  }
-
-  .time-label-hour:not(.time-label-hour-end), 
-  .time-label-all-day {
-    position: relative;
-    top: -5px;
-    right: 0;
-  }
-
-  .time-label-hour-end {
-    position: absolute;
-    right: 0;
-    bottom: -5px;
-  }
-
-  .time-label-wrapper:has(~ .time-label-wrapper) .time-label-hour-end {
-    visibility: hidden;
-  }
-
-  .event-block {
-    border-radius: 6px;
-  }
-
-  /* Icons: Subtle placement */
-
-  .event-icon {
-    color: var(--grid-event-text-color);
-    --icon-size: 14px;
-  }
-
-  /* Current Time Line */
-
-  .current-time-line {
-    background-color: var(--warning-color);
-    height: 2px;
-  }
-  .current-time-circle {
-    background-color: var(--warning-color);
-    width: 8px;
-    height: 8px;
-    left: -4px;
-    top: -3px;
-  }
-
-  /* Default Event Styles */
-
-  .event-sub-block {
-    background-color: var(--color, var(--grid-primary-text-color));
-  }
-```
-
-</details>
-
-<!-- END_CONFIG -->
-
-### Google Calendar Separated
-
-![Calendar Week Grid Card Example: Google Calendar Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/d59b15d8c2ce542963cd0fb72e37f8ec829b3d0b/media/images/google_calendar_separated.png)
-
-<!-- CONFIG:yasno_v3/google_calendar_separated -->
+<!-- CONFIG:yasno_v4/google_calendar -->
 
 <details>
 <summary>YAML Configuration</summary>
@@ -1465,6 +1267,8 @@ css: |
     --grid-event-text-color: var(--card-background-color, #fff);
     --grid-accent-color: var(--primary-color, #0b57d0);
     --grid-accent-text-color: var(--card-background-color, #fff);
+    --event-gap: min(3px, 8cqi);
+    --event-border-radius: min(6px, 20cqi);
   }
 
   ha-card.theme-dark {
@@ -1488,34 +1292,40 @@ css: |
     gap: 0px;
   }
 
-  .time-label-wrapper::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 10px;
-  }
-
-  .time-label-wrapper + .cell-wrapper,
-  .cell-wrapper + .cell-wrapper,
-  .time-label-wrapper::after {
-    border-bottom: 1px solid var(--grid-border-color);
-  }
-
+  .day-header-wrapper + .cell-wrapper,
   .time-label-wrapper + .cell-wrapper,
   .cell-wrapper + .cell-wrapper {
-    border-left: 1px solid var(--grid-border-color);
+    box-shadow: inset 0 -1px 0 0 var(--grid-border-color);
+  }
+
+  .cell-wrapper + .cell-wrapper {
+    box-shadow: inset 1px 0 0 0 var(--grid-border-color),
+      inset 0 -1px 0 0 var(--grid-border-color);
   }
 
   .cell {
     position: relative;
-    top: -3px;
-    left: -3px;
+    top: calc(var(--event-gap) * -1 - 1px);
+    left: calc(var(--event-gap) * -1);
     height: 28px;
   }
 
-  .day-header {
-    padding-bottom: 12px;
+  .grid-container[data-orientation='horizontal'] .day-header-wrapper {
+    margin-right: 6px;
+    padding-bottom: calc(var(--event-gap) * 2);
+  }
+
+  .grid-container[data-orientation='vertical'] .day-header-wrapper {
+    margin-bottom: 6px;
+    padding-right: calc(var(--event-gap) * 2);
+  }
+
+  .grid-container[data-orientation='horizontal'] .day-header {
+    flex-direction: row-reverse;
+  }
+
+  .grid-container[data-orientation='horizontal'] .day-header-secondary {
+    margin: -8px 6px -8px -8px;
   }
 
   .day-header.today {
@@ -1555,6 +1365,14 @@ css: |
   .day-header.today .day-header-secondary {
     color: var(--grid-accent-text-color);
     isolation: isolate;
+  }
+
+  .grid-container[data-orientation='horizontal'] .day-header {
+    justify-content: start;
+  }
+
+  .grid-container[data-orientation='horizontal'] .day-header {
+    justify-content: start;
   }
 
   .day-header.today .day-header-secondary:before {
@@ -1577,13 +1395,10 @@ css: |
   }
 
   .time-label {
-    display: block;
     position: relative;
     font-size: 10px;
     line-height: 10px;
     color: var(--grid-secondary-text-color);
-    padding-right: 0;
-    margin-right: 20px;
     text-align: right;
   }
 
@@ -1595,23 +1410,46 @@ css: |
     display: none;
   }
 
-  .time-label-hour-start,
-  .time-label-all-day,
-  .time-label-hour-end {
-    display: block;
+  .grid-container[data-orientation='vertical'] .time-label-wrapper {
+    margin-right: 6px;
   }
 
-  .time-label-hour:not(.time-label-hour-end), 
-  .time-label-all-day {
+  .grid-container[data-orientation='horizontal'] .time-label-wrapper {
+    margin-bottom: 6px;
+  }
+
+  .grid-container[data-orientation='vertical'] .time-label {
+    flex-direction: row;
+    justify-content: center;
+    align-items: start;
+  }
+
+  .grid-container[data-orientation='horizontal'] .time-label {
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+  }
+
+  .grid-container[data-orientation='vertical'] .time-label .time-label-hour:not(.time-label-hour-end),
+  .grid-container[data-orientation='vertical'] .time-label .time-label-all-day {
     position: relative;
-    top: -5px;
-    right: 0;
+    top: -7px;
   }
 
-  .time-label-hour-end {
+  .grid-container[data-orientation='horizontal'] .time-label .time-label-hour:not(.time-label-hour-end),
+  .grid-container[data-orientation='horizontal'] .time-label .time-label-all-day {
+    position: relative;
+    left: -7px;
+  }
+
+  .grid-container[data-orientation='vertical'] .time-label .time-label-hour-end {
     position: absolute;
-    right: 0;
     bottom: -5px;
+  }
+
+  .grid-container[data-orientation='horizontal'] .time-label .time-label-hour-end {
+    position: absolute;
+    right: -5px;
   }
 
   .time-label-wrapper:has(~ .time-label-wrapper) .time-label-hour-end {
@@ -1619,7 +1457,7 @@ css: |
   }
 
   .event-sub-block {
-    padding: 2px;
+    padding: var(--event-gap);
   }
 
   .event-sub-block:after {
@@ -1627,7 +1465,7 @@ css: |
     display: block;
     width: 100%;
     height: 100%;
-    border-radius: 6px;
+    border-radius: var(--event-border-radius);
   }
 
   /* Icons: Subtle placement */
@@ -1637,497 +1475,35 @@ css: |
     --icon-size: 14px;
   }
 
-  .event-wrapper:has(.event-sub-block:not([style*="top: 0%;"][style*="height: 100%;"])) .event-icon-overlay {
+  .event-wrapper:has(.event-sub-block:not([data-full="true"])) .event-icon-overlay {
     display: none;
   }
 
   /* Current Time Line */
 
-  .current-time-line {
-    background-color: var(--warning-color);
-    height: 2px;
-  }
-  .current-time-circle {
-    background-color: var(--warning-color);
-    width: 8px;
-    height: 8px;
-    left: -4px;
-    top: -3px;
-  }
-
-  /* Default Event Styles */
-
-  .event-sub-block:after {
-    background-color: var(--color, var(--grid-primary-text-color));
-  }
-```
-
-</details>
-
-<!-- END_CONFIG -->
-
-### Google Calendar Original
-
-![Calendar Week Grid Card Example: Google Calendar Original](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/d59b15d8c2ce542963cd0fb72e37f8ec829b3d0b/media/images/google_calendar_original.png)
-
-<!-- CONFIG:yasno_v3/google_calendar_original -->
-
-<details>
-<summary>YAML Configuration</summary>
-
-```yaml
-type: custom:calendar-week-grid-card
-primary_date_format:
-  weekday: short
-secondary_date_format:
-  day: numeric
-time_format:
-  hour: 2-digit
-  minute: 2-digit
-  hour12: false
-time_range: false
-icons_mode: all
-icons_container: event
-all_day: row
-theme_variables:
-  color:
-    name: Event Color
-    description: The color of the event.
-blank_event:
-  theme_values:
-    color: transparent
-entities:
-  - name: Planned Outages
-    entity: calendar.planned_outages
-    filter: Outage
-    icon: mdi:flash-off
-    theme_values:
-      color: '#F3511E'
-  - name: Probable Outages
-    entity: calendar.probable_outages
-    icon: mdi:flash-off
-    theme_values:
-      color: '#4285F4'
-  - name: No Outages
-    entity: calendar.planned_outages
-    filter: No Outages
-    icon: mdi:flash
-    theme_values:
-      color: '#34B779'
-  - name: Emergency Shutdowns
-    entity: calendar.planned_outages
-    filter: Emergency Shutdowns
-    icon: mdi:transmission-tower-off
-    theme_values:
-      color: '#D40101'
-  - name: Schedule Applies
-    entity: calendar.planned_outages
-    filter: Schedule Applies
-    icon: mdi:flash-off
-    theme_values:
-      color: '#F3511E'
-  - name: Waiting for Schedule
-    entity: calendar.planned_outages
-    filter: Waiting for Schedule
-    icon: mdi:timer-sand
-    theme_values:
-      color: '#F6BE28'
-    hide:
-      - Planned Outages
-css: |
-  ha-card { 
-    --grid-bg: #FFF;
-    --grid-border-color: #dde3ea;
-    --grid-primary-text-color: #1f1f1f;
-    --grid-secondary-text-color: #444746;
-    --grid-event-text-color: #fff;
-    --grid-accent-color: #0b57d0;
-    --grid-accent-text-color: #fff;
-  }
-
-  ha-card.theme-dark {
-    --grid-bg: #202124;
-    --grid-border-color: #3c4043;
-    --grid-primary-text-color: #e3e3e3;
-    --grid-secondary-text-color: #c4c7c5;
-    --grid-event-text-color: #131314;
-    --grid-accent-color: #a8c7fa;
-    --grid-accent-text-color: #062e6f;
-  }
-
-  ha-card {
-    background-color: var(--grid-bg);
-    box-shadow: none !important;
-    border: none !important;
-    font-family: 'Google Sans', Roboto, Arial, sans-serif;
-  }
-
-  /* Grid Styling */
-
-  .grid-container {
-    gap: 0px;
-  }
-
-  .time-label-wrapper::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 10px;
-  }
-
-  .time-label-wrapper + .cell-wrapper,
-  .cell-wrapper + .cell-wrapper,
-  .time-label-wrapper::after {
-    border-bottom: 1px solid var(--grid-border-color);
-  }
-
-  .time-label-wrapper + .cell-wrapper,
-  .cell-wrapper + .cell-wrapper {
-    border-left: 1px solid var(--grid-border-color);
-    padding-right: 4px;
-    padding-bottom: 4px;
-  }
-
-  .cell {
-    position: relative;
+  .current-time-line-wrapper {
     top: -1px;
-    left: -1px;
-    height: 24px;
+    left: 0px;
+    width: calc(100% - var(--event-gap) * 2);
+    height: calc(100% - var(--event-gap) * 2);
   }
 
-  .day-header {
-    padding-bottom: 12px;
-  }
-
-  .day-header.today {
-    color: var(--grid-accent-color);
-  }
-
-  .day-header-primary {
-    text-transform: uppercase;
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--grid-secondary-text-color);
-  }
-
-  .day-header-secondary {
-    position: relative;
-    font-size: 16px;
-    font-weight: 400;
-    color: var(--grid-primary-text-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    margin-top: 4px;
-    padding: 8px;
-    box-sizing: border-box;
-    width: fit-content;
-    max-width: 100%;
-    min-width: 2em;
-    min-height: 2em;
-    align-self: center;
-    aspect-ratio: 1;
-    line-height: 1.2;
-    overflow-wrap: normal;
-    word-break: normal;
-  }
-
-  .day-header.today .day-header-secondary {
-    color: var(--grid-accent-text-color);
-    isolation: isolate;
-  }
-
-  .day-header.today .day-header-secondary:before {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    left: 50%;
-    top: 50%;
+  .grid-container[data-orientation='vertical'] .current-time-line-wrapper {
     width: 100%;
-    aspect-ratio: 1;
-    height: auto;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background-color: var(--grid-accent-color);
-    pointer-events: none;
   }
 
-  .time-label {
-    top: -14px;
-    font-size: 10px;
-    line-height: 10px;
-    color: var(--grid-secondary-text-color);
-    padding-right: 20px;
-  }
-
-  .event-block {
-    border-radius: 6px;
-  }
-
-  /* Icons: Subtle placement */
-
-  .event-icon {
-    color: var(--grid-event-text-color);
-    --icon-size: 14px;
-  }
-
-  /* Current Time Line */
-
-  .current-time-line {
-    background-color: #ea4335;
-    height: 2px;
-  }
-  .current-time-circle {
-    background-color: #ea4335;
-    width: 8px;
-    height: 8px;
-    left: -4px;
-    top: -3px;
-  }
-
-  /* Default Event Styles */
-
-  .event-sub-block {
-    background-color: var(--color, var(--grid-primary-text-color));
-  }
-```
-
-</details>
-
-<!-- END_CONFIG -->
-
-### Google Calendar Original Separated
-
-![Calendar Week Grid Card Example: Google Calendar Original Separated](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/d59b15d8c2ce542963cd0fb72e37f8ec829b3d0b/media/images/google_calendar_original_separated.png)
-
-<!-- CONFIG:yasno_v3/google_calendar_original_separated -->
-
-<details>
-<summary>YAML Configuration</summary>
-
-```yaml
-type: custom:calendar-week-grid-card
-primary_date_format:
-  weekday: short
-secondary_date_format:
-  day: numeric
-time_format:
-  hour: 2-digit
-  minute: 2-digit
-  hour12: false
-time_range: false
-icons_mode: all
-icons_container: event
-all_day: row
-theme_variables:
-  color:
-    name: Event Color
-    description: The color of the event.
-blank_event:
-  theme_values:
-    color: transparent
-entities:
-  - name: Planned Outages
-    entity: calendar.planned_outages
-    filter: Outage
-    icon: mdi:flash-off
-    theme_values:
-      color: '#F3511E'
-  - name: Probable Outages
-    entity: calendar.probable_outages
-    icon: mdi:flash-off
-    theme_values:
-      color: '#4285F4'
-  - name: No Outages
-    entity: calendar.planned_outages
-    filter: No Outages
-    icon: mdi:flash
-    theme_values:
-      color: '#34B779'
-  - name: Emergency Shutdowns
-    entity: calendar.planned_outages
-    filter: Emergency Shutdowns
-    icon: mdi:transmission-tower-off
-    theme_values:
-      color: '#D40101'
-  - name: Schedule Applies
-    entity: calendar.planned_outages
-    filter: Schedule Applies
-    icon: mdi:flash-off
-    theme_values:
-      color: '#F3511E'
-  - name: Waiting for Schedule
-    entity: calendar.planned_outages
-    filter: Waiting for Schedule
-    icon: mdi:timer-sand
-    theme_values:
-      color: '#F6BE28'
-    hide:
-      - Planned Outages
-css: |
-  ha-card {
-    --grid-bg: #FFF;
-    --grid-border-color: #dde3ea;
-    --grid-primary-text-color: #1f1f1f;
-    --grid-secondary-text-color: #444746;
-    --grid-event-text-color: #fff;
-    --grid-accent-color: #0b57d0;
-    --grid-accent-text-color: #fff;
-  }
-
-  ha-card.theme-dark {
-    --grid-bg: #202124;
-    --grid-border-color: #3c4043;
-    --grid-primary-text-color: #e3e3e3;
-    --grid-secondary-text-color: #c4c7c5;
-    --grid-event-text-color: #131314;
-    --grid-accent-color: #a8c7fa;
-    --grid-accent-text-color: #062e6f;
-  }
-
-  ha-card {
-    background-color: var(--grid-bg);
-    box-shadow: none !important;
-    border: none !important;
-    border-radius: 16px;
-    font-family: 'Google Sans', Roboto, Arial, sans-serif;
-  }
-
-  /* Grid Styling */
-
-  .grid-container {
-    gap: 0px;
-  }
-
-  .time-label-wrapper::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 10px;
-  }
-
-  .time-label-wrapper + .cell-wrapper,
-  .cell-wrapper + .cell-wrapper,
-  .time-label-wrapper::after {
-    border-bottom: 1px solid var(--grid-border-color);
-  }
-
-  .time-label-wrapper + .cell-wrapper,
-  .cell-wrapper + .cell-wrapper {
-    border-left: 1px solid var(--grid-border-color);
-  }
-
-  .cell {
-    position: relative;
-    top: -3px;
-    left: -3px;
-    height: 28px;
-  }
-
-  .day-header {
-    padding-bottom: 12px;
-  }
-
-  .day-header.today {
-    color: var(--grid-accent-color);
-  }
-
-  .day-header-primary {
-    text-transform: uppercase;
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--grid-secondary-text-color);
-  }
-
-  .day-header-secondary {
-    position: relative;
-    font-size: 16px;
-    font-weight: 400;
-    color: var(--grid-primary-text-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    margin-top: 4px;
-    padding: 8px;
-    box-sizing: border-box;
-    width: fit-content;
-    max-width: 100%;
-    min-width: 2em;
-    min-height: 2em;
-    align-self: center;
-    aspect-ratio: 1;
-    line-height: 1.2;
-    overflow-wrap: normal;
-    word-break: normal;
-  }
-
-  .day-header.today .day-header-secondary {
-    color: var(--grid-accent-text-color);
-    isolation: isolate;
-  }
-
-  .day-header.today .day-header-secondary:before {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    left: 50%;
-    top: 50%;
-    width: 100%;
-    aspect-ratio: 1;
-    height: auto;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background-color: var(--grid-accent-color);
-    pointer-events: none;
-  }
-
-  .time-label {
-    top: -14px;
-    font-size: 10px;
-    line-height: 10px;
-    color: var(--grid-secondary-text-color);
-    padding-right: 20px;
-  }
-
-  .event-sub-block {
-    padding: 2px;
-  }
-
-  .event-sub-block:after {
-    content: '';
-    display: block;
-    width: 100%;
+  .grid-container[data-orientation='horizontal'] .current-time-line-wrapper {
     height: 100%;
-    border-radius: 6px;
   }
-
-  /* Icons: Subtle placement */
-
-  .event-icon {
-    color: var(--grid-event-text-color);
-    --icon-size: 14px;
-  }
-
-  .event-wrapper:has(.event-sub-block:not([style*="top: 0%;"][style*="height: 100%;"])) .event-icon-overlay {
-    display: none;
-  }
-
-  /* Current Time Line */
 
   .current-time-line {
-    background-color: #ea4335;
-    height: 2px;
+    background-color: var(--warning-color);
   }
+
   .current-time-circle {
-    background-color: #ea4335;
+    background-color: var(--warning-color);
     width: 8px;
     height: 8px;
-    left: -4px;
-    top: -3px;
   }
 
   /* Default Event Styles */

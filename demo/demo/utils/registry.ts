@@ -1,4 +1,4 @@
-import { ASSET_MANIFEST } from 'virtual:asset-manifest';
+import { getAssetManifest } from './manifest';
 import { BaseProvider } from './providers/base';
 import { DummyProvider } from './providers/dummy';
 import { YasnoProvider } from './providers/yasno';
@@ -8,7 +8,7 @@ import { YasnoApiProvider } from './providers/yasno-api';
  * Search manifest for files matching a pattern
  */
 function findAssetsInManifest(pattern: RegExp): string[] {
-  return ASSET_MANIFEST.filter((path) => pattern.test(path));
+  return getAssetManifest().filter((path) => pattern.test(path));
 }
 
 /**
@@ -59,36 +59,21 @@ export class ProviderRegistry {
    * Initialize all providers
    */
   private initializeProviders(): void {
-    const yasnoCalendarPaths = getYasnoCalendarPaths();
-    const yasnoImageCalendarPaths = getYasnoImageCalendarPaths();
-
     // Register dummy provider
     this.registerProvider(
-      new DummyProvider( // dummy provider
-        getConfigPaths('dummy'), // dummy configs
+      new DummyProvider(
+        getConfigPaths('dummy'), //
       ),
     );
 
     // Register yasno providers
     this.registerProvider(
       new YasnoProvider(
-        'yasno_image',
-        getConfigPaths('yasno_image'),
-        yasnoImageCalendarPaths,
-        {
-          defaultConfig: 'image',
-          defaultDataSource: 'yasno',
-        },
-      ),
-    );
-
-    this.registerProvider(
-      new YasnoProvider(
         'yasno_v1',
         getConfigPaths('yasno_v1'),
-        yasnoCalendarPaths,
+        getYasnoCalendarPaths(),
         {
-          defaultConfig: 'classic',
+          defaultConfig: 'basic',
           defaultDataSource: 'yasno_1',
         },
       ),
@@ -98,9 +83,9 @@ export class ProviderRegistry {
       new YasnoProvider(
         'yasno_v2',
         getConfigPaths('yasno_v2'),
-        yasnoCalendarPaths,
+        getYasnoCalendarPaths(),
         {
-          defaultConfig: 'google_calendar_separated',
+          defaultConfig: 'basic',
           defaultDataSource: 'yasno_1',
         },
       ),
@@ -110,22 +95,53 @@ export class ProviderRegistry {
       new YasnoProvider(
         'yasno_v3',
         getConfigPaths('yasno_v3'),
-        yasnoCalendarPaths,
+        getYasnoCalendarPaths(),
         {
-          defaultConfig: 'google_calendar_separated',
+          defaultConfig: 'basic',
           defaultDataSource: 'yasno_1',
         },
       ),
     );
 
-    // Register yasno API provider (uses yasno_v3 configs)
+    this.registerProvider(
+      new YasnoProvider(
+        'yasno_v4',
+        getConfigPaths('yasno_v4'),
+        getYasnoCalendarPaths(),
+        {
+          defaultConfig: 'google_calendar',
+          defaultDataSource: 'yasno_1',
+        },
+      ),
+    );
+
+    // Register yasno API provider
     this.registerProvider(
       new YasnoApiProvider(
-        getConfigPaths('yasno_v3'), // yasno_v3 configs
+        getConfigPaths('yasno_v4'), //
         {
-          defaultConfig: 'google_calendar_separated',
+          defaultConfig: 'google_calendar',
           defaultDataSource: 'yasno_1',
           cacheTtlMinutes: 5,
+        },
+      ),
+    );
+
+    this.registerProvider(
+      new YasnoProvider(
+        'yasno_image',
+        getConfigPaths('yasno_v4'),
+        getYasnoImageCalendarPaths(),
+        {
+          defaultConfig: 'google_calendar',
+          defaultDataSource: 'yasno_1',
+        },
+        {
+          time_format: 'h A',
+          start_hour: 7,
+          end_hour: 22,
+          days: 8,
+          week_start: 'sunday',
         },
       ),
     );
@@ -153,5 +169,24 @@ export class ProviderRegistry {
   }
 }
 
-// Singleton instance
-export const providerRegistry = new ProviderRegistry();
+let providerRegistrySingleton: ProviderRegistry | null = null;
+
+function getProviderRegistrySingleton(): ProviderRegistry {
+  if (!providerRegistrySingleton) {
+    providerRegistrySingleton = new ProviderRegistry();
+  }
+  return providerRegistrySingleton;
+}
+
+/**
+ * Lazily constructs the registry so it runs after entry `setAssetManifest(...)`
+ * (Rollup may evaluate shared chunks before the entry’s manifest side effect).
+ */
+export const providerRegistry = {
+  getProvider(name: string): BaseProvider | undefined {
+    return getProviderRegistrySingleton().getProvider(name);
+  },
+  getAllProviderNames(): string[] {
+    return getProviderRegistrySingleton().getAllProviderNames();
+  },
+};

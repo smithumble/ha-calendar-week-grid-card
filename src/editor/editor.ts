@@ -25,7 +25,11 @@ import {
   handleCriteriaTypeChange,
   handleCriteriaFieldChange,
 } from './utils/field';
-import { ThemeManager } from './utils/theme';
+import {
+  ThemeManager,
+  getEffectiveCardCss,
+  normalizeCssForCompare,
+} from './utils/theme';
 
 /**
  * Calendar Week Grid Card Editor component
@@ -103,8 +107,9 @@ export class CalendarWeekGridCardEditor extends LitElement {
         ? 'string'
         : 'object';
 
-    // Detect which theme is currently selected based on CSS content
+    // Detect selected theme and migrate legacy css-only theme configs
     this._detectSelectedTheme();
+    this._migrateLegacyThemeCssToThemeField();
   }
 
   getConfigValue(path: string, defaultValue?: unknown): unknown {
@@ -120,6 +125,36 @@ export class CalendarWeekGridCardEditor extends LitElement {
     }
     this._config = ConfigManager.setValue(this._config, path, value);
     this._fireConfigChanged();
+  }
+
+  private _isPlainObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  }
+
+  private _mergeOverrideValue(base: unknown, override: unknown): unknown {
+    if (Array.isArray(override)) {
+      return [...override];
+    }
+    if (!this._isPlainObject(override)) {
+      return override;
+    }
+
+    const baseObject = this._isPlainObject(base) ? base : {};
+    const merged: Record<string, unknown> = { ...baseObject };
+    for (const [key, value] of Object.entries(override)) {
+      merged[key] = this._mergeOverrideValue(baseObject[key], value);
+    }
+    return merged;
+  }
+
+  private _applyPresetOverrides(preset: EntitiesPreset): void {
+    if (!this._config || !preset.overrides) {
+      return;
+    }
+    this._config = this._mergeOverrideValue(
+      this._config,
+      preset.overrides,
+    ) as CardConfig;
   }
 
   private _fireConfigChanged(): void {
@@ -361,6 +396,17 @@ export class CalendarWeekGridCardEditor extends LitElement {
     this._selectedTheme = themeId;
 
     if (themeId === 'custom') {
+      if (!this._config) {
+        return;
+      }
+      const effective = getEffectiveCardCss(this._config, themes);
+      this._config = ConfigManager.setValue(this._config, 'theme', undefined);
+      this._config = ConfigManager.setValue(
+        this._config,
+        'css',
+        effective.trim() ? effective : undefined,
+      );
+      this._fireConfigChanged();
       return;
     }
 
@@ -390,6 +436,18 @@ export class CalendarWeekGridCardEditor extends LitElement {
       return html``;
     }
 
+    const hasCustomCss =
+      typeof this._config.css === 'string' &&
+      this._config.css.trim().length > 0;
+    const customCssWarning = html`
+      <div class="helper-text warning">
+        <strong class="warning-title">Warning</strong>
+        Custom CSS may not be fully supported in newer versions of this card. If
+        something looks broken after an update, select one of the standard
+        themes.
+      </div>
+    `;
+
     return html`
       <div class="card-config">
         <!-- CALENDAR ENTITIES -->
@@ -417,6 +475,20 @@ export class CalendarWeekGridCardEditor extends LitElement {
             ${this.addTextField('days', 'Days to show', 'number', '7')}
             <div class="helper-text">
               Number of days to display (default: 7)
+            </div>
+            ${this.addSelectField(
+              'orientation',
+              'Orientation',
+              [
+                { value: 'vertical', label: 'Vertical' },
+                { value: 'horizontal', label: 'Horizontal' },
+              ],
+              false,
+              'vertical',
+            )}
+            <div class="helper-text">
+              Grid orientation: vertical (days as columns) or horizontal (days
+              as rows)
             </div>
             ${this.addSelectField(
               'week_start',
@@ -448,6 +520,22 @@ export class CalendarWeekGridCardEditor extends LitElement {
             ${this.addBooleanField('trim_empty_hours', 'Trim Empty Hours')}
             <div class="helper-text">
               Trim empty hours at the top and bottom across all visible days
+            </div>
+            ${this.addTextField(
+              'trim_empty_hours_start_limit',
+              'Trim Empty Hours Max Start Hour',
+              'number',
+            )}
+            <div class="helper-text">
+              With trimming enabled, do not move start later than this hour
+            </div>
+            ${this.addTextField(
+              'trim_empty_hours_end_limit',
+              'Trim Empty Hours Min End Hour',
+              'number',
+            )}
+            <div class="helper-text">
+              With trimming enabled, do not move end earlier than this hour
             </div>
             ${this.addBooleanField('time_range', 'Show Time Range')}
             <div class="helper-text">
@@ -586,21 +674,23 @@ export class CalendarWeekGridCardEditor extends LitElement {
               false,
               this._selectedTheme,
             )}
-            <!-- Custom CSS -->
-            <h3>Custom CSS</h3>
+            <!-- Change CSS -->
+            <h3>Change Theme CSS</h3>
             <div class="helper-text">
-              Custom CSS styles. Use CSS variables and selectors to style the
-              card.
+              Change theme CSS styles. Use CSS variables and selectors to style
+              the card.
             </div>
+            ${hasCustomCss ? customCssWarning : ''}
             ${this.addExpansionPanel(
-              'Custom CSS',
+              'Theme CSS',
               'mdi:code-tags',
               html`
+                ${!hasCustomCss ? customCssWarning : ''}
                 <ha-code-editor
                   .hass="${this.hass}"
                   name="css"
                   label="Custom CSS"
-                  .value="${this.getConfigValue('css', '')}"
+                  .value="${this._getEditorCssValue()}"
                   @value-changed="${(e: CustomEvent) => {
                     e.stopPropagation();
                     this._handleCssChange(e.detail.value);
@@ -1295,11 +1385,24 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   /**
+   * Theme id used for examples/presets when UI shows "Custom" but config still references a package theme
+   */
+  private _themeIdForPackagedTheme(): string | null {
+    const t = this._config?.theme;
+    if (t && themes.some((x) => x.id === t)) {
+      return t;
+    }
+    return this._selectedTheme !== 'custom' ? this._selectedTheme : null;
+  }
+
+  /**
    * Get available presets from the currently selected theme
    */
   private _getAvailablePresets() {
+    const packagedId = this._themeIdForPackagedTheme();
+
     // If custom theme is selected, get presets from all themes
-    if (this._selectedTheme === 'custom') {
+    if (this._selectedTheme === 'custom' && !packagedId) {
       const presetMap = new Map<string, EntitiesPreset>();
       themes.forEach((theme) => {
         const themePresets = theme.config.entities_presets || [];
@@ -1319,8 +1422,10 @@ export class CalendarWeekGridCardEditor extends LitElement {
       return Array.from(presetMap.values());
     }
 
-    // Get presets from the currently selected theme
-    const selectedTheme = themes.find((t) => t.id === this._selectedTheme);
+    // Get presets from the packaged theme (or selected theme row)
+    const selectedTheme = themes.find(
+      (t) => t.id === (packagedId ?? this._selectedTheme),
+    );
     if (!selectedTheme || !selectedTheme.config.entities_presets) {
       return [];
     }
@@ -1361,13 +1466,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
       (p) => p.name === this._selectedPresetName,
     );
     const calendars = selectedPreset?.calendars || [];
-    const allCalendarsFilled =
-      calendars.length === 0 ||
-      calendars.every(
-        (calendar) =>
-          this._presetCalendarValues[calendar.template] &&
-          this._presetCalendarValues[calendar.template].trim() !== '',
-      );
 
     return html`
       <div class="preset-form">
@@ -1395,7 +1493,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
                     .value="${this._presetCalendarValues[calendar.template] ||
                     ''}"
                     .includeDomains="${['calendar']}"
-                    .required="${true}"
                     @value-changed="${(e: CustomEvent) => {
                       e.stopPropagation();
                       this._presetCalendarValues = {
@@ -1407,10 +1504,7 @@ export class CalendarWeekGridCardEditor extends LitElement {
                 `,
               )}
               <div class="button-group">
-                <ha-button
-                  .disabled="${!allCalendarsFilled}"
-                  @click="${() => this._applyPreset()}"
-                >
+                <ha-button @click="${() => this._applyPreset()}">
                   <ha-icon icon="mdi:check"></ha-icon>
                   Apply
                 </ha-button>
@@ -1491,8 +1585,47 @@ export class CalendarWeekGridCardEditor extends LitElement {
       });
     }
 
+    // Remove only unresolved preset template entities (no selected value).
+    const resolvedEntities = entities.filter((entity) => {
+      if (!selectedPreset.calendars || selectedPreset.calendars.length === 0) {
+        return true;
+      }
+      if (typeof entity === 'string') {
+        const templateCalendar = selectedPreset.calendars.find(
+          (c) => c.template === entity,
+        );
+        if (!templateCalendar) {
+          return true;
+        }
+        const selectedEntity =
+          this._presetCalendarValues[templateCalendar.template];
+        return !!selectedEntity?.trim();
+      }
+      if (entity && typeof entity === 'object' && 'entity' in entity) {
+        const templateCalendar = selectedPreset.calendars.find(
+          (c) => c.template === entity.entity,
+        );
+        if (!templateCalendar) {
+          return true;
+        }
+        const selectedEntity =
+          this._presetCalendarValues[templateCalendar.template];
+        return !!selectedEntity?.trim();
+      }
+      return true;
+    });
+
+    this._applyPresetOverrides(selectedPreset);
+    if (!this._config) {
+      return;
+    }
+
     this._collapseAllEntityPanels();
-    this.setConfigValue('entities', entities);
+    this._config = {
+      ...this._config,
+      entities: resolvedEntities,
+    };
+    this._fireConfigChanged();
     this._togglePresetForm();
   }
 
@@ -1577,11 +1710,12 @@ export class CalendarWeekGridCardEditor extends LitElement {
     if (!this._config) {
       return undefined;
     }
+    const themeId = this._themeIdForPackagedTheme();
+    if (!themeId) {
+      return undefined;
+    }
     const themeManager = new ThemeManager(this._config, themes);
-    return themeManager.getExampleByEntityIndex(
-      entityIndex,
-      this._selectedTheme,
-    );
+    return themeManager.getExampleByEntityIndex(entityIndex, themeId);
   }
 
   /**
@@ -1594,6 +1728,36 @@ export class CalendarWeekGridCardEditor extends LitElement {
     }
     const themeManager = new ThemeManager(this._config, themes);
     this._selectedTheme = themeManager.detectSelectedTheme();
+  }
+
+  /**
+   * Migrates legacy configs that store packaged theme CSS in `css` only.
+   * Rewrites to `theme` + no `css`, so saved config stays compact.
+   */
+  private _migrateLegacyThemeCssToThemeField(): void {
+    if (!this._config || this._selectedTheme === 'custom') {
+      return;
+    }
+    if (this._config.theme === this._selectedTheme && !this._config.css) {
+      return;
+    }
+
+    const theme = themes.find((t) => t.id === this._selectedTheme);
+    const themeCss = (theme?.config.css as string) || '';
+    const currentCss = this._config.css || '';
+
+    if (
+      currentCss &&
+      normalizeCssForCompare(currentCss) === normalizeCssForCompare(themeCss)
+    ) {
+      this._config = ConfigManager.setValue(
+        this._config,
+        'theme',
+        this._selectedTheme,
+      );
+      this._config = ConfigManager.setValue(this._config, 'css', undefined);
+      this._fireConfigChanged();
+    }
   }
 
   /**
@@ -1682,10 +1846,33 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   /**
+   * Effective CSS shown in the editor (theme default when config does not override)
+   */
+  private _getEditorCssValue(): string {
+    if (!this._config) {
+      return '';
+    }
+    return getEffectiveCardCss(this._config, themes);
+  }
+
+  /**
    * Handles CSS changes from the code editor
    */
   private _handleCssChange(newCss: string): void {
-    this.setConfigValue('css', newCss);
+    if (!this._config) {
+      return;
+    }
+    const themeId = this._config.theme;
+    const theme = themeId ? themes.find((t) => t.id === themeId) : undefined;
+    const defaultCss = (theme?.config.css as string) || '';
+    if (
+      theme &&
+      normalizeCssForCompare(newCss) === normalizeCssForCompare(defaultCss)
+    ) {
+      this.setConfigValue('css', undefined);
+    } else {
+      this.setConfigValue('css', newCss);
+    }
     this._detectSelectedTheme();
   }
 }

@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { ASSET_MANIFEST } from 'virtual:asset-manifest';
+import { getAssetManifest } from './manifest';
 
 interface RawThemeNode {
   [key: string]: RawThemeNode | string | number;
@@ -27,7 +27,7 @@ async function loadYamlFile(url: string): Promise<string> {
 // Find theme file in manifest
 function findThemeFile(themeName: string): string | null {
   const pattern = new RegExp(`assets/themes/${themeName}\\.(yaml|yml)$`);
-  const matches = ASSET_MANIFEST.filter((path) => pattern.test(path));
+  const matches = getAssetManifest().filter((path) => pattern.test(path));
   return matches.length > 0 ? matches[0] : null;
 }
 

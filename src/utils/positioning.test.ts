@@ -36,10 +36,10 @@ describe('positioning utilities', () => {
       );
 
       expect(result).toEqual({
-        topPct: 25,
-        heightPct: 50,
-        innerTopPct: -50,
-        innerHeightPct: 200,
+        startPct: 25,
+        lengthPct: 50,
+        innerStartPct: -50,
+        innerLengthPct: 200,
       });
     });
 
@@ -51,9 +51,9 @@ describe('positioning utilities', () => {
         new Date('2026-03-31T11:00:00Z').getTime(),
       );
 
-      expect(result.heightPct).toBe(0);
-      expect(result.innerTopPct).toBe(0);
-      expect(result.innerHeightPct).toBe(100);
+      expect(result.lengthPct).toBe(0);
+      expect(result.innerStartPct).toBe(0);
+      expect(result.innerLengthPct).toBe(100);
     });
   });
 
@@ -133,7 +133,7 @@ describe('positioning utilities', () => {
   });
 
   describe('calculateSubBlockPosition', () => {
-    it('computes top and height percentages inside a cell', () => {
+    it('computes start and length percentages inside a cell', () => {
       const result = calculateSubBlockPosition(
         {
           start: new Date('2026-03-31T10:15:00Z').getTime(),
@@ -143,7 +143,7 @@ describe('positioning utilities', () => {
         60 * 60 * 1000,
       );
 
-      expect(result).toEqual({ topPct: 25, heightPct: 25 });
+      expect(result).toEqual({ startPct: 25, lengthPct: 25 });
     });
   });
 

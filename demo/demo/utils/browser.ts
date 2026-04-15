@@ -1,5 +1,10 @@
 import type { CardConfig, HomeAssistant } from '../../../src/types';
 import { Calendar } from './data';
+import {
+  getDebugSecondRowOverride,
+  isDebugSecondRowEnabled,
+  isDebugSecondRowOverrideEnabled,
+} from './editor/override';
 import { mockHaCard, mockHaIcon } from './mocks/ha-card';
 import { getSharedMockHass } from './mocks/ha-hass';
 
@@ -130,5 +135,34 @@ export function renderCards(config: CardConfig, calendars: Calendar[]) {
   const containerIds = ['card-container-light', 'card-container-dark'];
   containerIds.forEach((containerId) => {
     renderCardToContainer(containerId, config, calendars);
+  });
+
+  const secondRowContainerIds = [
+    'card-container-light-horizontal',
+    'card-container-dark-horizontal',
+  ];
+  const hasSecondRow = isDebugSecondRowEnabled();
+  document.body.classList.toggle('with-second-row', hasSecondRow);
+
+  if (!hasSecondRow) {
+    secondRowContainerIds.forEach((containerId) => {
+      const container = document.getElementById(containerId);
+      if (container) {
+        container.innerHTML = '';
+      }
+    });
+    return;
+  }
+
+  const secondRowOverride = isDebugSecondRowOverrideEnabled()
+    ? getDebugSecondRowOverride()
+    : {};
+  const secondRowConfig: CardConfig = {
+    ...config,
+    ...secondRowOverride,
+  };
+
+  secondRowContainerIds.forEach((containerId) => {
+    renderCardToContainer(containerId, secondRowConfig, calendars);
   });
 }

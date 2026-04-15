@@ -159,15 +159,16 @@ css: |
   }
 
   .grid-container {
-    gap: 8px;
+    gap: 0px;
   }
 
-  .cell-wrapper {
-    min-height: 28px;
+  .cell-slot {
+    padding: max(2px, 8cqi);
   }
 
   .cell {
-    height:34px;
+    min-height: 28px;
+    height: 34px;
     border-radius: 17px;
   }
 

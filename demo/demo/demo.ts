@@ -1,8 +1,11 @@
+import { ASSET_MANIFEST } from 'virtual:asset-manifest/demo';
 import { setupBrowserEnv } from './utils/browser';
 import { getAllProviderNames } from './utils/data';
+import { allowDebugConfigOverrideInApp } from './utils/editor/override';
 import { setupEditorToggleButton } from './utils/editor/panel';
 import { loadIcons } from './utils/icons';
 import { setupGlobalKeyboardNavigation } from './utils/keyboard';
+import { setAssetManifest } from './utils/manifest';
 import {
   setupProviderSelector,
   setupConfigSelector,
@@ -11,11 +14,13 @@ import {
 import { setStoragePrefix } from './utils/storage';
 import { loadTheme } from './utils/theme';
 
+setAssetManifest(ASSET_MANIFEST);
+
 const AVAILABLE_PROVIDERS_DEV = getAllProviderNames();
-const AVAILABLE_PROVIDERS_PROD = ['yasno_v3'];
+const AVAILABLE_PROVIDERS_PROD = ['yasno_v4'];
 
 // Available providers based on build mode
-// For dev build - all providers, for prod build - only yasno_v3
+// For dev build - all providers, for prod build - only yasno_v4
 export const AVAILABLE_PROVIDERS =
   process.env.NODE_ENV === 'development'
     ? AVAILABLE_PROVIDERS_DEV
@@ -31,6 +36,8 @@ const KEYBOARD_NAV_SELECTORS = [
 ];
 
 async function main() {
+  allowDebugConfigOverrideInApp();
+
   // Set storage prefix
   setStoragePrefix('demo');
 

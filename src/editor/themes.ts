@@ -4,9 +4,6 @@
 import basicYamlConfig from '../configs/basic.yaml';
 import classicYamlConfig from '../configs/classic.yaml';
 import googleCalendarYamlConfig from '../configs/google_calendar.yaml';
-import googleCalendarOriginalYamlConfig from '../configs/google_calendar_original.yaml';
-import googleCalendarOriginalSeparatedYamlConfig from '../configs/google_calendar_original_separated.yaml';
-import googleCalendarSeparatedYamlConfig from '../configs/google_calendar_separated.yaml';
 import neonYamlConfig from '../configs/neon.yaml';
 import simpleYamlConfig from '../configs/simple.yaml';
 import simpleColoredYamlConfig from '../configs/simple_colored.yaml';
@@ -51,23 +48,8 @@ export const themes: ThemeInfo[] = [
     config: yasnoLegacyYamlConfig,
   },
   {
-    id: 'google_calendar_separated',
-    name: 'Google Calendar Separated',
-    config: googleCalendarSeparatedYamlConfig,
-  },
-  {
     id: 'google_calendar',
     name: 'Google Calendar',
     config: googleCalendarYamlConfig,
-  },
-  {
-    id: 'google_calendar_original',
-    name: 'Google Calendar Original',
-    config: googleCalendarOriginalYamlConfig,
-  },
-  {
-    id: 'google_calendar_original_separated',
-    name: 'Google Calendar Original Separated',
-    config: googleCalendarOriginalSeparatedYamlConfig,
   },
 ];

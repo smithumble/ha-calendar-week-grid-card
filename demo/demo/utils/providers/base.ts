@@ -17,6 +17,8 @@ export abstract class BaseProvider {
   protected defaultConfig?: string;
   protected defaultDataSource?: string;
 
+  protected configOverrides?: Partial<CardConfig>;
+
   abstract readonly name: string;
 
   /**
@@ -74,7 +76,7 @@ export abstract class BaseProvider {
   /**
    * Load a single config by name
    */
-  async loadConfigContent(configName: string): Promise<string | null> {
+  private async loadConfigContent(configName: string): Promise<string | null> {
     // Check cache
     if (this.configCache[configName]) {
       return this.configCache[configName];
@@ -144,6 +146,12 @@ export abstract class BaseProvider {
       const yaml = await import('js-yaml');
       const config = yaml.load(yamlContent) as CardConfig;
       this.transformEntitiesPresets(config);
+      if (
+        this.configOverrides &&
+        Object.keys(this.configOverrides).length > 0
+      ) {
+        return { ...config, ...this.configOverrides };
+      }
       return config;
     } catch (error) {
       console.warn(`Failed to parse config ${configName}:`, error);

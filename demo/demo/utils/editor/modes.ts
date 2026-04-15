@@ -16,7 +16,7 @@ import { getEditorElements } from './ui';
 // EDITOR MODE MANAGEMENT
 // ============================================================================
 
-export type EditorMode = 'yaml' | 'visual';
+export type EditorMode = 'yaml' | 'visual' | 'debug';
 
 let editorMode: EditorMode = 'visual';
 
@@ -36,14 +36,22 @@ export function switchEditorMode(
   onYamlSwitch?: () => void,
 ): void {
   editorMode = mode;
-  const { yamlEditor, visualEditorDiv, yamlBtn, visualBtn } =
-    getEditorElements();
+  const {
+    yamlEditor,
+    visualEditorDiv,
+    yamlBtn,
+    visualBtn,
+    debugEditorDiv,
+    debugBtn,
+  } = getEditorElements();
 
   if (mode === 'yaml') {
     yamlEditor?.style.setProperty('display', 'flex');
     visualEditorDiv?.style.setProperty('display', 'none');
+    debugEditorDiv?.style.setProperty('display', 'none');
     yamlBtn?.classList.add('active');
     visualBtn?.classList.remove('active');
+    debugBtn?.classList.remove('active');
     if (onYamlSwitch) {
       onYamlSwitch();
     }
@@ -51,11 +59,20 @@ export function switchEditorMode(
     if (yamlEditor) {
       void yamlEditor.offsetHeight; // Trigger reflow
     }
-  } else {
+  } else if (mode === 'visual') {
     yamlEditor?.style.setProperty('display', 'none');
     visualEditorDiv?.style.setProperty('display', 'flex');
+    debugEditorDiv?.style.setProperty('display', 'none');
     yamlBtn?.classList.remove('active');
     visualBtn?.classList.add('active');
+    debugBtn?.classList.remove('active');
+  } else if (mode === 'debug') {
+    yamlEditor?.style.setProperty('display', 'none');
+    visualEditorDiv?.style.setProperty('display', 'none');
+    debugEditorDiv?.style.setProperty('display', 'flex');
+    yamlBtn?.classList.remove('active');
+    visualBtn?.classList.remove('active');
+    debugBtn?.classList.add('active');
   }
 }
 

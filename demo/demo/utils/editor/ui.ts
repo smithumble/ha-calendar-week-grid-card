@@ -15,6 +15,16 @@ export interface EditorElements {
   visualContainer: HTMLElement | null;
   yamlBtn: HTMLElement | null;
   visualBtn: HTMLElement | null;
+  debugBtn: HTMLElement | null;
+  debugEditorDiv: HTMLElement | null;
+  /** ha-code-editor (same as visual editor YAML/CSS fields) */
+  debugOverrideCodeEditor: HTMLElement | null;
+  /** ha-switch (same control family as the visual config editor) */
+  debugOverrideEnabledSwitch: HTMLElement | null;
+  debugSecondRowEnabledSwitch: HTMLElement | null;
+  debugSecondRowOverrideEnabledSwitch: HTMLElement | null;
+  debugSecondRowOverrideCodeEditor: HTMLElement | null;
+  debugErrorDiv: HTMLElement | null;
 }
 
 /**
@@ -36,6 +46,24 @@ export function getEditorElements(): EditorElements {
     visualContainer: document.getElementById('visual-editor-container'),
     yamlBtn: document.getElementById('config-editor-mode-yaml'),
     visualBtn: document.getElementById('config-editor-mode-visual'),
+    debugBtn: document.getElementById('config-editor-mode-debug'),
+    debugEditorDiv: document.getElementById('config-editor-debug'),
+    debugOverrideCodeEditor: document.getElementById(
+      'config-editor-debug-override',
+    ),
+    debugOverrideEnabledSwitch: document.getElementById(
+      'config-editor-debug-override-enabled',
+    ),
+    debugSecondRowEnabledSwitch: document.getElementById(
+      'config-editor-debug-second-row-enabled',
+    ),
+    debugSecondRowOverrideEnabledSwitch: document.getElementById(
+      'config-editor-debug-second-row-override-enabled',
+    ),
+    debugSecondRowOverrideCodeEditor: document.getElementById(
+      'config-editor-debug-second-row-override',
+    ),
+    debugErrorDiv: document.getElementById('config-editor-debug-error'),
   };
 }
 

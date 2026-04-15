@@ -27,8 +27,10 @@ body {
 .theme-container {
   flex: 1;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 60px;
   box-sizing: border-box;
   background-color: var(--primary-background-color, rgb(40, 40, 40));
   color: var(--primary-text-color);
@@ -39,7 +41,9 @@ body {
 }
 
 #card-container-light,
-#card-container-dark {
+#card-container-dark,
+#card-container-light-horizontal,
+#card-container-dark-horizontal {
   width: 100%;
   max-width: 440px;
   display: grid;

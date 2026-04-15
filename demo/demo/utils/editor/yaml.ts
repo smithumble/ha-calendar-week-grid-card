@@ -3,9 +3,10 @@
  */
 
 import yaml from 'js-yaml';
-import type { CardConfig } from '../../../../src/types';
 import { getCurrentConfig } from '../state';
 import { getEditorElements } from './ui';
+
+export { parseYamlConfig } from './parse';
 
 /**
  * Update YAML editor with current config
@@ -25,23 +26,5 @@ export function updateYamlEditor(): void {
     textarea.value = configYaml;
   } catch (e) {
     console.error('Failed to serialize config:', e);
-  }
-}
-
-/**
- * Parse YAML text into config object
- * Throws an error if parsing fails
- */
-export function parseYamlConfig(yamlText: string): CardConfig {
-  try {
-    const parsed = yaml.load(yamlText) as CardConfig | undefined;
-    if (!parsed) {
-      throw new Error('YAML parsed to empty or undefined value');
-    }
-    return parsed;
-  } catch (e) {
-    throw new Error(
-      `Invalid YAML: ${e instanceof Error ? e.message : String(e)}`,
-    );
   }
 }

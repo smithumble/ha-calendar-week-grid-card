@@ -5,10 +5,10 @@ import { filterEvents } from './events';
  * Calculate event position and dimensions within a cell
  */
 export interface EventDimensions {
-  topPct: number;
-  heightPct: number;
-  innerTopPct: number;
-  innerHeightPct: number;
+  startPct: number;
+  lengthPct: number;
+  innerStartPct: number;
+  innerLengthPct: number;
 }
 
 export function calculateEventDimensions(
@@ -25,14 +25,14 @@ export function calculateEventDimensions(
   const startRatio = (start - cellStartTime) / duration;
   const endRatio = (end - cellStartTime) / duration;
 
-  const topPct = startRatio * 100;
-  const heightRatio = endRatio - startRatio;
-  const heightPct = heightRatio * 100;
+  const startPct = startRatio * 100;
+  const lengthRatio = endRatio - startRatio;
+  const lengthPct = lengthRatio * 100;
 
-  const innerHeightPct = heightRatio > 0 ? 100 / heightRatio : 100;
-  const innerTopPct = heightRatio > 0 ? -(startRatio / heightRatio) * 100 : 0;
+  const innerLengthPct = lengthRatio > 0 ? 100 / lengthRatio : 100;
+  const innerStartPct = lengthRatio > 0 ? -(startRatio / lengthRatio) * 100 : 0;
 
-  return { topPct, heightPct, innerTopPct, innerHeightPct };
+  return { startPct, lengthPct, innerStartPct, innerLengthPct };
 }
 
 /**
@@ -78,14 +78,14 @@ export function calculateSubBlockPosition(
   block: { start: number; end: number },
   cellStartTime: number,
   duration: number,
-): { topPct: number; heightPct: number } {
+): { startPct: number; lengthPct: number } {
   const startRatio = (block.start - cellStartTime) / duration;
   const endRatio = (block.end - cellStartTime) / duration;
 
-  const topPct = startRatio * 100;
-  const heightPct = (endRatio - startRatio) * 100;
+  const startPct = startRatio * 100;
+  const lengthPct = (endRatio - startRatio) * 100;
 
-  return { topPct, heightPct };
+  return { startPct, lengthPct };
 }
 
 /**

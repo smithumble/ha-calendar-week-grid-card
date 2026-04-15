@@ -8,6 +8,7 @@ import {
   setCurrentConfig,
   originalConfig,
 } from '../state';
+import { applyDebugOverrideToConfig } from './override';
 import {
   getEditorElements,
   showConfigEditorError,
@@ -48,8 +49,9 @@ export function applyEditedConfig(): boolean {
 export function resetConfig(): void {
   if (originalConfig) {
     const resetConfig = JSON.parse(JSON.stringify(originalConfig));
-    setCurrentConfig(resetConfig);
-    renderCards(resetConfig, getCurrentCalendars());
+    const configWithOverride = applyDebugOverrideToConfig(resetConfig);
+    setCurrentConfig(configWithOverride);
+    renderCards(configWithOverride, getCurrentCalendars());
     updateYamlEditor();
     updateVisualEditorInstance();
     hideConfigEditorError();

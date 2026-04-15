@@ -6,6 +6,7 @@ import type { CardConfig } from '../../../src/types';
 import { renderCards } from './browser';
 import type { Calendar } from './data';
 import { loadConfigByName, loadCalendarsForDataSource } from './data';
+import { applyDebugOverrideToConfig } from './editor/override';
 
 let currentProvider: string = '';
 let currentConfig: CardConfig | null = null;
@@ -50,8 +51,9 @@ export async function setConfig(
 ): Promise<boolean> {
   const config = await getConfigByName(provider, configName);
   if (config) {
-    setCurrentConfig(config);
     originalConfig = JSON.parse(JSON.stringify(config));
+    const configWithOverride = applyDebugOverrideToConfig(config);
+    setCurrentConfig(configWithOverride);
     return true;
   }
   return false;
