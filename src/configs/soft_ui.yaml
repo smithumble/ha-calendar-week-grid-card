@@ -163,7 +163,7 @@ css: |
   }
 
   .cell-slot {
-    padding: max(2px, 8cqi);
+    padding: max(2px, min(8cqi, 8cqb));
   }
 
   .cell {

@@ -154,7 +154,7 @@ entities_presets:
         description: Календар імовірних відключень з інтеграції ha-yasno-outages
 css: |
   .event-block {
-    border-radius: min(4px, 20cqi);
+    border-radius: min(4px, min(20cqi, 20cqb));
     border: 1px var(--border-style, dotted) rgb(from var(--primary-text-color) r g b / var(--border-opacity, 1.0));
   }
 

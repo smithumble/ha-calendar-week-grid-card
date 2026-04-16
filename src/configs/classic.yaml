@@ -156,7 +156,7 @@ css: |
   }
 
   .event-block {
-    border-radius: min(4px, 20cqi);
+    border-radius: min(4px, min(20cqi, 20cqb));
   }
 
   .event-icon {
