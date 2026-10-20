@@ -169,6 +169,17 @@ export class CalendarWeekGridCardEditor extends LitElement {
   // INPUT/EVENT HANDLERS
   //-----------------------------------------------------------------------------
 
+  private _eventControl(
+    event: Event,
+  ): HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null {
+    const control = (event.currentTarget ?? event.target) as
+      | HTMLInputElement
+      | HTMLSelectElement
+      | HTMLTextAreaElement
+      | null;
+    return control;
+  }
+
   private _readControlValue(
     target: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
   ): string | boolean | number | null {
@@ -313,16 +324,13 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   /**
-   * Debounced handler for keyup events
+   * Debounced handler for input events
    * Applies changes after user stops typing for 500ms
    */
   _valueChangedDebounced(event: Event): void {
-    if (!event.target) return;
+    const target = this._eventControl(event);
+    if (!target) return;
 
-    const target = event.target as
-      | HTMLInputElement
-      | HTMLSelectElement
-      | HTMLTextAreaElement;
     const name = target.getAttribute('name');
 
     if (!name) return;
@@ -350,15 +358,10 @@ export class CalendarWeekGridCardEditor extends LitElement {
   }
 
   _valueChanged(event: Event): void {
-    if (!event.target) return;
+    const target = this._eventControl(event);
+    if (!target) return;
 
     event.stopPropagation();
-
-    const target = event.target as
-      | HTMLInputElement
-      | HTMLSelectElement
-      | HTMLTextAreaElement;
-
     this._processValueChange(target);
   }
 
@@ -380,7 +383,12 @@ export class CalendarWeekGridCardEditor extends LitElement {
       return;
     }
 
-    if (detailValue === undefined) {
+    if (
+      detailValue === undefined ||
+      detailValue === null ||
+      String(detailValue) === '' ||
+      String(detailValue) === 'null'
+    ) {
       this.setConfigValue(name, undefined);
       return;
     }
@@ -727,14 +735,14 @@ export class CalendarWeekGridCardEditor extends LitElement {
     }
 
     return html`
-      <ha-textfield
+      <ha-input
         name="${name}"
         label="${label ?? name}"
         type="${type ?? 'text'}"
         .value="${value}"
         @change="${this._valueChanged}"
-        @keyup="${this._valueChangedDebounced}"
-      ></ha-textfield>
+        @input="${this._valueChangedDebounced}"
+      ></ha-input>
     `;
   }
 
@@ -783,11 +791,11 @@ export class CalendarWeekGridCardEditor extends LitElement {
     defaultValue?: string,
   ): TemplateResult {
     const configValue = this.getConfigValue(name, defaultValue);
-    const value: string | null =
+    const value: string =
       configValue === undefined ||
       configValue === null ||
-      String(configValue) === ''
-        ? null
+      String(configValue) === 'null'
+        ? ''
         : String(configValue);
 
     return html`
