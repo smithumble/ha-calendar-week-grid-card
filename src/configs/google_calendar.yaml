@@ -158,8 +158,9 @@ entities_presets:
           - Planned Outages
     overrides:
       orientation: 'horizontal'
-      start_hour: 10
-      end_hour: 24
+      trim_empty_hours: true
+      trim_empty_hours_end_limit: 18
+      trim_empty_hours_start_limit: 10
       days: 2
       week_start: 'today'
     calendars:
@@ -203,8 +204,9 @@ entities_presets:
           - Заплановані відключення
     overrides:
       orientation: 'horizontal'
-      start_hour: 10
-      end_hour: 24
+      trim_empty_hours: true
+      trim_empty_hours_end_limit: 18
+      trim_empty_hours_start_limit: 10
       days: 2
       week_start: 'today'
     calendars:
