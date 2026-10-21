@@ -719,7 +719,7 @@ function mockHaExpansionPanel() {
               .top {
                 display: flex;
                 align-items: center;
-                padding: 0 8px;
+                padding: var(--expansion-panel-summary-padding, 0 8px);
                 min-height: 48px;
                 cursor: pointer;
                 user-select: none;
@@ -736,7 +736,7 @@ function mockHaExpansionPanel() {
                 border-bottom-right-radius: 0px;
               }
               .content {
-                padding: 0 12px;
+                padding: var(--expansion-panel-content-padding, 0 8px);
                 display: ${contentDisplay};
                 color: var(--primary-text-color);
               }
