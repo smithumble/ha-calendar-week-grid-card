@@ -544,7 +544,7 @@ entities:
       - Planned Outages
 css: |
   .event-block {
-    border-radius: min(4px, 20cqi);
+    border-radius: min(4px, min(20cqi, 20cqb));
     border: 1px var(--border-style, dotted) rgb(from var(--primary-text-color) r g b / var(--border-opacity, 1.0));
   }
 
@@ -661,7 +661,7 @@ entities:
       - Planned Outages
 css: |
   .event-block {
-    border-radius: min(4px, 20cqi);
+    border-radius: min(4px, min(20cqi, 20cqb));
     border: 1px var(--border-style, dotted) rgb(from var(--color, var(--primary-text-color)) r g b / var(--border-opacity, 1.0));
   }
 
@@ -770,7 +770,7 @@ css: |
   }
 
   .event-block {
-    border-radius: min(4px, 20cqi);
+    border-radius: min(4px, min(20cqi, 20cqb));
   }
 
   .event-icon {
@@ -888,7 +888,7 @@ css: |
 
   .cell {
     height: 28px;
-    border-radius: min(6px, 20cqi);
+    border-radius: min(6px, min(20cqi, 20cqb));
   }
 
   .event-icon {
@@ -1006,7 +1006,7 @@ css: |
   }
 
   .cell-slot {
-    padding: max(2px, 8cqi);
+    padding: max(2px, min(8cqi, 8cqb));
   }
 
   .cell {
@@ -1267,8 +1267,8 @@ css: |
     --grid-event-text-color: var(--card-background-color, #fff);
     --grid-accent-color: var(--primary-color, #0b57d0);
     --grid-accent-text-color: var(--card-background-color, #fff);
-    --event-gap: min(3px, 8cqi);
-    --event-border-radius: min(6px, 20cqi);
+    --event-gap: min(3px, min(8cqi, 8cqb));
+    --event-border-radius: min(6px, min(20cqi, 20cqb));
   }
 
   ha-card.theme-dark {

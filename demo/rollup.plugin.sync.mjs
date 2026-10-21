@@ -127,10 +127,14 @@ export const sync = (options) => {
           this.addWatchFile(rebuildTriggerPath);
         }
         runSync({ targetList: buildStartTargets, verbose });
-
-        if (isWatchMode && recurringTargets.length > 0 && !pollTimer) {
+        if (isWatchMode && recurringTargets.length > 0) {
+          // Keep the poller aligned with source changes already handled by Rollup
+          // so it only triggers rebuilds for out-of-band file updates.
           previousRecurringSourcesSignature =
             getRecurringSourcesSignature(recurringTargets);
+        }
+
+        if (isWatchMode && recurringTargets.length > 0 && !pollTimer) {
           pollTimer = setInterval(() => {
             const nextRecurringSourcesSignature =
               getRecurringSourcesSignature(recurringTargets);

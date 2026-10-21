@@ -8,7 +8,7 @@ import type { HomeAssistant } from '../../../../src/types';
  * Mocks Home Assistant custom elements needed by the visual editor
  */
 export function mockHaEditorComponents(): void {
-  mockHaTextField();
+  mockHaInput();
   mockHaSelect();
   mockHaSwitch();
   mockHaFormfield();
@@ -20,10 +20,10 @@ export function mockHaEditorComponents(): void {
   mockHaIconButton();
 }
 
-function mockHaTextField() {
-  if (!customElements.get('ha-textfield')) {
+function mockHaInput() {
+  if (!customElements.get('ha-input')) {
     customElements.define(
-      'ha-textfield',
+      'ha-input',
       class extends HTMLElement {
         private input: HTMLInputElement;
         constructor() {
@@ -83,13 +83,13 @@ function mockHaTextField() {
             this.input.addEventListener('input', () => {
               this._value = this.input.value;
               this.dispatchEvent(
-                new CustomEvent('change', { bubbles: true, composed: true }),
+                new Event('input', { bubbles: true, composed: true }),
               );
             });
-            this.input.addEventListener('keyup', () => {
+            this.input.addEventListener('change', () => {
               this._value = this.input.value;
               this.dispatchEvent(
-                new CustomEvent('keyup', { bubbles: true, composed: true }),
+                new Event('change', { bubbles: true, composed: true }),
               );
             });
           }

@@ -2,7 +2,7 @@
 Editor Styles
 ============================================================================ */
 
-ha-textfield,
+ha-input,
 ha-select,
 ha-formfield,
 ha-entity-picker,
@@ -136,14 +136,11 @@ ha-formfield {
 
 .criteria-array-section {
   margin: 16px 0;
-  background-color: var(--card-background-color, rgba(0, 0, 0, 0.02));
-  border-radius: 4px;
 }
 
 .criteria-item {
   margin: 12px 0;
   padding: 12px;
-  background-color: var(--card-background-color, rgba(0, 0, 0, 0.05));
   border-radius: var(--ha-card-border-radius, var(--ha-border-radius-lg));
   border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.1));
 }

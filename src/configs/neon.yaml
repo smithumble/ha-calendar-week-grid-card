@@ -165,7 +165,7 @@ css: |
 
   .cell {
     height: 28px;
-    border-radius: min(6px, 20cqi);
+    border-radius: min(6px, min(20cqi, 20cqb));
   }
 
   .event-icon {

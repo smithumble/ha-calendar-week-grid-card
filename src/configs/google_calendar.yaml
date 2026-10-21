@@ -158,8 +158,9 @@ entities_presets:
           - Planned Outages
     overrides:
       orientation: 'horizontal'
-      start_hour: 10
-      end_hour: 24
+      trim_empty_hours: true
+      trim_empty_hours_end_limit: 18
+      trim_empty_hours_start_limit: 10
       days: 2
       week_start: 'today'
     calendars:
@@ -203,8 +204,9 @@ entities_presets:
           - Заплановані відключення
     overrides:
       orientation: 'horizontal'
-      start_hour: 10
-      end_hour: 24
+      trim_empty_hours: true
+      trim_empty_hours_end_limit: 18
+      trim_empty_hours_start_limit: 10
       days: 2
       week_start: 'today'
     calendars:
@@ -220,8 +222,8 @@ css: |
     --grid-event-text-color: var(--card-background-color, #fff);
     --grid-accent-color: var(--primary-color, #0b57d0);
     --grid-accent-text-color: var(--card-background-color, #fff);
-    --event-gap: min(3px, 8cqi);
-    --event-border-radius: min(6px, 20cqi);
+    --event-gap: min(3px, min(8cqi, 8cqb));
+    --event-border-radius: min(6px, min(20cqi, 20cqb));
   }
 
   ha-card.theme-dark {
