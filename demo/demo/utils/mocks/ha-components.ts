@@ -18,6 +18,7 @@ export function mockHaEditorComponents(): void {
   mockHaCodeEditor();
   mockHaButton();
   mockHaIconButton();
+  mockHaForm();
 }
 
 function mockHaInput() {
@@ -712,7 +713,7 @@ function mockHaExpansionPanel() {
                 display: block;
                 border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
                 border-radius: var(--ha-card-border-radius, var(--ha-border-radius-lg), 4px);
-                margin: 8px 0;
+                margin: 0;
                 background-color: var(--card-background-color, var(--primary-background-color));
               }
               .top {
@@ -763,6 +764,13 @@ function mockHaExpansionPanel() {
             newHeader.addEventListener('click', () => {
               this._expanded = !this._expanded;
               this.updateRender();
+              this.dispatchEvent(
+                new CustomEvent('expanded-changed', {
+                  detail: { expanded: this._expanded },
+                  bubbles: true,
+                  composed: true,
+                }),
+              );
             });
           }
 
@@ -1045,4 +1053,217 @@ function mockHaIconButton() {
       },
     );
   }
+}
+
+interface MockFormSchema {
+  name: string;
+  label?: string;
+  helper?: string;
+  required?: boolean;
+  selector: Record<string, Record<string, unknown> | undefined>;
+}
+
+type MockField = HTMLElement & {
+  value?: unknown;
+  checked?: boolean;
+  hass?: unknown;
+  options?: unknown;
+  clearable?: boolean;
+};
+
+/**
+ * Minimal ha-form: renders the selectors used by the editor with the other
+ * mocks and fires `value-changed` with the whole data object, like HA does.
+ */
+function mockHaForm() {
+  if (customElements.get('ha-form')) return;
+  customElements.define(
+    'ha-form',
+    class extends HTMLElement {
+      private _data: Record<string, unknown> = {};
+      private _schema: MockFormSchema[] = [];
+      private _hass: unknown = null;
+      private _signature = '';
+      private _fields = new Map<string, MockField>();
+      computeLabel?: (schema: MockFormSchema) => string;
+      computeHelper?: (schema: MockFormSchema) => string | undefined;
+
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+      }
+
+      connectedCallback() {
+        this._build();
+      }
+
+      set hass(value: unknown) {
+        this._hass = value;
+        this._fields.forEach((field) => {
+          if ('hass' in field) field.hass = value;
+        });
+      }
+      get hass() {
+        return this._hass;
+      }
+
+      set data(value: Record<string, unknown>) {
+        this._data = value || {};
+        this._sync();
+      }
+      get data() {
+        return this._data;
+      }
+
+      set schema(value: MockFormSchema[]) {
+        this._schema = value || [];
+        this._build();
+      }
+      get schema() {
+        return this._schema;
+      }
+
+      private _emit(name: string, value: unknown) {
+        this.dispatchEvent(
+          new CustomEvent('value-changed', {
+            detail: { value: { ...this._data, [name]: value } },
+            bubbles: true,
+            composed: true,
+          }),
+        );
+      }
+
+      private _createField(item: MockFormSchema): HTMLElement {
+        const label = this.computeLabel?.(item) ?? item.label ?? item.name;
+        const type = Object.keys(item.selector || {})[0];
+        const options = (item.selector?.[type] || {}) as Record<
+          string,
+          unknown
+        >;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'field';
+        let field: MockField;
+
+        // Inner mock events must not leak out of the form
+        const handle = (eventName: string, read: (e: Event) => unknown) => {
+          wrapper.addEventListener(eventName, (event) => {
+            event.stopPropagation();
+            if (event.isTrusted) return;
+            this._emit(item.name, read(event));
+          });
+        };
+        ['input', 'change', 'selected', 'value-changed'].forEach((name) =>
+          wrapper.addEventListener(name, (e) => e.stopPropagation()),
+        );
+
+        switch (type) {
+          case 'boolean': {
+            const formfield = document.createElement('ha-formfield');
+            formfield.setAttribute('label', label);
+            field = document.createElement('ha-switch') as MockField;
+            formfield.appendChild(field);
+            wrapper.appendChild(formfield);
+            handle('change', () => field.checked);
+            break;
+          }
+          case 'select': {
+            field = document.createElement('ha-select') as MockField;
+            field.setAttribute('label', label);
+            field.clearable = !item.required;
+            field.options = options.options;
+            wrapper.appendChild(field);
+            handle(
+              'selected',
+              (e) => (e as CustomEvent<{ value?: string }>).detail?.value,
+            );
+            break;
+          }
+          case 'entity':
+          case 'icon': {
+            field = document.createElement(
+              type === 'entity' ? 'ha-entity-picker' : 'ha-icon-picker',
+            ) as MockField;
+            field.setAttribute('label', label);
+            if (typeof options.placeholder === 'string') {
+              field.setAttribute('placeholder', options.placeholder);
+            }
+            const domain = (options.filter as { domain?: string } | undefined)
+              ?.domain;
+            if (domain) field.setAttribute('includeDomains', domain);
+            field.hass = this._hass;
+            wrapper.appendChild(field);
+            handle(
+              'value-changed',
+              (e) => (e as CustomEvent<{ value?: string }>).detail?.value,
+            );
+            break;
+          }
+          default: {
+            const isNumber = type === 'number';
+            field = document.createElement('ha-input') as MockField;
+            field.setAttribute('label', label);
+            field.setAttribute('type', isNumber ? 'number' : 'text');
+            wrapper.appendChild(field);
+            handle('input', () => {
+              const raw = String(field.value ?? '');
+              if (!isNumber) return raw;
+              return raw === '' ? undefined : Number(raw);
+            });
+          }
+        }
+
+        const helper = this.computeHelper?.(item) ?? item.helper;
+        if (helper) {
+          const helperEl = document.createElement('div');
+          helperEl.className = 'helper';
+          helperEl.textContent = helper;
+          wrapper.appendChild(helperEl);
+        }
+
+        this._fields.set(item.name, field);
+        return wrapper;
+      }
+
+      private _build() {
+        if (!this.shadowRoot || !this.isConnected) return;
+        const signature = JSON.stringify(this._schema);
+        if (signature === this._signature) {
+          this._sync();
+          return;
+        }
+        this._signature = signature;
+        this._fields.clear();
+        this.shadowRoot.innerHTML = `
+          <style>
+            :host { display: block; }
+            .root { display: flex; flex-direction: column; gap: 16px; }
+            .helper {
+              margin-top: 4px;
+              font-size: 12px;
+              color: var(--secondary-text-color);
+            }
+          </style>
+          <div class="root"></div>
+        `;
+        const root = this.shadowRoot.querySelector('.root')!;
+        this._schema.forEach((item) =>
+          root.appendChild(this._createField(item)),
+        );
+        this._sync();
+      }
+
+      private _sync() {
+        this._fields.forEach((field, name) => {
+          if (this.shadowRoot?.activeElement === field) return;
+          const value = this._data[name];
+          if (field.tagName === 'HA-SWITCH') {
+            field.checked = Boolean(value);
+          } else {
+            field.value =
+              value === undefined || value === null ? '' : String(value);
+          }
+        });
+      }
+    },
+  );
 }

@@ -1,188 +1,289 @@
 /* ============================================================================
-Editor Styles
-============================================================================ */
+   Editor Styles (Bubble Card inspired)
+   ============================================================================ */
 
-ha-input,
-ha-select,
-ha-formfield,
-ha-entity-picker,
-ha-icon-picker {
+:host {
   display: block;
-  margin: 8px 0;
+  /* One spacing scale for every box: panels, sections, items, info boxes */
+  --editor-space: 12px;
+  --editor-inset: 12px;
+  /* ha-form puts 24px between its fields; separate stacked forms the same */
+  --editor-field-space: 24px;
+  --editor-border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+  --editor-radius: var(--ha-card-border-radius, var(--ha-border-radius-lg));
 }
 
 .card-config {
   display: flex;
   flex-direction: column;
+  gap: var(--editor-space);
   padding: 4px 0;
 }
 
-.helper-text {
-  color: var(--secondary-text-color);
-  font-size: 10px;
-  line-height: 1.1;
-  margin-top: -4px;
-  margin-bottom: 8px;
-}
-
-.helper-text.warning {
-  margin-top: 8px;
-  margin-bottom: 12px;
-  padding: 10px 12px;
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--primary-text-color);
-  background-color: var(--warning-color, rgba(255, 152, 0, 0.14));
-  border: 1px solid
-    color-mix(in srgb, var(--warning-color, #ff9800) 60%, transparent);
-  border-left: 4px solid var(--warning-color, #ff9800);
-  border-radius: 6px;
-}
-
-.helper-text.warning .warning-title {
+ha-form {
   display: block;
-  margin-bottom: 8px;
 }
 
-h3 {
-  margin: 24px 0 6px 0;
-  font-size: 14px;
-}
-
-h3:first-of-type {
-  margin-top: 8px;
-}
-
-h4 {
-  margin: 24px 0 6px 0;
-}
-
-h5 {
-  margin: 2px 0 0 0;
-}
-
-.panel-content {
-  padding: 8px 0 12px 0;
-}
+/* ---------------------------------------------------------------------------
+   Expansion panels
+   --------------------------------------------------------------------------- */
 
 ha-expansion-panel {
-  margin: 8px 0;
-  border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
-  border-radius: var(--ha-card-border-radius, var(--ha-border-radius-lg));
-}
-
-ha-expansion-panel .panel-content {
-  padding: 8px 0 0 0;
-}
-
-ha-button {
-  margin: 8px 0;
-}
-
-ha-formfield {
-  display: flex;
-  align-items: center;
-  padding: 8px 0;
-}
-
-.editor-section {
-  margin: 16px 0;
-}
-
-.button-section {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.button-group {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin: 8px 0;
-}
-
-.preset-form {
-  margin: 16px 0;
-  padding: 0 16px;
-  background-color: var(--card-background-color, rgba(0, 0, 0, 0.02));
-  border-radius: var(--ha-card-border-radius, var(--ha-border-radius-lg));
-  border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
-}
-
-.preset-form .helper-text {
-  margin-top: 8px;
-}
-
-.preset-form .button-group {
-  margin-top: 16px;
-}
-
-.preset-form ha-entity-picker {
   display: block;
-  margin: 8px 0;
+  --expansion-panel-content-padding: 0;
+  margin: 0;
+  border: var(--editor-border);
+  border-radius: var(--editor-radius);
 }
 
-.preset-form-helper {
-  margin-top: 8px;
+ha-expansion-panel .content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--editor-space);
+  padding: var(--editor-inset);
+  overflow-x: visible;
 }
 
-.format-fields {
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--primary-text-color);
+}
+
+.panel-header ha-icon {
+  flex-shrink: 0;
+  margin: 0;
+  color: var(--secondary-text-color);
+}
+
+/* ---------------------------------------------------------------------------
+   Sections
+   --------------------------------------------------------------------------- */
+
+.section {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin: 8px 0;
+  padding: var(--editor-inset);
+  border: var(--editor-border);
+  border-radius: var(--editor-radius);
 }
 
-.criteria-array-section {
-  margin: 16px 0;
+/* Stacked forms / actions inside a box keep ha-form's own field spacing */
+.section > ha-form + ha-form,
+.section > ha-form + .element-actions,
+.section > p + ha-form,
+.preset-form > ha-form + ha-form,
+.preset-form > ha-form + .element-actions {
+  margin-top: calc(var(--editor-field-space) - 8px);
 }
 
-.criteria-item {
-  margin: 12px 0;
-  padding: 12px;
-  border-radius: var(--ha-card-border-radius, var(--ha-border-radius-lg));
-  border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.1));
-}
-
-.criteria-item-header {
+.section-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
-}
-
-.criteria-item-header ha-select {
-  flex: 1;
   margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-text-color);
 }
 
-.criteria-item-header ha-button {
+.section-title ha-icon {
+  --mdc-icon-size: 18px;
+  color: var(--primary-color);
+}
+
+.section-description {
   margin: 0;
-  min-width: auto;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--secondary-text-color);
 }
 
-.criteria-object-fields {
+/* ---------------------------------------------------------------------------
+   Info / warning boxes
+   --------------------------------------------------------------------------- */
+
+.editor-info {
+  position: relative;
+  padding: var(--editor-inset);
+  border-radius: var(--editor-radius);
+  overflow: hidden;
+}
+
+.editor-info::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--info-color, #039be5);
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.editor-info.warning::before {
+  background-color: var(--warning-color, #ff9800);
+  opacity: 0.15;
+}
+
+.editor-info-title {
+  position: relative;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-text-color);
+}
+
+.editor-info-title::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: calc(-1 * var(--editor-inset));
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--primary-color);
+}
+
+.editor-info.warning .editor-info-title::before {
+  background: var(--warning-color, #ff9800);
+}
+
+.editor-info-title ha-icon {
+  --mdc-icon-size: 18px;
+  flex-shrink: 0;
+  color: var(--info-color, #039be5);
+}
+
+.editor-info.warning .editor-info-title ha-icon {
+  color: var(--warning-color, #ff9800);
+}
+
+.editor-info-content {
+  position: relative;
+  padding: 0 0 0 26px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--primary-text-color);
+}
+
+.editor-info-content p {
+  margin: 4px 0 0 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Buttons
+   --------------------------------------------------------------------------- */
+
+.element-actions {
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
-.expansion-panel-header {
-  width: 100%;
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 6px 14px 6px 10px;
+  border: none;
+  border-radius: 32px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--primary-text-color);
+  background: color-mix(in srgb, var(--primary-color) 35%, transparent);
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
+
+.icon-button ha-icon {
+  --mdc-icon-size: 18px;
+  display: flex;
+}
+
+.icon-button:hover {
+  background: color-mix(in srgb, var(--primary-color) 55%, transparent);
+  transform: translateY(-1px);
+}
+
+.icon-button:active {
+  background: color-mix(in srgb, var(--primary-color) 75%, transparent);
+  transform: none;
+}
+
+.icon-button:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.icon-button.secondary {
+  background: color-mix(in srgb, var(--primary-text-color) 10%, transparent);
+}
+
+.icon-button.secondary:hover {
+  background: color-mix(in srgb, var(--primary-text-color) 18%, transparent);
+}
+
+.icon-button.danger:hover {
+  background: color-mix(in srgb, var(--error-color, #db4437) 40%, transparent);
+}
+
+.icon-button.round {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--secondary-text-color);
+}
+
+.icon-button.round:hover {
+  background: color-mix(in srgb, var(--primary-text-color) 10%, transparent);
+  color: var(--primary-text-color);
+}
+
+.icon-button.round.danger:hover {
+  background: color-mix(in srgb, var(--error-color, #db4437) 18%, transparent);
+  color: var(--error-color, #db4437);
+}
+
+.icon-button[disabled] {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Calendar entity panels
+   --------------------------------------------------------------------------- */
 
 .entity-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
   min-width: 0;
-  max-width: 100%;
-  flex: 1;
-  padding: 8px;
+  padding: 8px 0;
   box-sizing: border-box;
-  overflow: hidden;
+}
+
+.entity-header-icon {
+  flex-shrink: 0;
+  color: var(--secondary-text-color);
 }
 
 .entity-header-content {
@@ -191,46 +292,30 @@ ha-formfield {
   gap: 2px;
   flex: 1;
   min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
 }
 
-.entity-header-primary {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.entity-header-name {
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 1.2;
-  color: var(--primary-text-color);
+.entity-header-name,
+.entity-header-entity,
+.entity-header-device {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.entity-header-name {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--primary-text-color);
 }
 
 .entity-header-entity {
   font-size: 12px;
   line-height: 1.2;
   color: var(--secondary-text-color);
-  opacity: 0.8;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.entity-header-secondary {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 2px;
-}
-
-.entity-header-id {
+.entity-header-device {
   font-size: 11px;
   line-height: 1.2;
   color: var(--secondary-text-color);
@@ -244,35 +329,96 @@ ha-formfield {
   flex-shrink: 0;
 }
 
-.entity-header-buttons ha-icon-button {
-  --mdc-icon-button-size: 28px;
-  --mdc-icon-size: 16px;
+/* ---------------------------------------------------------------------------
+   Criteria (hide / under / over)
+   --------------------------------------------------------------------------- */
+
+.criteria-array-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.criteria-array-section > .criteria-item:first-of-type,
+.criteria-array-section > .element-actions {
+  margin-top: 4px;
+}
+
+.criteria-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
-  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--primary-text-color);
-  opacity: 0.7;
-  transition: opacity 0.2s;
-  pointer-events: auto;
-  display: inline-flex;
+}
+
+.badge {
+  min-width: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  color: var(--text-primary-color, #fff);
+  background: var(--primary-color);
+}
+
+.criteria-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--editor-field-space);
+  padding: var(--editor-inset);
+  border: var(--editor-border);
+  border-radius: var(--editor-radius);
+}
+
+.criteria-item-header {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  vertical-align: middle;
-  line-height: 1;
+  gap: 8px;
 }
 
-.entity-header-buttons ha-icon-button ha-icon {
-  display: inline-flex;
+.criteria-item-header ha-form {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Preset form
+   --------------------------------------------------------------------------- */
+
+.preset-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--editor-inset);
+  border: var(--editor-border);
+  border-style: dashed;
+  border-radius: var(--editor-radius);
+}
+
+.preset-title {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  vertical-align: middle;
-  line-height: 1;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-text-color);
 }
 
-.entity-header-buttons ha-icon-button:hover {
-  opacity: 1;
+.preset-title ha-icon {
+  --mdc-icon-size: 18px;
+  color: var(--primary-color);
 }
 
-.entity-header-buttons ha-icon-button[disabled] {
-  opacity: 0.3;
-  cursor: not-allowed;
+/* ---------------------------------------------------------------------------
+   Code editor
+   --------------------------------------------------------------------------- */
+
+ha-code-editor {
+  display: block;
+  overflow: auto;
 }

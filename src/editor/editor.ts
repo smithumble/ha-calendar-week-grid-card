@@ -1,10 +1,22 @@
 /**
  * Visual editor for Calendar Week Grid Card
- * Provides a visual configuration interface using native Home Assistant elements
+ *
+ * Built the way Bubble Card builds its editor:
+ * - every field is a native Home Assistant `ha-form` selector (text, number,
+ *   boolean, select, icon, entity), so the editor follows HA frontend
+ *   upgrades instead of depending on the internals of individual components;
+ * - sections are outlined `ha-expansion-panel`s with an icon header, whose
+ *   open state is remembered across re-renders and whose heavy content is
+ *   only rendered once the panel has been opened (lazy panels);
+ * - values the form only displayed as defaults are never written back, and
+ *   cleared fields are removed from the config instead of being stored empty;
+ * - `hass` updates are throttled so state changes elsewhere in HA don't
+ *   re-render the editor on every tick;
+ * - info/warning boxes and pill buttons are plain styled elements.
  */
 
-import { LitElement, TemplateResult, html, unsafeCSS } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { LitElement, TemplateResult, html, nothing, unsafeCSS } from 'lit';
+import { state } from 'lit/decorators.js';
 import type {
   HomeAssistant,
   CardConfig,
@@ -20,16 +32,172 @@ import { ConfigManager } from './utils/config';
 import type { FieldHandlerContext } from './utils/field';
 import {
   handleTimeFormatTypeChange,
-  handleDateFormatFieldChange,
-  handleTimeFormatObjectFieldChange,
   handleCriteriaTypeChange,
-  handleCriteriaFieldChange,
 } from './utils/field';
+import {
+  type FormData,
+  type FormSchemaItem,
+  type SelectOption,
+  applyChanges,
+  booleanField,
+  computeHelper,
+  computeLabel,
+  entityField,
+  iconField,
+  isEmptyValue,
+  isPlainObject,
+  numberField,
+  resolveFormChanges,
+  selectField,
+  textField,
+} from './utils/form';
 import {
   ThemeManager,
   getEffectiveCardCss,
   normalizeCssForCompare,
 } from './utils/theme';
+
+//-----------------------------------------------------------------------------
+// STATIC OPTION LISTS
+//-----------------------------------------------------------------------------
+
+const ORIENTATION_OPTIONS: SelectOption[] = [
+  { value: 'vertical', label: 'Vertical' },
+  { value: 'horizontal', label: 'Horizontal' },
+];
+
+const WEEK_START_OPTIONS: SelectOption[] = [
+  { value: 'today', label: 'Today' },
+  { value: 'sunday', label: 'Sunday' },
+  { value: 'monday', label: 'Monday' },
+  { value: 'tuesday', label: 'Tuesday' },
+  { value: 'wednesday', label: 'Wednesday' },
+  { value: 'thursday', label: 'Thursday' },
+  { value: 'friday', label: 'Friday' },
+  { value: 'saturday', label: 'Saturday' },
+];
+
+const ALL_DAY_OPTIONS: SelectOption[] = [
+  { value: 'grid', label: 'Grid' },
+  { value: 'row', label: 'Row' },
+  { value: 'both', label: 'Both' },
+];
+
+const ICONS_CONTAINER_OPTIONS: SelectOption[] = [
+  { value: 'event', label: 'Event' },
+  { value: 'cell', label: 'Cell' },
+];
+
+const ICONS_MODE_OPTIONS: SelectOption[] = [
+  { value: 'top', label: 'Top' },
+  { value: 'all', label: 'All' },
+];
+
+const DATE_FORMAT_SCHEMA: FormSchemaItem[] = [
+  selectField('weekday', 'Weekday', [
+    { value: 'narrow', label: 'Narrow (M, T, W)' },
+    { value: 'short', label: 'Short (Mon, Tue, Wed)' },
+    { value: 'long', label: 'Long (Monday, Tuesday)' },
+  ]),
+  selectField('day', 'Day', [
+    { value: 'numeric', label: 'Numeric (15)' },
+    { value: '2-digit', label: '2-digit (05)' },
+  ]),
+  selectField('month', 'Month', [
+    { value: 'numeric', label: 'Numeric (3)' },
+    { value: '2-digit', label: '2-digit (03)' },
+    { value: 'narrow', label: 'Narrow (M)' },
+    { value: 'short', label: 'Short (Mar)' },
+    { value: 'long', label: 'Long (March)' },
+  ]),
+  selectField('year', 'Year', [
+    { value: 'numeric', label: 'Numeric (2024)' },
+    { value: '2-digit', label: '2-digit (24)' },
+  ]),
+];
+
+const TIME_FORMAT_OBJECT_SCHEMA: FormSchemaItem[] = [
+  selectField('hour', 'Hour', [
+    { value: 'numeric', label: 'Numeric (9)' },
+    { value: '2-digit', label: '2-digit (09)' },
+  ]),
+  selectField('minute', 'Minute', [
+    { value: 'numeric', label: 'Numeric (5)' },
+    { value: '2-digit', label: '2-digit (05)' },
+  ]),
+  selectField('second', 'Second', [
+    { value: 'numeric', label: 'Numeric (30)' },
+    { value: '2-digit', label: '2-digit (30)' },
+  ]),
+  selectField('hour12', '12/24 Hour Format', [
+    { value: 'true', label: '12-hour (AM/PM)' },
+    { value: 'false', label: '24-hour' },
+  ]),
+];
+
+const TIME_FORMAT_TYPE_SCHEMA: FormSchemaItem[] = [
+  selectField(
+    'time_format_type',
+    'Format Type',
+    [
+      { value: 'string', label: 'String Pattern (Legacy)' },
+      { value: 'object', label: 'Structured Options (Recommended)' },
+    ],
+    { required: true },
+  ),
+];
+
+const CRITERIA_TYPE_SCHEMA: FormSchemaItem[] = [
+  selectField(
+    '__type',
+    'Type',
+    [
+      { value: 'string', label: 'Simple (Name)' },
+      { value: 'object', label: 'Detailed (Criteria)' },
+    ],
+    { required: true },
+  ),
+];
+
+const CRITERIA_NAME_SCHEMA: FormSchemaItem[] = [
+  textField('name', 'Event Name', 'Match events by entity name'),
+];
+
+const CRITERIA_OBJECT_SCHEMA: FormSchemaItem[] = [
+  textField('name', 'Name'),
+  entityField('entity', 'Entity', { domain: 'calendar' }),
+  textField(
+    'filter',
+    'Filter',
+    'Match events by any combination of criteria (all must match)',
+  ),
+];
+
+const ENTITY_SETTINGS_SCHEMA: FormSchemaItem[] = [
+  textField('name', 'Name', 'Name for this calendar entity'),
+  textField('filter', 'Filter', 'Filter events by text in summary'),
+  iconField('icon', 'Icon', 'Icon for events from this entity'),
+];
+
+type EventConfigPath = 'event' | 'blank_event' | 'blank_all_day_event';
+
+interface FormOptions {
+  /** Values displayed when the config does not set them (never written back). */
+  defaults?: FormData;
+  /** Data for UI-only forms that don't map onto a config object. */
+  data?: FormData;
+  /** Custom change handler; default writes the changes to `path`. */
+  onChange?: (changes: FormData) => void;
+}
+
+interface PanelOptions {
+  expanded?: boolean;
+  /** Render content only once the panel has been opened. */
+  lazy?: boolean;
+  /** Custom header (must carry slot="header"). */
+  header?: TemplateResult;
+  className?: string;
+}
 
 /**
  * Calendar Week Grid Card Editor component
@@ -43,20 +211,54 @@ export class CalendarWeekGridCardEditor extends LitElement {
     return unsafeCSS(styles);
   }
 
-  @property({ attribute: false }) hass?: HomeAssistant;
   @state() private _config?: CardConfig;
   @state() private _timeFormatType: 'string' | 'object' = 'object';
-  @state() private _expandedEntityIndex: number | null = null;
   @state() private _selectedTheme: string = 'custom';
   @state() private _showPresetForm: boolean = false;
   @state() private _selectedPresetName: string = '';
   @state() private _presetCalendarValues: Record<string, string> = {};
-  private _debounceTimeouts: Map<string, ReturnType<typeof setTimeout>> =
-    new Map();
-  private _pendingValues: Map<
-    string,
-    string | boolean | number | object | null
-  > = new Map();
+  @state() private _expandedPanels: Record<string, boolean> = {};
+
+  /** Panels opened at least once (their lazy content stays rendered). */
+  private _loadedPanels = new Set<string>();
+
+  //-----------------------------------------------------------------------------
+  // HASS (THROTTLED)
+  //-----------------------------------------------------------------------------
+
+  private _hass?: HomeAssistant;
+  private _renderHass?: HomeAssistant;
+  private _hassThrottleTimer?: ReturnType<typeof setTimeout>;
+
+  /**
+   * The first assignment renders immediately; later ones (every state change
+   * in HA) are throttled, the editor only needs fresh entity names.
+   */
+  set hass(value: HomeAssistant | undefined) {
+    this._hass = value;
+    if (!value) {
+      this._renderHass = undefined;
+      this.requestUpdate();
+      return;
+    }
+    if (!this._renderHass) {
+      this._renderHass = value;
+      this.requestUpdate();
+      return;
+    }
+    if (this._hassThrottleTimer) return;
+    this._hassThrottleTimer = setTimeout(() => {
+      this._hassThrottleTimer = undefined;
+      if (this._renderHass !== this._hass) {
+        this._renderHass = this._hass;
+        this.requestUpdate();
+      }
+    }, 1000);
+  }
+
+  get hass(): HomeAssistant | undefined {
+    return this._renderHass ?? this._hass;
+  }
 
   //-----------------------------------------------------------------------------
   // LIFECYCLE METHODS
@@ -64,25 +266,36 @@ export class CalendarWeekGridCardEditor extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    this.loadHaComponents();
+    this._loadHaComponents();
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    // Clear all pending debounce timeouts
-    this._debounceTimeouts.forEach((timeout) => clearTimeout(timeout));
-    this._debounceTimeouts.clear();
-    this._pendingValues.clear();
+    if (this._hassThrottleTimer) {
+      clearTimeout(this._hassThrottleTimer);
+      this._hassThrottleTimer = undefined;
+    }
   }
 
-  private loadHaComponents(): void {
-    // Hack to load ha-components needed for editor
+  /**
+   * `ha-form` and the pickers are lazy-loaded by HA. Asking a built-in card
+   * for its editor makes HA load them when they aren't defined yet.
+   */
+  private _loadHaComponents(): void {
+    const loadEditorOf = (cardTag: string) => {
+      try {
+        (
+          customElements.get(cardTag) as unknown as
+            | { getConfigElement?: () => unknown }
+            | undefined
+        )?.getConfigElement?.();
+      } catch {
+        // Not available in this HA version
+      }
+    };
+    if (!customElements.get('ha-form')) loadEditorOf('hui-tile-card');
     if (!customElements.get('ha-entity-picker')) {
-      (
-        customElements.get('hui-entities-card') as unknown as {
-          getConfigElement: () => HTMLElement;
-        }
-      )?.getConfigElement();
+      loadEditorOf('hui-entities-card');
     }
   }
 
@@ -95,19 +308,16 @@ export class CalendarWeekGridCardEditor extends LitElement {
       type: 'custom:calendar-week-grid-card',
       ...config,
     };
-    // Set entities to empty array if not present, preserving original order
     if (!this._config.entities) {
       this._config.entities = [];
     }
 
-    // Initialize time format type based on current config
-    const timeFormat = this._config?.time_format;
+    const timeFormat = this._config.time_format;
     this._timeFormatType =
       typeof timeFormat === 'string' || timeFormat === undefined
         ? 'string'
         : 'object';
 
-    // Detect selected theme and migrate legacy css-only theme configs
     this._detectSelectedTheme();
     this._migrateLegacyThemeCssToThemeField();
   }
@@ -127,20 +337,70 @@ export class CalendarWeekGridCardEditor extends LitElement {
     this._fireConfigChanged();
   }
 
-  private _isPlainObject(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  private _fieldContext(): FieldHandlerContext {
+    return {
+      getConfigValue: this.getConfigValue.bind(this),
+      setConfigValue: this.setConfigValue.bind(this),
+    };
+  }
+
+  /** Object stored at `path` ('' = the config itself), or {} */
+  private _getObject(path: string): FormData {
+    const value = path ? this.getConfigValue(path) : this._config;
+    return isPlainObject(value) ? value : {};
+  }
+
+  /**
+   * Writes `changes` into the object at `path`. An object that ends up empty
+   * is removed, and so are the empty parents it leaves behind (e.g. clearing
+   * the last theme value of `event` removes `event` entirely).
+   */
+  private _applyObjectChanges(path: string, changes: FormData): void {
+    if (!this._config) return;
+    const updated = applyChanges(this._getObject(path), changes);
+
+    if (!path) {
+      this._config = {
+        ...(updated as unknown as CardConfig),
+        type: this._config.type,
+      };
+      this._fireConfigChanged();
+      return;
+    }
+
+    const parts = path.split('.');
+    const isArrayItem = /^\d+$/.test(parts[parts.length - 1]);
+    let config = ConfigManager.setValue(
+      this._config,
+      path,
+      !isArrayItem && isEmptyValue(updated) ? undefined : updated,
+    );
+
+    parts.pop();
+    while (parts.length > 0) {
+      const last = parts[parts.length - 1];
+      if (/^\d+$/.test(last)) break;
+      const parentPath = parts.join('.');
+      const parentValue = ConfigManager.getValue(config, parentPath);
+      if (!isPlainObject(parentValue) || Object.keys(parentValue).length) break;
+      config = ConfigManager.setValue(config, parentPath, undefined);
+      parts.pop();
+    }
+
+    this._config = config;
+    this._fireConfigChanged();
   }
 
   private _mergeOverrideValue(base: unknown, override: unknown): unknown {
     if (Array.isArray(override)) {
       return [...override];
     }
-    if (!this._isPlainObject(override)) {
+    if (!isPlainObject(override)) {
       return override;
     }
 
-    const baseObject = this._isPlainObject(base) ? base : {};
-    const merged: Record<string, unknown> = { ...baseObject };
+    const baseObject = isPlainObject(base) ? base : {};
+    const merged: FormData = { ...baseObject };
     for (const [key, value] of Object.entries(override)) {
       merged[key] = this._mergeOverrideValue(baseObject[key], value);
     }
@@ -161,252 +421,1202 @@ export class CalendarWeekGridCardEditor extends LitElement {
     this.dispatchEvent(
       new CustomEvent('config-changed', {
         detail: { config: this._config },
+        bubbles: true,
+        composed: true,
       }),
     );
   }
 
   //-----------------------------------------------------------------------------
-  // INPUT/EVENT HANDLERS
+  // BUILDING BLOCKS
   //-----------------------------------------------------------------------------
 
-  private _eventControl(
-    event: Event,
-  ): HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null {
-    const control = (event.currentTarget ?? event.target) as
-      | HTMLInputElement
-      | HTMLSelectElement
-      | HTMLTextAreaElement
-      | null;
-    return control;
+  /**
+   * Renders an `ha-form` bound to the object at `path`.
+   */
+  private _form(
+    path: string,
+    schema: FormSchemaItem[],
+    options: FormOptions = {},
+  ): TemplateResult {
+    const stored = options.data ?? this._getObject(path);
+    const data = { ...(options.defaults ?? {}), ...stored };
+
+    return html`
+      <ha-form
+        .hass=${this.hass}
+        .data=${data}
+        .schema=${schema}
+        .computeLabel=${computeLabel}
+        .computeHelper=${computeHelper}
+        @value-changed=${(event: CustomEvent<{ value?: FormData }>) => {
+          event.stopPropagation();
+          const changes = resolveFormChanges(
+            schema,
+            stored,
+            event.detail?.value ?? {},
+            options.defaults,
+          );
+          if (Object.keys(changes).length === 0) return;
+          if (options.onChange) {
+            options.onChange(changes);
+          } else {
+            this._applyObjectChanges(path, changes);
+          }
+        }}
+      ></ha-form>
+    `;
   }
 
-  private _readControlValue(
-    target: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
-  ): string | boolean | number | null {
-    let value: string | boolean | number | null = target.value;
-    if (target.tagName === 'HA-SWITCH') {
-      value = (target as HTMLInputElement).checked;
+  /**
+   * Outlined expansion panel with an icon header. Its open state survives
+   * re-renders; lazy panels render their content on first open.
+   */
+  private _panel(
+    key: string,
+    title: string,
+    icon: string,
+    content: () => unknown,
+    options: PanelOptions = {},
+  ): TemplateResult {
+    const expanded = this._expandedPanels[key] ?? options.expanded ?? false;
+    if (expanded) this._loadedPanels.add(key);
+    const showContent = !options.lazy || this._loadedPanels.has(key);
+
+    return html`
+      <ha-expansion-panel
+        outlined
+        class=${options.className ?? ''}
+        .expanded=${expanded}
+        @expanded-changed=${(event: CustomEvent<{ expanded?: boolean }>) =>
+          this._onPanelToggled(event, key)}
+      >
+        ${options.header ??
+        html`<h4 slot="header" class="panel-header">
+          <ha-icon icon=${icon}></ha-icon>
+          <span>${title}</span>
+        </h4>`}
+        <div class="content">${showContent ? content() : nothing}</div>
+      </ha-expansion-panel>
+    `;
+  }
+
+  private _onPanelToggled(
+    event: CustomEvent<{ expanded?: boolean }>,
+    key: string,
+  ): void {
+    // The event bubbles: only react to this panel, not to nested ones
+    if (event.target !== event.currentTarget) return;
+    const panel = event.currentTarget as HTMLElement & { expanded?: boolean };
+    const expanded = Boolean(event.detail?.expanded ?? panel.expanded);
+    if (expanded) this._loadedPanels.add(key);
+    if (this._expandedPanels[key] === expanded) return;
+    this._expandedPanels = { ...this._expandedPanels, [key]: expanded };
+  }
+
+  private _collapsePanels(prefix: string): void {
+    const next: Record<string, boolean> = {};
+    for (const [key, value] of Object.entries(this._expandedPanels)) {
+      next[key] = key.startsWith(prefix) ? false : value;
     }
+    this._expandedPanels = next;
+  }
+
+  /** Section inside a panel: icon title, optional description, content */
+  private _section(
+    title: string,
+    icon: string,
+    content: unknown,
+    description?: string,
+  ): TemplateResult {
+    return html`
+      <div class="section">
+        <h3 class="section-title">
+          <ha-icon icon=${icon}></ha-icon>
+          ${title}
+        </h3>
+        ${description
+          ? html`<p class="section-description">${description}</p>`
+          : nothing}
+        ${content}
+      </div>
+    `;
+  }
+
+  /** Bubble-style info box */
+  private _info(
+    title: string,
+    body: unknown,
+    variant: 'info' | 'warning' = 'info',
+  ): TemplateResult {
+    return html`
+      <div class="editor-info ${variant}">
+        <h4 class="editor-info-title">
+          <ha-icon
+            icon=${variant === 'warning'
+              ? 'mdi:alert-outline'
+              : 'mdi:information-outline'}
+          ></ha-icon>
+          ${title}
+        </h4>
+        <div class="editor-info-content">${body}</div>
+      </div>
+    `;
+  }
+
+  /** Pill button */
+  private _button(
+    label: string,
+    icon: string,
+    onClick: () => void,
+    variant: '' | 'secondary' | 'danger' = '',
+  ): TemplateResult {
+    return html`
+      <button
+        type="button"
+        class="icon-button ${variant}"
+        @click=${(event: Event) => {
+          event.stopPropagation();
+          onClick();
+        }}
+      >
+        <ha-icon icon=${icon}></ha-icon>
+        <span>${label}</span>
+      </button>
+    `;
+  }
+
+  /** Round icon-only button used in panel headers and item rows */
+  private _iconButton(
+    icon: string,
+    title: string,
+    onClick: () => void,
+    config: { disabled?: boolean; danger?: boolean } = {},
+  ): TemplateResult {
+    return html`
+      <button
+        type="button"
+        class="icon-button round ${config.danger ? 'danger' : ''}"
+        title=${title}
+        aria-label=${title}
+        ?disabled=${config.disabled ?? false}
+        @click=${(event: Event) => {
+          event.stopPropagation();
+          if (!config.disabled) onClick();
+        }}
+      >
+        <ha-icon icon=${icon}></ha-icon>
+      </button>
+    `;
+  }
+
+  //-----------------------------------------------------------------------------
+  // MAIN RENDER METHOD
+  //-----------------------------------------------------------------------------
+
+  render(): TemplateResult {
+    if (!this.hass || !this._config) {
+      return html``;
+    }
+
+    return html`
+      <div class="card-config">
+        ${this._panel(
+          'entities',
+          'Calendar Entities',
+          'mdi:calendar-multiple',
+          () => this._renderCalendarEntities(),
+          { expanded: true },
+        )}
+        ${this._panel(
+          'core',
+          'Core Settings',
+          'mdi:calendar-month',
+          () => this._renderCoreSettings(),
+          { lazy: true },
+        )}
+        ${this._panel(
+          'format',
+          'Date & Time Format',
+          'mdi:clock-outline',
+          () => this._renderDateTimeFormat(),
+          { lazy: true },
+        )}
+        ${this._panel(
+          'events',
+          'Event Display',
+          'mdi:format-color-text',
+          () => this._renderEventDisplay(),
+          { lazy: true },
+        )}
+        ${this._panel(
+          'styling',
+          'Styling',
+          'mdi:palette',
+          () => this._renderStyling(),
+          { expanded: true },
+        )}
+      </div>
+    `;
+  }
+
+  //-----------------------------------------------------------------------------
+  // CORE SETTINGS
+  //-----------------------------------------------------------------------------
+
+  private _renderCoreSettings(): TemplateResult {
+    return html`
+      ${this._section(
+        'Language',
+        'mdi:translate',
+        this._form('', [
+          textField(
+            'language',
+            'Language Code',
+            'Language code for date formatting (e.g., en, fr, de)',
+          ),
+        ]),
+      )}
+      ${this._section(
+        'Days Range',
+        'mdi:calendar-range',
+        this._form(
+          '',
+          [
+            numberField(
+              'days',
+              'Days to show',
+              'Number of days to display (default: 7)',
+              { min: 1 },
+            ),
+            selectField('orientation', 'Orientation', ORIENTATION_OPTIONS, {
+              helper:
+                'Grid orientation: vertical (days as columns) or horizontal (days as rows)',
+            }),
+            selectField('week_start', 'Week Start', WEEK_START_OPTIONS),
+          ],
+          {
+            defaults: { days: 7, orientation: 'vertical', week_start: 'today' },
+          },
+        ),
+      )}
+      ${this._section(
+        'Time Range',
+        'mdi:clock-start',
+        this._form(
+          '',
+          [
+            numberField(
+              'start_hour',
+              'Start Hour',
+              'Hour to start displaying (0-23, default: 0)',
+              { min: 0, max: 23 },
+            ),
+            numberField(
+              'end_hour',
+              'End Hour',
+              'Hour to stop displaying (0-24, default: 24)',
+              { min: 0, max: 24 },
+            ),
+            booleanField(
+              'trim_empty_hours',
+              'Trim Empty Hours',
+              'Trim empty hours at the top and bottom across all visible days',
+            ),
+            numberField(
+              'trim_empty_hours_start_limit',
+              'Trim Empty Hours Max Start Hour',
+              'With trimming enabled, do not move start later than this hour',
+              { min: 0, max: 23 },
+            ),
+            numberField(
+              'trim_empty_hours_end_limit',
+              'Trim Empty Hours Min End Hour',
+              'With trimming enabled, do not move end earlier than this hour',
+              { min: 1, max: 24 },
+            ),
+            booleanField(
+              'time_range',
+              'Show Time Range',
+              'Display time as a range (e.g., "09 - 10" instead of "09")',
+            ),
+          ],
+          {
+            defaults: {
+              start_hour: 0,
+              end_hour: 24,
+              trim_empty_hours: false,
+              time_range: false,
+            },
+          },
+        ),
+      )}
+    `;
+  }
+
+  //-----------------------------------------------------------------------------
+  // DATE & TIME FORMAT
+  //-----------------------------------------------------------------------------
+
+  private _renderDateTimeFormat(): TemplateResult {
+    return html`
+      ${this._section(
+        'Date Format',
+        'mdi:calendar-text',
+        this._form('primary_date_format', DATE_FORMAT_SCHEMA),
+        'Primary date format options. Displayed as the main label.',
+      )}
+      ${this._section(
+        'Secondary Date Format',
+        'mdi:calendar-text-outline',
+        this._form('secondary_date_format', DATE_FORMAT_SCHEMA),
+        'Secondary date format (optional). Displayed below primary format.',
+      )}
+      ${this._section(
+        'Time Format',
+        'mdi:clock-time-four-outline',
+        this._renderTimeFormatFields(),
+        'Configure time display format. Choose between string pattern or structured options.',
+      )}
+    `;
+  }
+
+  private _renderTimeFormatFields(): TemplateResult {
+    const timeFormat = this.getConfigValue('time_format') as
+      | string
+      | Intl.DateTimeFormatOptions
+      | undefined;
+
+    const typeForm = this._form('', TIME_FORMAT_TYPE_SCHEMA, {
+      data: { time_format_type: this._timeFormatType },
+      onChange: (changes) => {
+        const formatType = changes.time_format_type as 'string' | 'object';
+        if (!formatType) return;
+        this._timeFormatType = formatType;
+        handleTimeFormatTypeChange(formatType, this._fieldContext());
+      },
+    });
+
+    if (this._timeFormatType === 'string') {
+      return html`
+        ${typeForm}
+        <p class="section-description">
+          Use tokens: H (0-23), HH (00-23), h (1-12), hh (01-12), m (0-59), mm
+          (00-59), a (am/pm), A (AM/PM)
+        </p>
+        ${this._form(
+          '',
+          [
+            textField(
+              'time_format',
+              'Time Format Pattern',
+              'Examples: "h A" → "9 AM", "HH:mm" → "09:00", "hh:mm A" → "09:00 AM"',
+            ),
+          ],
+          {
+            data: {
+              time_format: typeof timeFormat === 'string' ? timeFormat : 'h A',
+            },
+          },
+        )}
+      `;
+    }
+
+    // hour12 is a boolean in the config but a select in the form
+    const formatObject = isPlainObject(timeFormat) ? timeFormat : {};
+    const displayed: FormData = { ...formatObject };
+    if (typeof formatObject.hour12 === 'boolean') {
+      displayed.hour12 = String(formatObject.hour12);
+    }
+
+    return html`
+      ${typeForm}
+      ${this._form('time_format', TIME_FORMAT_OBJECT_SCHEMA, {
+        data: displayed,
+        onChange: (changes) => {
+          const mapped = { ...changes };
+          if (typeof mapped.hour12 === 'string') {
+            mapped.hour12 = mapped.hour12 === 'true';
+          }
+          this._applyObjectChanges('time_format', mapped);
+        },
+      })}
+    `;
+  }
+
+  //-----------------------------------------------------------------------------
+  // EVENT DISPLAY
+  //-----------------------------------------------------------------------------
+
+  private _renderEventDisplay(): TemplateResult {
+    return html`
+      ${this._section(
+        'All Day Events',
+        'mdi:calendar-today',
+        this._form(
+          '',
+          [
+            selectField('all_day', 'All Day Display', ALL_DAY_OPTIONS),
+            textField('all_day_label', 'All Day Label'),
+          ],
+          { defaults: { all_day: 'grid' } },
+        ),
+      )}
+      ${this._section(
+        'Icons',
+        'mdi:emoticon-outline',
+        this._form(
+          '',
+          [
+            selectField(
+              'icons_container',
+              'Icons Container',
+              ICONS_CONTAINER_OPTIONS,
+            ),
+            selectField('icons_mode', 'Icons Mode', ICONS_MODE_OPTIONS),
+          ],
+          { defaults: { icons_container: 'cell', icons_mode: 'top' } },
+        ),
+      )}
+      ${this._section(
+        'Default Event',
+        'mdi:calendar-star',
+        this._renderEventConfig('event', 'Default Event Icon'),
+        'Configure default properties for all events (can be overridden by individual entity configs)',
+      )}
+      ${this._section(
+        'Blank Event',
+        'mdi:calendar-blank-outline',
+        this._renderEventConfig('blank_event', 'Blank Event Icon'),
+        'Configure blank event appearance and variables',
+      )}
+      ${this._section(
+        'Blank All-Day Event',
+        'mdi:calendar-blank',
+        this._renderEventConfig(
+          'blank_all_day_event',
+          'Blank All-Day Event Icon',
+        ),
+        'Configure blank all-day event appearance and variables',
+      )}
+      ${this._section(
+        'Filter',
+        'mdi:filter-outline',
+        this._form('', [
+          textField(
+            'filter',
+            'Global Filter',
+            'Filter events by text in summary (applies to all entities)',
+          ),
+        ]),
+      )}
+    `;
+  }
+
+  private _renderEventConfig(
+    path: EventConfigPath,
+    iconLabel: string,
+  ): TemplateResult {
+    return html`
+      ${this._form(path, [
+        iconField('icon', iconLabel, undefined, 'mdi:cancel'),
+      ])}
+      ${this._renderThemeValuesForm(`${path}.theme_values`)}
+    `;
+  }
+
+  //-----------------------------------------------------------------------------
+  // STYLING
+  //-----------------------------------------------------------------------------
+
+  private _renderStyling(): TemplateResult {
+    const hasCustomCss =
+      typeof this._config?.css === 'string' &&
+      this._config.css.trim().length > 0;
+    const customCssWarning = this._info(
+      'Warning',
+      html`<p>
+        Custom CSS may not be fully supported in newer versions of this card. If
+        something looks broken after an update, select one of the standard
+        themes.
+      </p>`,
+      'warning',
+    );
+
+    return html`
+      ${this._section(
+        'Theme',
+        'mdi:palette-swatch',
+        this._form(
+          '',
+          [
+            selectField(
+              'theme_selection',
+              'Theme',
+              [
+                { value: 'custom', label: 'Custom' },
+                ...themes.map((theme) => ({
+                  value: theme.id,
+                  label: theme.name,
+                })),
+              ],
+              { required: true },
+            ),
+          ],
+          {
+            data: { theme_selection: this._selectedTheme },
+            onChange: (changes) => {
+              const themeId = changes.theme_selection;
+              if (typeof themeId === 'string') {
+                this._handleThemeSelection(themeId);
+              }
+            },
+          },
+        ),
+        'Select a theme or choose "Custom" to edit CSS manually.',
+      )}
+      ${this._section(
+        'Change Theme CSS',
+        'mdi:language-css3',
+        html`
+          ${hasCustomCss ? customCssWarning : nothing}
+          ${this._panel(
+            'theme_css',
+            'Theme CSS',
+            'mdi:code-tags',
+            () => html`
+              ${!hasCustomCss ? customCssWarning : nothing}
+              <ha-code-editor
+                .hass=${this.hass}
+                .value=${this._getEditorCssValue()}
+                @value-changed=${(event: CustomEvent<{ value: string }>) => {
+                  event.stopPropagation();
+                  this._handleCssChange(event.detail.value);
+                }}
+              ></ha-code-editor>
+            `,
+            { lazy: true },
+          )}
+        `,
+        'Change theme CSS styles. Use CSS variables and selectors to style the card.',
+      )}
+    `;
+  }
+
+  //-----------------------------------------------------------------------------
+  // THEME VARIABLES
+  //-----------------------------------------------------------------------------
+
+  /**
+   * Form for the theme variables (`theme_variables`) of the current theme,
+   * stored in the `theme_values` object at `path`.
+   */
+  private _renderThemeValuesForm(
+    path: string,
+  ): TemplateResult | typeof nothing {
+    const themeVariables = this.getConfigValue('theme_variables', {}) as Record<
+      string,
+      ThemeVariable
+    >;
+    const entries = Object.entries(themeVariables ?? {});
+    if (entries.length === 0) return nothing;
+
+    const schema = entries.map(([key, variable]) =>
+      textField(
+        key,
+        variable?.name || key,
+        [`Theme: ${this._selectedThemeName}`, variable?.description]
+          .filter(Boolean)
+          .join(' · '),
+      ),
+    );
+
+    // Values may be numbers in YAML; the text selector edits them as strings
+    const displayed: FormData = {};
+    for (const [key, value] of Object.entries(this._getObject(path))) {
+      displayed[key] =
+        value === undefined || value === null ? value : String(value);
+    }
+
+    return this._form(path, schema, {
+      data: displayed,
+      onChange: (changes) => this._applyObjectChanges(path, changes),
+    });
+  }
+
+  //-----------------------------------------------------------------------------
+  // CRITERIA (hide / under / over)
+  //-----------------------------------------------------------------------------
+
+  private _renderCriteriaArray(
+    configPath: string,
+    label: string,
+    description: string,
+  ): TemplateResult {
+    const criteria =
+      (this.getConfigValue(configPath, []) as Array<string | EventCriteria>) ||
+      [];
+
+    return html`
+      <div class="criteria-array-section">
+        <h4 class="criteria-title">
+          ${label}
+          ${criteria.length
+            ? html`<span class="badge">${criteria.length}</span>`
+            : nothing}
+        </h4>
+        <p class="section-description">${description}</p>
+        ${criteria.map((item, itemIndex) =>
+          this._renderCriteriaItem(configPath, item, itemIndex),
+        )}
+        <div class="element-actions">
+          ${this._button(`Add ${label} Criteria`, 'mdi:plus', () =>
+            this._addCriteriaItem(configPath),
+          )}
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderCriteriaItem(
+    configPath: string,
+    item: string | EventCriteria,
+    itemIndex: number,
+  ): TemplateResult {
+    const isString = typeof item === 'string';
+    const itemPath = `${configPath}.${itemIndex}`;
+
+    return html`
+      <div class="criteria-item">
+        <div class="criteria-item-header">
+          ${this._form('', CRITERIA_TYPE_SCHEMA, {
+            data: { __type: isString ? 'string' : 'object' },
+            onChange: (changes) => {
+              const type = changes.__type as 'string' | 'object' | undefined;
+              if (type) {
+                handleCriteriaTypeChange(itemPath, type, this._fieldContext());
+              }
+            },
+          })}
+          ${this._iconButton(
+            'mdi:delete-outline',
+            'Remove',
+            () => this._removeCriteriaItem(configPath, itemIndex),
+            { danger: true },
+          )}
+        </div>
+        ${isString
+          ? this._form('', CRITERIA_NAME_SCHEMA, {
+              data: { name: item },
+              onChange: (changes) =>
+                this.setConfigValue(
+                  itemPath,
+                  (changes.name as string | undefined) ?? '',
+                ),
+            })
+          : this._form(itemPath, CRITERIA_OBJECT_SCHEMA, {
+              onChange: (changes) => {
+                const updated = applyChanges(
+                  this._getObject(itemPath),
+                  changes,
+                );
+                // An empty criteria object goes back to an empty name
+                this.setConfigValue(
+                  itemPath,
+                  Object.keys(updated).length ? updated : '',
+                );
+              },
+            })}
+      </div>
+    `;
+  }
+
+  _addCriteriaItem(configPath: string): void {
+    const criteria = [
+      ...((this.getConfigValue(configPath, []) as Array<
+        string | EventCriteria
+      >) || []),
+    ];
+    criteria.push('');
+    this.setConfigValue(configPath, criteria);
+  }
+
+  _removeCriteriaItem(configPath: string, itemIndex: number): void {
+    const criteria = [
+      ...((this.getConfigValue(configPath, []) as Array<
+        string | EventCriteria
+      >) || []),
+    ];
+    criteria.splice(itemIndex, 1);
+    this.setConfigValue(configPath, criteria.length ? criteria : undefined);
+  }
+
+  //-----------------------------------------------------------------------------
+  // CALENDAR ENTITIES
+  //-----------------------------------------------------------------------------
+
+  private _getEntityInfo(entityId: string): {
+    calendarName: string;
+    deviceName: string;
+  } {
+    const hass = this.hass;
+    if (!hass || !entityId) {
+      return { calendarName: entityId || '', deviceName: '' };
+    }
+
+    const fullName = hass.states?.[entityId]?.attributes?.friendly_name || '';
+    const entityReg = hass.entities?.[entityId];
+    const deviceReg = entityReg?.device_id
+      ? hass.devices?.[entityReg.device_id]
+      : null;
+    const deviceName: string = deviceReg
+      ? deviceReg.name_by_user || deviceReg.name || ''
+      : '';
+    const calendarName =
+      fullName.replace(deviceName, '').trim() || fullName || entityId;
+
+    return { calendarName, deviceName };
+  }
+
+  private _renderEntityHeader(
+    entity: string | EntityConfig,
+    index: number,
+  ): TemplateResult {
+    const isStringEntity = typeof entity === 'string';
+    const entityId = isStringEntity ? entity : entity.entity;
+    const { calendarName, deviceName } = this._getEntityInfo(entityId);
+    const customName = !isStringEntity
+      ? entity.name || entity.filter || undefined
+      : undefined;
+
+    const entities = this._config?.entities || [];
+    const stop = (event: Event) => event.stopPropagation();
+
+    return html`
+      <div slot="header" class="entity-header">
+        <ha-icon
+          class="entity-header-icon"
+          icon=${(!isStringEntity && entity.icon) || 'mdi:calendar'}
+        ></ha-icon>
+        <div class="entity-header-content">
+          <div class="entity-header-name">
+            ${customName || calendarName || `Calendar ${index + 1}`}
+          </div>
+          ${customName && calendarName
+            ? html`<div class="entity-header-entity">${calendarName}</div>`
+            : nothing}
+          ${deviceName
+            ? html`<div class="entity-header-device">${deviceName}</div>`
+            : nothing}
+        </div>
+        <div
+          class="entity-header-buttons"
+          @click=${stop}
+          @mousedown=${stop}
+          @touchstart=${stop}
+          @keydown=${stop}
+        >
+          ${this._iconButton(
+            'mdi:arrow-up',
+            'Move up',
+            () => this._moveEntity(index, -1),
+            { disabled: index === 0 },
+          )}
+          ${this._iconButton(
+            'mdi:arrow-down',
+            'Move down',
+            () => this._moveEntity(index, 1),
+            { disabled: index >= entities.length - 1 },
+          )}
+          ${this._iconButton(
+            'mdi:trash-can-outline',
+            'Remove',
+            () => this._removeCalendarEntity(index),
+            { danger: true },
+          )}
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderCalendarEntity(
+    entity: string | EntityConfig,
+    index: number,
+  ): TemplateResult {
+    const isStringEntity = typeof entity === 'string';
+    const path = `entities.${index}`;
+    const panelKey = `entity_${index}`;
+    const pickerSchema = [
+      entityField('entity', '', {
+        domain: 'calendar',
+        required: true,
+      }),
+    ];
+
+    const entityPicker = isStringEntity
+      ? this._form('', pickerSchema, {
+          data: { entity },
+          onChange: (changes) =>
+            this.setConfigValue(
+              path,
+              (changes.entity as string | undefined) ?? '',
+            ),
+        })
+      : this._form(path, pickerSchema, {
+          onChange: (changes) =>
+            this._applyObjectChanges(path, {
+              entity: (changes.entity as string | undefined) ?? '',
+            }),
+        });
+
+    return this._panel(
+      panelKey,
+      '',
+      'mdi:calendar',
+      () => html`
+        ${this._section('Entity', 'mdi:calendar', entityPicker)}
+        ${isStringEntity
+          ? html`
+              <div class="element-actions">
+                ${this._button('Convert to Advanced', 'mdi:code-json', () =>
+                  this._convertEntityToObject(index),
+                )}
+              </div>
+            `
+          : html`
+              ${this._section(
+                'Entity Settings',
+                'mdi:tune-variant',
+                html`
+                  ${this._form(path, ENTITY_SETTINGS_SCHEMA)}
+                  ${this._renderThemeValuesForm(`${path}.theme_values`)}
+                `,
+              )}
+              ${this._panel(
+                `${panelKey}_advanced`,
+                'Advanced Event Control',
+                'mdi:code-braces',
+                () => html`
+                  ${this._info(
+                    'Layering & visibility',
+                    html`<p>
+                      Control event layering and visibility. Each item can be a
+                      simple name (string) or detailed criteria (object).
+                    </p>`,
+                  )}
+                  ${this._renderCriteriaArray(
+                    `${path}.hide`,
+                    'Hide',
+                    'Events to hide when this event is present',
+                  )}
+                  ${this._renderCriteriaArray(
+                    `${path}.under`,
+                    'Under',
+                    'Events to render underneath this one',
+                  )}
+                  ${this._renderCriteriaArray(
+                    `${path}.over`,
+                    'Over',
+                    'Events to render on top of this one',
+                  )}
+                `,
+                { lazy: true },
+              )}
+            `}
+      `,
+      {
+        lazy: true,
+        header: this._renderEntityHeader(entity, index),
+        className: 'entity-panel',
+      },
+    );
+  }
+
+  private _renderCalendarEntities(): TemplateResult {
+    const entities = this._config?.entities || [];
+
+    return html`
+      ${entities.length === 0
+        ? html`<p class="section-description">
+            No calendars yet. Add a calendar entity or apply a preset.
+          </p>`
+        : nothing}
+      ${entities.map((entity, index) =>
+        this._renderCalendarEntity(entity, index),
+      )}
+      <div class="element-actions">
+        ${this._button('Add Calendar', 'mdi:plus', () =>
+          this._addCalendarEntity(),
+        )}
+        ${entities.length > 0
+          ? this._button(
+              'Remove All',
+              'mdi:delete-sweep-outline',
+              () => this._removeAllCalendarEntities(),
+              'danger',
+            )
+          : nothing}
+        ${this._button(
+          'Apply Preset',
+          'mdi:package-variant',
+          () => this._togglePresetForm(),
+          'secondary',
+        )}
+      </div>
+      ${this._showPresetForm ? this._renderPresetForm() : nothing}
+    `;
+  }
+
+  _addCalendarEntity(): void {
+    const entities = [...(this._config?.entities || [])];
+    const newIndex = entities.length;
+
+    const example = this._getExampleByEntityIndex(newIndex);
+    const newEntity = example
+      ? this._applyThemeValuesToEntity('', example)
+      : '';
+
+    entities.push(newEntity);
+    this._collapsePanels('entity_');
+    this._expandedPanels = {
+      ...this._expandedPanels,
+      [`entity_${newIndex}`]: true,
+    };
+    this.setConfigValue('entities', entities);
+  }
+
+  _removeCalendarEntity(index: number): void {
+    this._collapsePanels('entity_');
+    const entities = [...(this._config?.entities || [])];
+    entities.splice(index, 1);
+    this.setConfigValue('entities', entities);
+  }
+
+  _removeAllCalendarEntities(): void {
+    this._collapsePanels('entity_');
+    this.setConfigValue('entities', []);
+  }
+
+  _moveEntity(index: number, direction: -1 | 1): void {
+    const entities = [...(this._config?.entities || [])];
+    const target = index + direction;
+    if (target < 0 || target >= entities.length) return;
+    this._collapsePanels('entity_');
+    [entities[index], entities[target]] = [entities[target], entities[index]];
+    this.setConfigValue('entities', entities);
+  }
+
+  _convertEntityToObject(index: number): void {
+    const entities = [...(this._config?.entities || [])];
+    const entityValue = entities[index] as string;
+    entities[index] = { entity: entityValue };
+    this.setConfigValue('entities', entities);
+  }
+
+  //-----------------------------------------------------------------------------
+  // PRESETS
+  //-----------------------------------------------------------------------------
+
+  /**
+   * Theme id used for examples/presets when UI shows "Custom" but config
+   * still references a package theme
+   */
+  private _themeIdForPackagedTheme(): string | null {
+    const t = this._config?.theme;
+    if (t && themes.some((x) => x.id === t)) {
+      return t;
+    }
+    return this._selectedTheme !== 'custom' ? this._selectedTheme : null;
+  }
+
+  private _getAvailablePresets(): EntitiesPreset[] {
+    const packagedId = this._themeIdForPackagedTheme();
+
+    // Custom theme: offer the presets of every theme
+    if (this._selectedTheme === 'custom' && !packagedId) {
+      const presetMap = new Map<string, EntitiesPreset>();
+      themes.forEach((theme) => {
+        (theme.config.entities_presets || []).forEach((preset) => {
+          const presetName = `${preset.name}_${theme.id}`;
+          if (!presetMap.has(presetName)) {
+            presetMap.set(presetName, {
+              ...preset,
+              name: presetName,
+              title: `${theme.name}: ${preset.title}`,
+            });
+          }
+        });
+      });
+      return Array.from(presetMap.values());
+    }
+
+    const selectedTheme = themes.find(
+      (t) => t.id === (packagedId ?? this._selectedTheme),
+    );
+    return selectedTheme?.config.entities_presets || [];
+  }
+
+  private _ensureDefaultPresetSelection(presets: EntitiesPreset[]): void {
     if (
-      target.getAttribute('type') === 'number' &&
-      value !== '' &&
-      typeof value === 'string'
+      presets.length > 0 &&
+      !presets.some((p) => p.name === this._selectedPresetName)
     ) {
-      value = parseFloat(value);
+      this._selectedPresetName = presets[0].name;
     }
-    return value;
   }
 
-  /**
-   * Processes a value change from a target element
-   * Extracted to be reusable for both immediate and debounced changes
-   */
-  private _processValueChange(
-    target: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
-  ): void {
-    const name = target.getAttribute('name');
-    if (!name) return;
-
-    this._applyValueChange(name, this._readControlValue(target));
+  _togglePresetForm(): void {
+    this._showPresetForm = !this._showPresetForm;
+    this._presetCalendarValues = {};
+    if (this._showPresetForm) {
+      this._ensureDefaultPresetSelection(this._getAvailablePresets());
+    } else {
+      this._selectedPresetName = '';
+    }
   }
 
-  /**
-   * Applies a value change by name and value
-   * Used for debounced changes where we have the value directly
-   */
-  private _applyValueChange(
-    name: string,
-    processedValue: string | boolean | number | object | null,
-  ): void {
-    // Create context for field handlers
-    const context: FieldHandlerContext = {
-      getConfigValue: this.getConfigValue.bind(this),
-      setConfigValue: this.setConfigValue.bind(this),
+  private _renderPresetForm(): TemplateResult {
+    const presets = this._getAvailablePresets();
+
+    if (presets.length === 0) {
+      return this._info('Apply Preset', html`<p>No presets available</p>`);
+    }
+
+    this._ensureDefaultPresetSelection(presets);
+
+    const selectedPreset = presets.find(
+      (p) => p.name === this._selectedPresetName,
+    );
+    const calendars = selectedPreset?.calendars || [];
+
+    return html`
+      <div class="preset-form">
+        <h4 class="preset-title">
+          <ha-icon icon="mdi:package-variant"></ha-icon>
+          Apply Preset
+        </h4>
+        ${this._form(
+          '',
+          [
+            selectField(
+              'preset',
+              'Preset',
+              presets.map((p) => ({ value: p.name, label: p.title })),
+              { required: true },
+            ),
+          ],
+          {
+            data: { preset: this._selectedPresetName },
+            onChange: (changes) => {
+              this._selectedPresetName =
+                (changes.preset as string | undefined) ?? '';
+              this._presetCalendarValues = {};
+            },
+          },
+        )}
+        ${calendars.length > 0
+          ? this._form(
+              '',
+              calendars.map((calendar) =>
+                entityField(calendar.template, calendar.title, {
+                  domain: 'calendar',
+                  helper: calendar.description,
+                }),
+              ),
+              {
+                data: { ...this._presetCalendarValues },
+                onChange: (changes) => {
+                  const values = { ...this._presetCalendarValues };
+                  for (const [key, value] of Object.entries(changes)) {
+                    if (typeof value === 'string' && value) {
+                      values[key] = value;
+                    } else {
+                      delete values[key];
+                    }
+                  }
+                  this._presetCalendarValues = values;
+                },
+              },
+            )
+          : nothing}
+        ${selectedPreset
+          ? html`
+              <div class="element-actions">
+                ${this._button('Apply', 'mdi:check', () => this._applyPreset())}
+                ${this._button(
+                  'Cancel',
+                  'mdi:close',
+                  () => this._togglePresetForm(),
+                  'secondary',
+                )}
+              </div>
+            `
+          : nothing}
+      </div>
+    `;
+  }
+
+  _applyPreset(): void {
+    if (!this._selectedPresetName || !this._config) {
+      return;
+    }
+
+    const selectedPreset = this._getAvailablePresets().find(
+      (p) => p.name === this._selectedPresetName,
+    );
+    if (!selectedPreset || !selectedPreset.entities) {
+      return;
+    }
+
+    const calendars = selectedPreset.calendars || [];
+    // undefined: not a template; '': template without a selected calendar
+    const selectedFor = (template: string): string | undefined => {
+      const calendar = calendars.find((c) => c.template === template);
+      if (!calendar) return undefined;
+      return this._presetCalendarValues[calendar.template]?.trim() || '';
     };
 
-    // Handle theme_selection (UI-only field that controls theme switching)
-    if (name === 'theme_selection') {
-      this._handleThemeSelection(processedValue as string);
+    const entities = (
+      JSON.parse(JSON.stringify(selectedPreset.entities)) as (
+        | string
+        | EntityConfig
+      )[]
+    )
+      .map((entity) => {
+        const template = typeof entity === 'string' ? entity : entity?.entity;
+        const selected = template ? selectedFor(template) : undefined;
+        if (selected === undefined) return entity;
+        if (!selected) return null;
+        return typeof entity === 'string'
+          ? selected
+          : { ...entity, entity: selected };
+      })
+      .filter((entity): entity is string | EntityConfig => entity !== null);
+
+    this._applyPresetOverrides(selectedPreset);
+    if (!this._config) {
       return;
     }
 
-    // Handle time_format_type (UI-only field that controls format switching)
-    if (name === 'time_format_type') {
-      const formatType = processedValue as 'string' | 'object';
-      this._timeFormatType = formatType;
-      handleTimeFormatTypeChange(formatType, context);
-      return;
-    }
-
-    // Handle date format fields (build object from individual fields)
-    if (
-      name.startsWith('primary_date_format.') ||
-      name.startsWith('secondary_date_format.')
-    ) {
-      const configPath = name.split('.')[0];
-      const fieldName = name.split('.')[1];
-      handleDateFormatFieldChange(
-        configPath,
-        fieldName,
-        processedValue,
-        context,
-      );
-      return;
-    }
-
-    // Handle time format object fields
-    if (name.startsWith('time_format.')) {
-      const fieldName = name.split('.')[1];
-      handleTimeFormatObjectFieldChange(fieldName, processedValue, context);
-      return;
-    }
-
-    // Handle criteria type switching (UI-only field)
-    if (name.endsWith('.__type')) {
-      const basePath = name.replace('.__type', '');
-      const newType = processedValue as 'string' | 'object';
-      handleCriteriaTypeChange(basePath, newType, context);
-      return;
-    }
-
-    // Handle criteria object fields (name, type, entity, filter)
-    const criteriaFieldMatch = name.match(
-      /^(entities\.\d+\.(under|over|hide))\.(\d+)\.(.+)$/,
-    );
-    if (criteriaFieldMatch) {
-      const basePath = criteriaFieldMatch[1];
-      const itemIndex = parseInt(criteriaFieldMatch[3], 10);
-      const fieldName = criteriaFieldMatch[4];
-
-      if (fieldName === '__type') {
-        return;
-      }
-
-      handleCriteriaFieldChange(
-        basePath,
-        itemIndex,
-        fieldName,
-        processedValue,
-        context,
-      );
-      return;
-    }
-
-    // Try to parse JSON for object fields (legacy support)
-    const objectFields = [
-      'primary_date_format',
-      'secondary_date_format',
-      'time_format',
-      'grid_options',
-      'layout_options',
-    ];
-    if (
-      typeof processedValue === 'string' &&
-      processedValue.trim() !== '' &&
-      objectFields.includes(name) &&
-      (processedValue.startsWith('{') || processedValue.startsWith('['))
-    ) {
-      try {
-        processedValue = JSON.parse(processedValue);
-      } catch {
-        // If parsing fails, keep as string
-      }
-    }
-
-    // Empty strings should remove the property for all optional fields
-    // (fields handled by special handlers above already return early)
-    if (processedValue === '') {
-      this.setConfigValue(name, undefined);
-      return;
-    }
-
-    this.setConfigValue(name, processedValue);
+    this._collapsePanels('entity_');
+    this._config = {
+      ...this._config,
+      entities,
+    };
+    this._fireConfigChanged();
+    this._togglePresetForm();
   }
 
-  /**
-   * Debounced handler for input events
-   * Applies changes after user stops typing for 500ms
-   */
-  _valueChangedDebounced(event: Event): void {
-    const target = this._eventControl(event);
-    if (!target) return;
+  //-----------------------------------------------------------------------------
+  // THEME MANAGEMENT
+  //-----------------------------------------------------------------------------
 
-    const name = target.getAttribute('name');
-
-    if (!name) return;
-
-    this._pendingValues.set(name, this._readControlValue(target));
-
-    // Clear existing timeout for this field
-    const existingTimeout = this._debounceTimeouts.get(name);
-    if (existingTimeout) {
-      clearTimeout(existingTimeout);
-    }
-
-    // Set new timeout to apply change after debounce period
-    const timeout = setTimeout(() => {
-      this._debounceTimeouts.delete(name);
-
-      const pending = this._pendingValues.get(name);
-      if (pending === undefined) return;
-
-      this._pendingValues.delete(name);
-      this._applyValueChange(name, pending);
-    }, 500);
-
-    this._debounceTimeouts.set(name, timeout);
-  }
-
-  _valueChanged(event: Event): void {
-    const target = this._eventControl(event);
-    if (!target) return;
-
-    event.stopPropagation();
-    this._processValueChange(target);
-  }
-
-  /** Handle `ha-select` @selected (detail.value). */
-  private _haSelectSelected(event: CustomEvent<{ value?: string }>): void {
-    event.stopPropagation();
-    const selectHost = event.currentTarget as HTMLElement;
-    const name = selectHost.getAttribute('name');
-    if (!name) return;
-
-    const detailValue = event.detail?.value;
-
-    if (name === 'preset_selection') {
-      this._selectedPresetName =
-        detailValue === undefined || detailValue === null
-          ? ''
-          : String(detailValue);
-      this._presetCalendarValues = {};
-      return;
-    }
-
-    if (
-      detailValue === undefined ||
-      detailValue === null ||
-      String(detailValue) === '' ||
-      String(detailValue) === 'null'
-    ) {
-      this.setConfigValue(name, undefined);
-      return;
-    }
-
-    this._applyValueChange(name, String(detailValue));
-  }
-
-  /**
-   * Handles theme selection changes
-   */
   private _handleThemeSelection(themeId: string): void {
+    if (!this._config) return;
     const previousTheme = this._selectedTheme;
     this._selectedTheme = themeId;
 
     if (themeId === 'custom') {
-      if (!this._config) {
-        return;
-      }
       const effective = getEffectiveCardCss(this._config, themes);
       this._config = ConfigManager.setValue(this._config, 'theme', undefined);
       this._config = ConfigManager.setValue(
@@ -421,13 +1631,12 @@ export class CalendarWeekGridCardEditor extends LitElement {
     const selectedTheme = themes.find((t) => t.id === themeId);
     if (selectedTheme && selectedTheme.config) {
       if (previousTheme !== 'custom') {
-        const themeManager = new ThemeManager(this._config!, themes);
-        this._config = themeManager.archiveThemeValues(previousTheme);
+        this._config = new ThemeManager(
+          this._config,
+          themes,
+        ).archiveThemeValues(previousTheme);
       }
-
-      // Apply theme configuration
-      const themeManager = new ThemeManager(this._config!, themes);
-      this._config = themeManager.applyThemeConfig(
+      this._config = new ThemeManager(this._config, themes).applyThemeConfig(
         selectedTheme.config,
         themeId,
       );
@@ -435,1283 +1644,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
     }
   }
 
-  //-----------------------------------------------------------------------------
-  // MAIN RENDER METHOD
-  //-----------------------------------------------------------------------------
-
-  render(): TemplateResult {
-    if (!this.hass || !this._config) {
-      return html``;
-    }
-
-    const hasCustomCss =
-      typeof this._config.css === 'string' &&
-      this._config.css.trim().length > 0;
-    const customCssWarning = html`
-      <div class="helper-text warning">
-        <strong class="warning-title">Warning</strong>
-        Custom CSS may not be fully supported in newer versions of this card. If
-        something looks broken after an update, select one of the standard
-        themes.
-      </div>
-    `;
-
-    return html`
-      <div class="card-config">
-        <!-- CALENDAR ENTITIES -->
-        ${this.addExpansionPanel(
-          'Calendar Entities',
-          'mdi:calendar-multiple',
-          html` ${this._renderCalendarEntities()} `,
-          true,
-        )}
-
-        <!-- CORE SETTINGS -->
-        ${this.addExpansionPanel(
-          'Core Settings',
-          'mdi:calendar-month',
-          html`
-            <!-- Language -->
-            <h3>Language</h3>
-            ${this.addTextField('language', 'Language Code')}
-            <div class="helper-text">
-              Language code for date formatting (e.g., en, fr, de)
-            </div>
-
-            <!-- Days Range -->
-            <h3>Days Range</h3>
-            ${this.addTextField('days', 'Days to show', 'number', '7')}
-            <div class="helper-text">
-              Number of days to display (default: 7)
-            </div>
-            ${this.addSelectField(
-              'orientation',
-              'Orientation',
-              [
-                { value: 'vertical', label: 'Vertical' },
-                { value: 'horizontal', label: 'Horizontal' },
-              ],
-              false,
-              'vertical',
-            )}
-            <div class="helper-text">
-              Grid orientation: vertical (days as columns) or horizontal (days
-              as rows)
-            </div>
-            ${this.addSelectField(
-              'week_start',
-              'Week Start',
-              [
-                { value: 'today', label: 'Today' },
-                { value: 'sunday', label: 'Sunday' },
-                { value: 'monday', label: 'Monday' },
-                { value: 'tuesday', label: 'Tuesday' },
-                { value: 'wednesday', label: 'Wednesday' },
-                { value: 'thursday', label: 'Thursday' },
-                { value: 'friday', label: 'Friday' },
-                { value: 'saturday', label: 'Saturday' },
-              ],
-              false,
-              'today',
-            )}
-
-            <!-- Time Range -->
-            <h3>Time Range</h3>
-            ${this.addTextField('start_hour', 'Start Hour', 'number', '0')}
-            <div class="helper-text">
-              Hour to start displaying (0-23, default: 0)
-            </div>
-            ${this.addTextField('end_hour', 'End Hour', 'number', '24')}
-            <div class="helper-text">
-              Hour to stop displaying (0-24, default: 24)
-            </div>
-            ${this.addBooleanField('trim_empty_hours', 'Trim Empty Hours')}
-            <div class="helper-text">
-              Trim empty hours at the top and bottom across all visible days
-            </div>
-            ${this.addTextField(
-              'trim_empty_hours_start_limit',
-              'Trim Empty Hours Max Start Hour',
-              'number',
-            )}
-            <div class="helper-text">
-              With trimming enabled, do not move start later than this hour
-            </div>
-            ${this.addTextField(
-              'trim_empty_hours_end_limit',
-              'Trim Empty Hours Min End Hour',
-              'number',
-            )}
-            <div class="helper-text">
-              With trimming enabled, do not move end earlier than this hour
-            </div>
-            ${this.addBooleanField('time_range', 'Show Time Range')}
-            <div class="helper-text">
-              Display time as a range (e.g., "09 - 10" instead of "09")
-            </div>
-          `,
-        )}
-
-        <!-- DATE & TIME FORMAT -->
-        ${this.addExpansionPanel(
-          'Date & Time Format',
-          'mdi:clock-outline',
-          html`
-            <!-- Primary Date Format -->
-            <h3>Date Format</h3>
-            <div class="helper-text">
-              Primary date format options. Displayed as the main label.
-            </div>
-            ${this._renderDateFormatFields('primary_date_format')}
-            <h3>Secondary Date Format</h3>
-            <div class="helper-text">
-              Secondary date format (optional). Displayed below primary format.
-            </div>
-            ${this._renderDateFormatFields('secondary_date_format')}
-
-            <!-- Time Format -->
-            <h3>Time Format</h3>
-            <div class="helper-text">
-              Configure time display format. Choose between string pattern or
-              structured options.
-            </div>
-            ${this._renderTimeFormatFields()}
-          `,
-        )}
-
-        <!-- EVENT DISPLAY -->
-        ${this.addExpansionPanel(
-          'Event Display',
-          'mdi:format-color-text',
-          html`
-            <!-- All Day Events -->
-            <h3>All Day Events</h3>
-            ${this.addSelectField(
-              'all_day',
-              'All Day Display',
-              [
-                { value: 'grid', label: 'Grid' },
-                { value: 'row', label: 'Row' },
-                { value: 'both', label: 'Both' },
-              ],
-              false,
-              'grid',
-            )}
-            ${this.addTextField('all_day_label', 'All Day Label')}
-
-            <!-- Icons -->
-            <h3>Icons</h3>
-            ${this.addSelectField(
-              'icons_container',
-              'Icons Container',
-              [
-                { value: 'event', label: 'Event' },
-                { value: 'cell', label: 'Cell' },
-              ],
-              false,
-              'cell',
-            )}
-            ${this.addSelectField(
-              'icons_mode',
-              'Icons Mode',
-              [
-                { value: 'top', label: 'Top' },
-                { value: 'all', label: 'All' },
-              ],
-              false,
-              'top',
-            )}
-
-            <!-- Default Event Config -->
-            <h3>Default Event</h3>
-            <div class="helper-text">
-              Configure default properties for all events (can be overridden by
-              individual entity configs)
-            </div>
-            ${this.addIconPickerField('event.icon', 'Default Event Icon')}
-            ${this._renderThemeConfigVariables('event')}
-
-            <!-- Blank Event Config -->
-            <h3>Blank Event</h3>
-            <div class="helper-text">
-              Configure blank event appearance and variables
-            </div>
-            ${this.addIconPickerField('blank_event.icon', 'Blank Event Icon')}
-            ${this._renderThemeConfigVariables('blank_event')}
-
-            <!-- Blank All-Day Event Config -->
-            <h3>Blank All-Day Event</h3>
-            <div class="helper-text">
-              Configure blank all-day event appearance and variables
-            </div>
-            ${this.addIconPickerField(
-              'blank_all_day_event.icon',
-              'Blank All-Day Event Icon',
-            )}
-            ${this._renderThemeConfigVariables('blank_all_day_event')}
-
-            <!-- Filter -->
-            <h3>Filter</h3>
-            ${this.addTextField('filter', 'Global Filter')}
-            <div class="helper-text">
-              Filter events by text in summary (applies to all entities)
-            </div>
-          `,
-        )}
-
-        <!-- STYLING -->
-        ${this.addExpansionPanel(
-          'Styling',
-          'mdi:palette',
-          html`
-            <!-- Theme Selection -->
-            <h3>Theme</h3>
-            <div class="helper-text">
-              Select a theme or choose "Custom" to edit CSS manually.
-            </div>
-            ${this.addSelectField(
-              'theme_selection',
-              '',
-              [
-                { value: 'custom', label: 'Custom' },
-                ...themes.map((theme) => ({
-                  value: theme.id,
-                  label: theme.name,
-                })),
-              ],
-              false,
-              this._selectedTheme,
-            )}
-            <!-- Change CSS -->
-            <h3>Change Theme CSS</h3>
-            <div class="helper-text">
-              Change theme CSS styles. Use CSS variables and selectors to style
-              the card.
-            </div>
-            ${hasCustomCss ? customCssWarning : ''}
-            ${this.addExpansionPanel(
-              'Theme CSS',
-              'mdi:code-tags',
-              html`
-                ${!hasCustomCss ? customCssWarning : ''}
-                <ha-code-editor
-                  .hass="${this.hass}"
-                  name="css"
-                  label="Custom CSS"
-                  .value="${this._getEditorCssValue()}"
-                  @value-changed="${(e: CustomEvent) => {
-                    e.stopPropagation();
-                    this._handleCssChange(e.detail.value);
-                  }}"
-                ></ha-code-editor>
-              `,
-              false,
-            )}
-          `,
-          true,
-        )}
-      </div>
-    `;
-  }
-
-  //-----------------------------------------------------------------------------
-  // RENDERING HELPERS (UI FIELD GENERATORS)
-  //-----------------------------------------------------------------------------
-
-  addTextField(
-    name: string,
-    label?: string,
-    type?: string,
-    defaultValue?: string,
-  ): TemplateResult {
-    let value = this.getConfigValue(name, defaultValue);
-
-    if (value === undefined) {
-      value = '';
-    } else if (typeof value === 'object') {
-      value = JSON.stringify(value);
-    } else {
-      value = String(value);
-    }
-
-    return html`
-      <ha-input
-        name="${name}"
-        label="${label ?? name}"
-        type="${type ?? 'text'}"
-        .value="${value}"
-        @change="${this._valueChanged}"
-        @input="${this._valueChangedDebounced}"
-      ></ha-input>
-    `;
-  }
-
-  addEntityPickerField(
-    name: string,
-    label?: string,
-    includeDomains?: string[],
-    defaultValue?: string,
-  ): TemplateResult {
-    return html`
-      <ha-entity-picker
-        .hass="${this.hass}"
-        name="${name}"
-        label="${label ?? name}"
-        .value="${this.getConfigValue(name, defaultValue)}"
-        .includeDomains="${includeDomains}"
-        @value-changed="${(e: CustomEvent) => {
-          e.stopPropagation();
-          this.setConfigValue(name, e.detail.value);
-        }}"
-      ></ha-entity-picker>
-    `;
-  }
-
-  addBooleanField(
-    name: string,
-    label?: string,
-    defaultValue?: boolean,
-  ): TemplateResult {
-    return html`
-      <ha-formfield label="${label ?? name}">
-        <ha-switch
-          name="${name}"
-          .checked="${this.getConfigValue(name, defaultValue)}"
-          @change="${this._valueChanged}"
-        ></ha-switch>
-      </ha-formfield>
-    `;
-  }
-
-  addSelectField(
-    name: string,
-    label?: string,
-    options?: Array<{ value: string; label: string }>,
-    clearable?: boolean,
-    defaultValue?: string,
-  ): TemplateResult {
-    const configValue = this.getConfigValue(name, defaultValue);
-    const value: string =
-      configValue === undefined ||
-      configValue === null ||
-      String(configValue) === 'null'
-        ? ''
-        : String(configValue);
-
-    return html`
-      <ha-select
-        name="${name}"
-        label="${label ?? name}"
-        .value="${value}"
-        .options="${options ?? []}"
-        .clearable="${clearable ?? false}"
-        @selected="${this._haSelectSelected}"
-        @closed="${(event: Event) => event.stopPropagation()}"
-      ></ha-select>
-    `;
-  }
-
-  addIconPickerField(
-    name: string,
-    label?: string,
-    placeholder: string = 'mdi:cancel',
-  ): TemplateResult {
-    return html`
-      <ha-icon-picker
-        .hass="${this.hass}"
-        name="${name}"
-        label="${label ?? name}"
-        placeholder="${placeholder}"
-        .value="${this.getConfigValue(name)}"
-        @value-changed="${(event: CustomEvent<{ value: string }>) => {
-          // Empty strings should remove the property
-          const value =
-            event.detail.value === '' ? undefined : event.detail.value;
-          this.setConfigValue(name, value);
-        }}"
-      ></ha-icon-picker>
-    `;
-  }
-
-  addExpansionPanel(
-    header: string | TemplateResult,
-    icon: string,
-    content: TemplateResult,
-    expanded?: boolean,
-    extra?: TemplateResult,
-  ): TemplateResult {
-    return html`
-      <ha-expansion-panel .expanded="${expanded ?? false}" outlined>
-        <ha-icon slot="leading-icon" icon="${icon}"></ha-icon>
-        ${typeof header === 'string'
-          ? html`<span slot="header">${header}</span>`
-          : html`<div slot="header" class="expansion-panel-header">
-              ${header}
-            </div>`}
-        <div class="panel-content">${content}</div>
-      </ha-expansion-panel>
-      ${extra ? extra : ''}
-    `;
-  }
-
-  addButton(
-    text: string,
-    icon: string,
-    clickFunction: () => void,
-  ): TemplateResult {
-    return html`
-      <ha-button @click="${clickFunction}">
-        <ha-icon icon="${icon}"></ha-icon>
-        ${text}
-      </ha-button>
-    `;
-  }
-
-  addIconButton(
-    icon: string,
-    clickFunction: () => void,
-    title?: string,
-    disabled?: boolean,
-  ): TemplateResult {
-    return html`
-      <ha-icon-button
-        @click="${(e: Event) => {
-          e.stopPropagation();
-          if (!disabled) {
-            clickFunction();
-          }
-        }}"
-        .title="${title ?? ''}"
-        .disabled="${disabled ?? false}"
-      >
-        <ha-icon icon="${icon}"></ha-icon>
-      </ha-icon-button>
-    `;
-  }
-
-  //-----------------------------------------------------------------------------
-  // DATETIME FORMAT FIELD RENDERING
-  //-----------------------------------------------------------------------------
-
-  /**
-   * Renders date format fields for primary or secondary date format
-   */
-  _renderDateFormatFields(configPath: string): TemplateResult {
-    return html`
-      <div class="format-fields">
-        ${this.addSelectField(
-          `${configPath}.weekday`,
-          'Weekday',
-          [
-            { value: 'narrow', label: 'Narrow (M, T, W)' },
-            { value: 'short', label: 'Short (Mon, Tue, Wed)' },
-            { value: 'long', label: 'Long (Monday, Tuesday)' },
-          ],
-          true,
-        )}
-        ${this.addSelectField(
-          `${configPath}.day`,
-          'Day',
-          [
-            { value: 'numeric', label: 'Numeric (15)' },
-            { value: '2-digit', label: '2-digit (05)' },
-          ],
-          true,
-        )}
-        ${this.addSelectField(
-          `${configPath}.month`,
-          'Month',
-          [
-            { value: 'numeric', label: 'Numeric (3)' },
-            { value: '2-digit', label: '2-digit (03)' },
-            { value: 'narrow', label: 'Narrow (M)' },
-            { value: 'short', label: 'Short (Mar)' },
-            { value: 'long', label: 'Long (March)' },
-          ],
-          true,
-        )}
-        ${this.addSelectField(
-          `${configPath}.year`,
-          'Year',
-          [
-            { value: 'numeric', label: 'Numeric (2024)' },
-            { value: '2-digit', label: '2-digit (24)' },
-          ],
-          true,
-        )}
-      </div>
-    `;
-  }
-
-  /**
-   * Renders time format fields with support for both string and object formats
-   */
-  _renderTimeFormatFields(): TemplateResult {
-    const timeFormat = this.getConfigValue('time_format') as
-      | string
-      | Intl.DateTimeFormatOptions
-      | undefined;
-
-    const formatType = this._timeFormatType;
-
-    return html`
-      <div class="format-fields">
-        ${this.addSelectField(
-          'time_format_type',
-          'Format Type',
-          [
-            { value: 'string', label: 'String Pattern (Legacy)' },
-            { value: 'object', label: 'Structured Options (Recommended)' },
-          ],
-          false,
-          formatType,
-        )}
-        ${formatType === 'string'
-          ? html`
-              <div class="helper-text">
-                Use tokens: H (0-23), HH (00-23), h (1-12), hh (01-12), m
-                (0-59), mm (00-59), a (am/pm), A (AM/PM)
-              </div>
-              ${this.addTextField(
-                'time_format',
-                'Time Format Pattern',
-                'text',
-                typeof timeFormat === 'string' ? timeFormat : 'h A',
-              )}
-              <div class="helper-text">
-                Examples: "h A" → "9 AM", "HH:mm" → "09:00", "hh:mm A" → "09:00
-                AM"
-              </div>
-            `
-          : html`
-              ${this.addSelectField(
-                'time_format.hour',
-                'Hour',
-                [
-                  { value: 'numeric', label: 'Numeric (9)' },
-                  { value: '2-digit', label: '2-digit (09)' },
-                ],
-                true,
-              )}
-              ${this.addSelectField(
-                'time_format.minute',
-                'Minute',
-                [
-                  { value: 'numeric', label: 'Numeric (5)' },
-                  { value: '2-digit', label: '2-digit (05)' },
-                ],
-                true,
-              )}
-              ${this.addSelectField(
-                'time_format.second',
-                'Second',
-                [
-                  { value: 'numeric', label: 'Numeric (30)' },
-                  { value: '2-digit', label: '2-digit (30)' },
-                ],
-                true,
-              )}
-              ${this.addSelectField(
-                'time_format.hour12',
-                '12/24 Hour Format',
-                [
-                  { value: 'true', label: '12-hour (AM/PM)' },
-                  { value: 'false', label: '24-hour' },
-                ],
-                true,
-              )}
-            `}
-      </div>
-    `;
-  }
-
-  //-----------------------------------------------------------------------------
-  // CRITERIA ARRAY RENDERING & MANAGEMENT
-  //-----------------------------------------------------------------------------
-
-  /**
-   * Renders a criteria array field (under/over/hide)
-   */
-  _renderCriteriaArray(
-    configPath: string,
-    label: string,
-    description: string,
-  ): TemplateResult {
-    const criteria =
-      (this.getConfigValue(configPath, []) as Array<string | EventCriteria>) ||
-      [];
-
-    return html`
-      <div class="criteria-array-section">
-        <h4>${label}</h4>
-        <div class="helper-text">${description}</div>
-        ${criteria.map((item, itemIndex) =>
-          this._renderCriteriaItem(configPath, item, itemIndex),
-        )}
-        ${this.addButton(`Add ${label} Criteria`, 'mdi:plus', () =>
-          this._addCriteriaItem(configPath),
-        )}
-      </div>
-    `;
-  }
-
-  /**
-   * Renders a single criteria item (string or object)
-   */
-  _renderCriteriaItem(
-    configPath: string,
-    item: string | EventCriteria,
-    itemIndex: number,
-  ): TemplateResult {
-    const isString = typeof item === 'string';
-    const itemPath = `${configPath}.${itemIndex}`;
-    const itemObj = isString ? {} : item;
-
-    return html`
-      <div class="criteria-item">
-        <div class="criteria-item-header">
-          ${this.addSelectField(
-            `${itemPath}.__type`,
-            'Type',
-            [
-              { value: 'string', label: 'Simple (Name)' },
-              { value: 'object', label: 'Detailed (Criteria)' },
-            ],
-            false,
-            isString ? 'string' : 'object',
-          )}
-          ${this.addButton('Remove', 'mdi:delete', () =>
-            this._removeCriteriaItem(configPath, itemIndex),
-          )}
-        </div>
-        ${isString
-          ? html`
-              ${this.addTextField(
-                itemPath,
-                'Event Name',
-                'text',
-                item as string,
-              )}
-              <div class="helper-text">Match events by entity name</div>
-            `
-          : html`
-              <div class="criteria-object-fields">
-                ${this.addTextField(
-                  `${itemPath}.name`,
-                  'Name',
-                  'text',
-                  (itemObj.name as string) || '',
-                )}
-                ${this.addTextField(
-                  `${itemPath}.entity`,
-                  'Entity',
-                  'text',
-                  (itemObj.entity as string) || '',
-                )}
-                ${this.addTextField(
-                  `${itemPath}.filter`,
-                  'Filter',
-                  'text',
-                  (itemObj.filter as string) || '',
-                )}
-                <div class="helper-text">
-                  Match events by any combination of criteria (all must match)
-                </div>
-              </div>
-            `}
-      </div>
-    `;
-  }
-
-  /**
-   * Adds a new criteria item to the array
-   */
-  _addCriteriaItem(configPath: string): void {
-    const criteria =
-      (this.getConfigValue(configPath, []) as Array<string | EventCriteria>) ||
-      [];
-    criteria.push('');
-    this.setConfigValue(configPath, criteria);
-  }
-
-  /**
-   * Removes a criteria item from the array
-   */
-  _removeCriteriaItem(configPath: string, itemIndex: number): void {
-    const criteria =
-      (this.getConfigValue(configPath, []) as Array<string | EventCriteria>) ||
-      [];
-    criteria.splice(itemIndex, 1);
-    if (criteria.length === 0) {
-      this.setConfigValue(configPath, undefined);
-    } else {
-      this.setConfigValue(configPath, criteria);
-    }
-  }
-
-  //-----------------------------------------------------------------------------
-  // CALENDAR ENTITY RENDERING & MANAGEMENT
-  //-----------------------------------------------------------------------------
-
-  /**
-   * Gets entity information from Home Assistant
-   */
-  private _getEntityInfo(entityId: string): {
-    calendarName: string;
-    deviceName: string;
-  } {
-    if (!this.hass || !entityId) {
-      return { calendarName: entityId || '', deviceName: '' };
-    }
-
-    const state = this.hass?.states[entityId];
-
-    // 1. Get the full friendly name
-    const fullString = state?.attributes?.friendly_name || '';
-
-    // 2. Find the Device Name via the hass object registries
-    const entityReg = this.hass.entities[entityId];
-    const deviceReg =
-      entityReg && entityReg.device_id
-        ? this.hass.devices[entityReg.device_id]
-        : null;
-    const deviceName: string = deviceReg
-      ? deviceReg.name_by_user || deviceReg.name || ''
-      : '';
-
-    // 3. Calculate the Calendar Name by removing the Device Name
-    // We replace "DeviceName " (note the space) with empty string
-    const calendarName = fullString.replace(deviceName, '').trim();
-
-    return { calendarName, deviceName };
-  }
-
-  /**
-   * Renders a structured multiline header for entity expansion panel
-   */
-  private _renderEntityHeader(
-    entity: string | EntityConfig,
-    managementButtons?: TemplateResult,
-  ): TemplateResult {
-    const isStringEntity = typeof entity === 'string';
-    const entityId = isStringEntity ? entity : entity.entity;
-
-    const { calendarName, deviceName } = this._getEntityInfo(entityId);
-
-    const customFilter = !isStringEntity ? entity.filter : undefined;
-    const customName = !isStringEntity
-      ? entity.name || customFilter || calendarName
-      : undefined;
-
-    return html`
-      <div class="entity-header">
-        <div class="entity-header-content">
-          <div class="entity-header-primary">
-            ${customName
-              ? html`<div class="entity-header-name">${customName}</div>`
-              : ''}
-            ${calendarName
-              ? html`<div class="entity-header-entity">${calendarName}</div>`
-              : ''}
-          </div>
-          <div class="entity-header-secondary">
-            ${deviceName
-              ? html`<div class="entity-header-id">${deviceName}</div>`
-              : ''}
-          </div>
-        </div>
-        ${managementButtons
-          ? html`<div class="entity-header-buttons">${managementButtons}</div>`
-          : ''}
-      </div>
-    `;
-  }
-
-  _renderCalendarEntity(
-    entity: string | EntityConfig,
-    index: number,
-  ): TemplateResult {
-    const isStringEntity = typeof entity === 'string';
-
-    const entities = this._config?.entities || [];
-    const canMoveUp = index > 0;
-    const canMoveDown = index < entities.length - 1;
-
-    const managementButtons = html`
-      ${this.addIconButton(
-        'mdi:arrow-up',
-        () => this._moveEntityUp(index),
-        'Move up',
-        !canMoveUp,
-      )}
-      ${this.addIconButton(
-        'mdi:arrow-down',
-        () => this._moveEntityDown(index),
-        'Move down',
-        !canMoveDown,
-      )}
-      ${this.addIconButton(
-        'mdi:trash-can',
-        () => this._removeCalendarEntity(index),
-        'Remove',
-      )}
-    `;
-
-    const panelHeader = this._renderEntityHeader(entity, managementButtons);
-    const isExpanded = this._expandedEntityIndex === index;
-
-    return html`
-      ${this.addExpansionPanel(
-        panelHeader,
-        'mdi:calendar',
-        html`
-          <!-- Entity Identification -->
-          <div class="editor-section">
-            <h4>Entity</h4>
-            ${this.addEntityPickerField(
-              `entities.${index}${isStringEntity ? '' : '.entity'}`,
-              'Calendar Entity',
-              ['calendar'],
-            )}
-          </div>
-
-          ${!isStringEntity
-            ? html`
-                <!-- Entity Configuration -->
-                <div class="editor-section">
-                  <h4>Entity Settings</h4>
-                  ${this.addTextField(`entities.${index}.name`, 'Name')}
-                  <div class="helper-text">Name for this calendar entity</div>
-                  ${this.addTextField(`entities.${index}.filter`, 'Filter')}
-                  <div class="helper-text">
-                    Filter events by text in summary
-                  </div>
-                  ${this.addIconPickerField(`entities.${index}.icon`, 'Icon')}
-                  <div class="helper-text">
-                    Icon for events from this entity
-                  </div>
-                  ${this._renderThemeVariables(index)}
-                </div>
-
-                <!-- Advanced Event Control -->
-                ${this.addExpansionPanel(
-                  'Advanced Event Control',
-                  'mdi:code-braces',
-                  html`
-                    <div class="helper-text">
-                      Control event layering and visibility. Each item can be a
-                      simple name (string) or detailed criteria (object).
-                    </div>
-                    ${this._renderCriteriaArray(
-                      `entities.${index}.hide`,
-                      'Hide',
-                      'Events to hide when this event is present',
-                    )}
-                    ${this._renderCriteriaArray(
-                      `entities.${index}.under`,
-                      'Under',
-                      'Events to render underneath this one',
-                    )}
-                    ${this._renderCriteriaArray(
-                      `entities.${index}.over`,
-                      'Over',
-                      'Events to render on top of this one',
-                    )}
-                  `,
-                  false,
-                )}
-              `
-            : html``}
-
-          <!-- Entity Action Buttons -->
-          ${isStringEntity
-            ? html`
-                <div class="editor-section button-section">
-                  ${this.addButton('Convert to Advanced', 'mdi:code-json', () =>
-                    this._convertEntityToObject(index),
-                  )}
-                </div>
-              `
-            : html``}
-        `,
-        isExpanded,
-      )}
-    `;
-  }
-
-  _renderCalendarEntities(): TemplateResult {
-    const entities = this._config?.entities || [];
-
-    return html`
-      ${entities.map((entity, index) =>
-        this._renderCalendarEntity(entity, index),
-      )}
-      <div class="button-group">
-        ${this.addButton('Add Calendar', 'mdi:plus', () =>
-          this._addCalendarEntity(),
-        )}
-        ${entities.length > 0
-          ? this.addButton('Remove All', 'mdi:delete-sweep', () =>
-              this._removeAllCalendarEntities(),
-            )
-          : ''}
-        ${this.addButton('Apply Preset', 'mdi:package-variant', () =>
-          this._togglePresetForm(),
-        )}
-      </div>
-      ${this._showPresetForm ? this._renderPresetForm() : ''}
-    `;
-  }
-
-  _addCalendarEntity(): void {
-    const entities = [...(this._config?.entities || [])];
-    const newIndex = entities.length;
-
-    // Get example by entity index and apply theme values
-    const example = this._getExampleByEntityIndex(newIndex);
-    const newEntity = example
-      ? this._applyThemeValuesToEntity('', example)
-      : '';
-
-    entities.push(newEntity);
-    this.setConfigValue('entities', entities);
-    // Auto-expand the newly added entity
-    this._expandedEntityIndex = newIndex;
-  }
-
-  _removeCalendarEntity(index: number): void {
-    this._collapseAllEntityPanels();
-    const entities = [...(this._config?.entities || [])];
-    entities.splice(index, 1);
-    // Always set entities to empty array if it becomes empty, never delete it
-    this.setConfigValue('entities', entities.length > 0 ? entities : []);
-  }
-
-  _removeAllCalendarEntities(): void {
-    this._collapseAllEntityPanels();
-    this.setConfigValue('entities', []);
-  }
-
-  /**
-   * Theme id used for examples/presets when UI shows "Custom" but config still references a package theme
-   */
-  private _themeIdForPackagedTheme(): string | null {
-    const t = this._config?.theme;
-    if (t && themes.some((x) => x.id === t)) {
-      return t;
-    }
-    return this._selectedTheme !== 'custom' ? this._selectedTheme : null;
-  }
-
-  /**
-   * Get available presets from the currently selected theme
-   */
-  private _getAvailablePresets() {
-    const packagedId = this._themeIdForPackagedTheme();
-
-    // If custom theme is selected, get presets from all themes
-    if (this._selectedTheme === 'custom' && !packagedId) {
-      const presetMap = new Map<string, EntitiesPreset>();
-      themes.forEach((theme) => {
-        const themePresets = theme.config.entities_presets || [];
-        themePresets.forEach((preset) => {
-          if (!presetMap.has(preset.name)) {
-            const presetName = `${preset.name}_${theme.id}`;
-            const presetTitle = `${theme.name}: ${preset.title}`;
-            const customPreset: EntitiesPreset = {
-              ...preset,
-              name: presetName,
-              title: presetTitle,
-            };
-            presetMap.set(presetName, customPreset);
-          }
-        });
-      });
-      return Array.from(presetMap.values());
-    }
-
-    // Get presets from the packaged theme (or selected theme row)
-    const selectedTheme = themes.find(
-      (t) => t.id === (packagedId ?? this._selectedTheme),
-    );
-    if (!selectedTheme || !selectedTheme.config.entities_presets) {
-      return [];
-    }
-
-    return selectedTheme.config.entities_presets;
-  }
-
-  private _ensureDefaultPresetSelection(presets: EntitiesPreset[]): void {
-    if (!this._selectedPresetName && presets.length > 0) {
-      this._selectedPresetName = presets[0].name;
-    }
-  }
-
-  _togglePresetForm(): void {
-    this._showPresetForm = !this._showPresetForm;
-    if (this._showPresetForm) {
-      this._ensureDefaultPresetSelection(this._getAvailablePresets());
-      this._presetCalendarValues = {};
-    } else {
-      // Clear state when closing
-      this._selectedPresetName = '';
-      this._presetCalendarValues = {};
-    }
-  }
-
-  _renderPresetForm(): TemplateResult {
-    const presets = this._getAvailablePresets();
-
-    if (presets.length === 0) {
-      return html`
-        <div class="helper-text preset-form-helper">No presets available</div>
-      `;
-    }
-
-    this._ensureDefaultPresetSelection(presets);
-
-    const selectedPreset = presets.find(
-      (p) => p.name === this._selectedPresetName,
-    );
-    const calendars = selectedPreset?.calendars || [];
-
-    return html`
-      <div class="preset-form">
-        <h4>Apply Preset</h4>
-        <ha-select
-          name="preset_selection"
-          label="Preset"
-          .value="${this._selectedPresetName || ''}"
-          .options="${presets.map((p) => ({
-            value: p.name,
-            label: p.title,
-          }))}"
-          .clearable="${false}"
-          @selected="${this._haSelectSelected}"
-          @closed="${(event: Event) => event.stopPropagation()}"
-        ></ha-select>
-        ${selectedPreset && calendars.length > 0
-          ? html`
-              ${calendars.map(
-                (calendar) => html`
-                  <ha-entity-picker
-                    .hass="${this.hass}"
-                    label="${calendar.title}"
-                    .helper="${calendar.description || ''}"
-                    .value="${this._presetCalendarValues[calendar.template] ||
-                    ''}"
-                    .includeDomains="${['calendar']}"
-                    @value-changed="${(e: CustomEvent) => {
-                      e.stopPropagation();
-                      this._presetCalendarValues = {
-                        ...this._presetCalendarValues,
-                        [calendar.template]: e.detail.value,
-                      };
-                    }}"
-                  ></ha-entity-picker>
-                `,
-              )}
-              <div class="button-group">
-                <ha-button @click="${() => this._applyPreset()}">
-                  <ha-icon icon="mdi:check"></ha-icon>
-                  Apply
-                </ha-button>
-                ${this.addButton('Cancel', 'mdi:close', () =>
-                  this._togglePresetForm(),
-                )}
-              </div>
-            `
-          : selectedPreset
-            ? html`
-                <div class="button-group">
-                  ${this.addButton('Apply', 'mdi:check', () =>
-                    this._applyPreset(),
-                  )}
-                  ${this.addButton('Cancel', 'mdi:close', () =>
-                    this._togglePresetForm(),
-                  )}
-                </div>
-              `
-            : ''}
-      </div>
-    `;
-  }
-
-  _applyPreset(): void {
-    if (!this._selectedPresetName || !this._config) {
-      return;
-    }
-
-    // Get preset from themes instead of current config
-    const availablePresets = this._getAvailablePresets();
-    const selectedPreset = availablePresets.find(
-      (p) => p.name === this._selectedPresetName,
-    );
-
-    if (!selectedPreset || !selectedPreset.entities) {
-      return;
-    }
-
-    // Clone entities from preset
-    const entities = JSON.parse(JSON.stringify(selectedPreset.entities)) as (
-      | string
-      | EntityConfig
-    )[];
-
-    // Replace template values with selected calendar entities
-    if (selectedPreset.calendars && selectedPreset.calendars.length > 0) {
-      entities.forEach((entity, index) => {
-        if (typeof entity === 'string') {
-          // Find matching template and replace
-          const calendar = selectedPreset.calendars?.find(
-            (c) => c.template === entity,
-          );
-          if (calendar) {
-            const selectedEntity =
-              this._presetCalendarValues[calendar.template];
-            if (selectedEntity) {
-              entities[index] = selectedEntity;
-            }
-          }
-        } else if (entity && typeof entity === 'object' && 'entity' in entity) {
-          // Replace entity field if it matches a template
-          const calendar = selectedPreset.calendars?.find(
-            (c) => c.template === entity.entity,
-          );
-          if (calendar) {
-            const selectedEntity =
-              this._presetCalendarValues[calendar.template];
-            if (selectedEntity) {
-              // Create a new object to ensure reactivity
-              entities[index] = {
-                ...entity,
-                entity: selectedEntity,
-              };
-            }
-          }
-        }
-      });
-    }
-
-    // Remove only unresolved preset template entities (no selected value).
-    const resolvedEntities = entities.filter((entity) => {
-      if (!selectedPreset.calendars || selectedPreset.calendars.length === 0) {
-        return true;
-      }
-      if (typeof entity === 'string') {
-        const templateCalendar = selectedPreset.calendars.find(
-          (c) => c.template === entity,
-        );
-        if (!templateCalendar) {
-          return true;
-        }
-        const selectedEntity =
-          this._presetCalendarValues[templateCalendar.template];
-        return !!selectedEntity?.trim();
-      }
-      if (entity && typeof entity === 'object' && 'entity' in entity) {
-        const templateCalendar = selectedPreset.calendars.find(
-          (c) => c.template === entity.entity,
-        );
-        if (!templateCalendar) {
-          return true;
-        }
-        const selectedEntity =
-          this._presetCalendarValues[templateCalendar.template];
-        return !!selectedEntity?.trim();
-      }
-      return true;
-    });
-
-    this._applyPresetOverrides(selectedPreset);
-    if (!this._config) {
-      return;
-    }
-
-    this._collapseAllEntityPanels();
-    this._config = {
-      ...this._config,
-      entities: resolvedEntities,
-    };
-    this._fireConfigChanged();
-    this._togglePresetForm();
-  }
-
-  _moveEntityUp(index: number): void {
-    if (index <= 0) return;
-    this._collapseAllEntityPanels();
-    const entities = [...(this._config?.entities || [])];
-    const temp = entities[index];
-    entities[index] = entities[index - 1];
-    entities[index - 1] = temp;
-    this.setConfigValue('entities', entities);
-  }
-
-  _moveEntityDown(index: number): void {
-    const entities = [...(this._config?.entities || [])];
-    if (index >= entities.length - 1) return;
-    this._collapseAllEntityPanels();
-    const temp = entities[index];
-    entities[index] = entities[index + 1];
-    entities[index + 1] = temp;
-    this.setConfigValue('entities', entities);
-  }
-
-  _collapseAllEntityPanels(): void {
-    this._expandedEntityIndex = null;
-    // Use requestAnimationFrame to ensure DOM is updated after config change
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        // Find all expansion panels
-        const allPanels =
-          this.shadowRoot?.querySelectorAll('ha-expansion-panel');
-
-        if (allPanels) {
-          allPanels.forEach((panel) => {
-            // Check if this panel has .entity-header directly in its header slot
-            // (not nested in parent panels)
-            const headerSlot = panel.querySelector('[slot="header"]');
-            const entityHeader = headerSlot?.querySelector('.entity-header');
-
-            if (entityHeader) {
-              // Only collapse panels that have .entity-header directly in their header
-              if (panel instanceof HTMLElement && 'expanded' in panel) {
-                panel.expanded = false;
-
-                // Also collapse all nested expansion panels within this entity panel
-                const nestedPanels = panel.querySelectorAll(
-                  '.panel-content ha-expansion-panel',
-                );
-                nestedPanels.forEach((nestedPanel) => {
-                  if (
-                    nestedPanel instanceof HTMLElement &&
-                    'expanded' in nestedPanel
-                  ) {
-                    nestedPanel.expanded = false;
-                  }
-                });
-              }
-            }
-          });
-        }
-      });
-    });
-  }
-
-  _convertEntityToObject(index: number): void {
-    const entities = [...(this._config?.entities || [])];
-    const entityValue = entities[index] as string;
-    entities[index] = { entity: entityValue };
-    this.setConfigValue('entities', entities);
-  }
-
-  //-----------------------------------------------------------------------------
-  // THEME MANAGEMENT
-  //-----------------------------------------------------------------------------
-
-  /**
-   * Gets theme_values_examples entry by entity index (cycling with modulo)
-   */
   private _getExampleByEntityIndex(
     entityIndex: number,
   ): ThemeValues | undefined {
@@ -1722,20 +1654,21 @@ export class CalendarWeekGridCardEditor extends LitElement {
     if (!themeId) {
       return undefined;
     }
-    const themeManager = new ThemeManager(this._config, themes);
-    return themeManager.getExampleByEntityIndex(entityIndex, themeId);
+    return new ThemeManager(this._config, themes).getExampleByEntityIndex(
+      entityIndex,
+      themeId,
+    );
   }
 
-  /**
-   * Detects which theme is currently selected based on CSS content
-   */
   private _detectSelectedTheme(): void {
     if (!this._config) {
       this._selectedTheme = 'custom';
       return;
     }
-    const themeManager = new ThemeManager(this._config, themes);
-    this._selectedTheme = themeManager.detectSelectedTheme();
+    this._selectedTheme = new ThemeManager(
+      this._config,
+      themes,
+    ).detectSelectedTheme();
   }
 
   /**
@@ -1768,9 +1701,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
     }
   }
 
-  /**
-   * Get the display name for the currently selected theme
-   */
   private get _selectedThemeName(): string {
     if (this._selectedTheme === 'custom') {
       return 'Custom';
@@ -1779,9 +1709,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
     return theme?.name || 'Custom';
   }
 
-  /**
-   * Apply theme values from example to a single entity
-   */
   private _applyThemeValuesToEntity(
     entity: string | EntityConfig,
     example: ThemeValues,
@@ -1789,73 +1716,13 @@ export class CalendarWeekGridCardEditor extends LitElement {
     if (!this._config) {
       return entity;
     }
-    const themeManager = new ThemeManager(this._config, themes);
-    return themeManager.applyThemeValuesToEntity(entity, example);
+    return new ThemeManager(this._config, themes).applyThemeValuesToEntity(
+      entity,
+      example,
+    );
   }
 
-  /**
-   * Renders fields for entity variables defined in theme_variables config
-   * Values are stored in theme_values nested object
-   */
-  private _renderThemeVariables(entityIndex: number): TemplateResult {
-    const themeVariables = this.getConfigValue('theme_variables', {}) as Record<
-      string,
-      ThemeVariable
-    >;
-
-    return html`
-      ${Object.entries(themeVariables).map(([varKey, varConfig]) => {
-        const varName = varConfig?.name || varKey;
-        const varDescription = varConfig?.description || '';
-        return html`
-          ${this.addTextField(
-            `entities.${entityIndex}.theme_values.${varKey}`,
-            varName,
-          )}
-          <div class="helper-text" style="color: var(--primary-text-color);">
-            Theme: ${this._selectedThemeName}
-          </div>
-          ${varDescription
-            ? html`<div class="helper-text">${varDescription}</div>`
-            : ''}
-        `;
-      })}
-    `;
-  }
-
-  /**
-   * Renders fields for theme variables defined in theme_variables config
-   * Used for event, blank_event, and blank_all_day_event configs
-   * Values are stored in theme_values nested object
-   */
-  private _renderThemeConfigVariables(
-    configPath: 'event' | 'blank_event' | 'blank_all_day_event',
-  ): TemplateResult {
-    const themeVariables = this.getConfigValue('theme_variables', {}) as Record<
-      string,
-      ThemeVariable
-    >;
-
-    return html`
-      ${Object.entries(themeVariables).map(([varKey, varConfig]) => {
-        const varName = varConfig?.name || varKey;
-        const varDescription = varConfig?.description || '';
-        return html`
-          ${this.addTextField(`${configPath}.theme_values.${varKey}`, varName)}
-          <div class="helper-text" style="color: var(--primary-text-color);">
-            Theme: ${this._selectedThemeName}
-          </div>
-          ${varDescription
-            ? html`<div class="helper-text">${varDescription}</div>`
-            : ''}
-        `;
-      })}
-    `;
-  }
-
-  /**
-   * Effective CSS shown in the editor (theme default when config does not override)
-   */
+  /** Effective CSS shown in the editor (theme default when not overridden) */
   private _getEditorCssValue(): string {
     if (!this._config) {
       return '';
@@ -1863,9 +1730,6 @@ export class CalendarWeekGridCardEditor extends LitElement {
     return getEffectiveCardCss(this._config, themes);
   }
 
-  /**
-   * Handles CSS changes from the code editor
-   */
   private _handleCssChange(newCss: string): void {
     if (!this._config) {
       return;
