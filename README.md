@@ -63,7 +63,7 @@ type: module
 
 This card supports Home Assistant's visual editor, providing an intuitive interface to configure all card options without writing YAML.
 
-![Visual Editor](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/e2164d8a39b663cf03c35ec4f4ef53bc4031478c/media/images/editor.png)
+![Visual Editor](https://media.githubusercontent.com/media/smithumble/ha-calendar-week-grid-card/0a15a69bfe1d0cf6bd11a62b57e9b12c69ceb353/media/images/editor.png)
 
 Simply click the **Configure** button when editing your dashboard to access the visual editor.
 
