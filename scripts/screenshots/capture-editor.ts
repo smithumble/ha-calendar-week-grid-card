@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import readline from 'readline';
 import { fileURLToPath } from 'url';
-import puppeteer, { Page } from 'puppeteer';
+import puppeteer, { Browser, ElementHandle, Page } from 'puppeteer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,6 +10,7 @@ const projectRoot = path.resolve(__dirname, '../../');
 
 // Constants
 const OUTPUT_DIR = path.resolve(projectRoot, 'media/images');
+const OUTPUT_FILE = path.join(OUTPUT_DIR, 'editor.png');
 const SCREENSHOT_VIEWPORT_WIDTH = 2560;
 const SCREENSHOT_VIEWPORT_HEIGHT = 1440;
 const DEVICE_SCALE_FACTOR = 2;
@@ -16,443 +18,298 @@ const ELEMENT_SELECTOR = 'calendar-week-grid-card-editor';
 const POLL_INTERVAL = 1000; // Check every second
 const MAX_WAIT_TIME = 300000; // 5 minutes max wait
 
+type Stage =
+  | 'homeAssistant'
+  | 'dialogEditCard'
+  | 'cardElementEditor'
+  | 'editor'
+  | 'large';
+
+interface PageState {
+  stages: Record<Stage, boolean>;
+  error?: string;
+}
+
 /**
- * Ensure output directory exists
+ * Browser-side code is passed as a string on purpose: tsx/esbuild rewrites
+ * functions handed to page.evaluate (adds `__name` helpers that don't exist
+ * in the page), which silently broke the search inside HA's shadow DOM.
+ *
+ * `findAll(tag)` walks the document and every open shadow root.
  */
+const FIND_ALL_SOURCE = `
+  function findAll(tag) {
+    const found = [];
+    const roots = [document];
+    const seen = new Set();
+    while (roots.length) {
+      const root = roots.shift();
+      let elements = [];
+      try { elements = root.querySelectorAll('*'); } catch (e) { continue; }
+      for (const el of elements) {
+        if (el.localName === tag) found.push(el);
+        if (el.shadowRoot && !seen.has(el.shadowRoot)) {
+          seen.add(el.shadowRoot);
+          roots.push(el.shadowRoot);
+        }
+      }
+    }
+    return found;
+  }
+`;
+
+const STATE_SCRIPT = `(() => {
+  ${FIND_ALL_SOURCE}
+  try {
+    const dialogs = findAll('hui-dialog-edit-card');
+    // hui-dialog-edit-card reflects its enlarged state as the 'large'
+    // attribute; the inner ha-dialog then gets width="full" (its default
+    // width is "large", so that value must not count as enlarged).
+    const isLarge = dialogs.some((dialog) => {
+      if (dialog.hasAttribute('large') || dialog.large === true) return true;
+      const root = dialog.shadowRoot;
+      if (!root) return false;
+      return Array.from(
+        root.querySelectorAll('ha-dialog, ha-md-dialog, ha-wa-dialog'),
+      ).some(
+        (inner) => inner.getAttribute('width') === 'full' || inner.width === 'full',
+      );
+    });
+    return {
+      stages: {
+        homeAssistant: findAll('home-assistant').length > 0,
+        dialogEditCard: dialogs.length > 0,
+        cardElementEditor: findAll('hui-card-element-editor').length > 0,
+        editor: findAll('${ELEMENT_SELECTOR}').length > 0,
+        large: isLarge,
+      },
+    };
+  } catch (e) {
+    return { stages: {}, error: String(e && e.message ? e.message : e) };
+  }
+})()`;
+
+/**
+ * Pads the editor, scrolls it into view and returns its full rect plus the
+ * part actually visible inside its scrolling containers (the edit dialog
+ * clips its content, so the full rect can cover the dialog footer, the
+ * preview and the dashboard behind it).
+ */
+const PREPARE_SCRIPT = `(() => {
+  ${FIND_ALL_SOURCE}
+  const editor = findAll('${ELEMENT_SELECTOR}')[0];
+  if (!editor) return null;
+  const cardConfig = editor.shadowRoot && editor.shadowRoot.querySelector('.card-config');
+  if (cardConfig) cardConfig.style.padding = '50px';
+  editor.scrollIntoView({ block: 'start' });
+
+  const full = editor.getBoundingClientRect();
+  let left = full.left;
+  let top = full.top;
+  let right = full.right;
+  let bottom = full.bottom;
+
+  // Walk up through shadow roots and intersect with clipping ancestors
+  let node = editor;
+  while (node) {
+    const parent = node.parentElement || (node.getRootNode && node.getRootNode().host) || null;
+    if (!parent || parent === document.documentElement) break;
+    const style = getComputedStyle(parent);
+    if (/(auto|scroll|hidden|clip)/.test(style.overflow + style.overflowX + style.overflowY)) {
+      const r = parent.getBoundingClientRect();
+      left = Math.max(left, r.left);
+      top = Math.max(top, r.top);
+      right = Math.min(right, r.right);
+      bottom = Math.min(bottom, r.bottom);
+    }
+    node = parent;
+  }
+  left = Math.max(left, 0);
+  top = Math.max(top, 0);
+  right = Math.min(right, window.innerWidth);
+  bottom = Math.min(bottom, window.innerHeight);
+
+  return {
+    full: { x: full.left, y: full.top, width: full.width, height: full.height },
+    visible: {
+      x: left,
+      y: top,
+      width: Math.max(0, right - left),
+      height: Math.max(0, bottom - top),
+    },
+  };
+})()`;
+
+/** The editor's `.card-config` (its whole visible content) */
+const CONTENT_SCRIPT = `(() => {
+  ${FIND_ALL_SOURCE}
+  const editor = findAll('${ELEMENT_SELECTOR}')[0];
+  if (!editor) return null;
+  return (editor.shadowRoot && editor.shadowRoot.querySelector('.card-config')) || editor;
+})()`;
+
+const STAGE_MESSAGES: Record<Stage, string> = {
+  homeAssistant: '✓ home-assistant - detected, open the card edit dialog',
+  dialogEditCard: '✓ hui-dialog-edit-card - detected',
+  cardElementEditor: '✓ hui-card-element-editor - detected',
+  editor: `✓ ${ELEMENT_SELECTOR} - detected, make the editor large by clicking on the dialog title (or press Enter to capture now)`,
+  large: '✓ large editor - detected',
+};
+
 function ensureOutputDir(): void {
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
 }
 
-/**
- * Check if element exists and parent dialog has large attribute
- */
-async function checkElementAndParentReady(page: Page): Promise<{
-  editorFound: boolean;
-  parentHasLarge: boolean;
-  stages: {
-    body: boolean;
-    homeAssistant: boolean;
-    dialogEditCard: boolean;
-    haDialog: boolean;
-    cardElementEditor: boolean;
-  };
-  error?: string;
-}> {
+async function getPageState(page: Page): Promise<PageState | null> {
   try {
-    // First, test if page evaluation works at all
-    const testResult = await page
-      .evaluate(() => {
-        return {
-          hasDocument: typeof document !== 'undefined',
-          hasBody: document.body !== null,
-          bodyTagName: document.body ? document.body.tagName : 'none',
-          url: window.location.href,
-        };
-      })
-      .catch(() => null);
-
-    if (!testResult) {
-      return {
-        editorFound: false,
-        parentHasLarge: false,
-        stages: {
-          body: false,
-          homeAssistant: false,
-          dialogEditCard: false,
-          haDialog: false,
-          cardElementEditor: false,
-        },
-        error: 'Page evaluation failed - could not evaluate page',
-      };
-    }
-
-    if (!testResult.hasDocument) {
-      return {
-        editorFound: false,
-        parentHasLarge: false,
-        stages: {
-          body: false,
-          homeAssistant: false,
-          dialogEditCard: false,
-          haDialog: false,
-          cardElementEditor: false,
-        },
-        error: 'Page evaluation failed - document not accessible',
-      };
-    }
-
-    // Direct evaluation without script injection - using flattened approach
-    const result = await page.evaluate((selector) => {
-      try {
-        const normalizedSelector = selector.toLowerCase();
-        const dialogSelector = 'hui-dialog-edit-card';
-        const cardEditorSelector = 'hui-card-element-editor';
-        const haDialogSelector = 'ha-dialog';
-        const homeAssistantSelector = 'home-assistant';
-
-        let editorFound = false;
-        let dialogHasLarge = false;
-        const stages = {
-          body: false,
-          homeAssistant: false,
-          dialogEditCard: false,
-          haDialog: false,
-          cardElementEditor: false,
-        };
-
-        if (document && document.body) {
-          stages.body = true;
-        }
-
-        // Flattened recursive search without nested functions
-        const rootsToCheck = [{ root: document, depth: 0 }];
-        const checkedRoots = new WeakSet();
-
-        while (rootsToCheck.length > 0) {
-          const current = rootsToCheck.shift();
-          if (!current || current.depth > 20) continue;
-
-          let elements;
-          try {
-            elements = current.root.querySelectorAll('*');
-          } catch {
-            continue;
-          }
-
-          for (let i = 0; i < elements.length; i++) {
-            const el = elements[i];
-            if (!el) continue;
-
-            const tagName = el.tagName ? el.tagName.toLowerCase() : '';
-
-            if (tagName === 'body') stages.body = true;
-            if (tagName === homeAssistantSelector) stages.homeAssistant = true;
-            if (tagName === dialogSelector) {
-              stages.dialogEditCard = true;
-              if (el.hasAttribute('large')) dialogHasLarge = true;
-            }
-            if (tagName === haDialogSelector) stages.haDialog = true;
-            if (tagName === cardEditorSelector) stages.cardElementEditor = true;
-            if (tagName === normalizedSelector) editorFound = true;
-
-            if (el.shadowRoot && !checkedRoots.has(el.shadowRoot)) {
-              checkedRoots.add(el.shadowRoot);
-              rootsToCheck.push({
-                root: el.shadowRoot,
-                depth: current.depth + 1,
-              });
-            }
-          }
-        }
-
-        return {
-          editorFound: editorFound,
-          parentHasLarge: dialogHasLarge,
-          stages: stages,
-        };
-      } catch (e) {
-        return {
-          editorFound: false,
-          parentHasLarge: false,
-          stages: {
-            body: false,
-            homeAssistant: false,
-            dialogEditCard: false,
-            haDialog: false,
-            cardElementEditor: false,
-          },
-          error: e.message || String(e),
-        };
-      }
-    }, ELEMENT_SELECTOR);
-
-    return result;
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('Error in checkElementAndParentReady:', errorMessage);
-    return {
-      editorFound: false,
-      parentHasLarge: false,
-      stages: {
-        body: false,
-        homeAssistant: false,
-        dialogEditCard: false,
-        haDialog: false,
-        cardElementEditor: false,
-      },
-      error: errorMessage,
-    };
+    return (await page.evaluate(STATE_SCRIPT)) as PageState;
+  } catch {
+    // Page is navigating or closed
+    return null;
   }
 }
 
 /**
- * Wait for the editor element to appear and parent dialog to have large attribute
+ * Pressing Enter in the terminal captures right away, without waiting for
+ * the large dialog (useful when HA changes how the large state is exposed).
  */
-async function waitForEditorElement(
-  page: Page,
+function listenForEnter(onEnter: () => void): () => void {
+  if (!process.stdin.isTTY) return () => undefined;
+  const rl = readline.createInterface({ input: process.stdin });
+  rl.on('line', onEnter);
+  return () => rl.close();
+}
+
+/**
+ * Polls every open tab (the user may navigate in any of them) until a tab
+ * shows the editor in a large dialog, or Enter is pressed.
+ */
+async function waitForEditorPage(
+  browser: Browser,
   timeout: number = MAX_WAIT_TIME,
-): Promise<void> {
-  const startTime = Date.now();
-  const loggedStages = {
-    body: false,
-    homeAssistant: false,
-    dialogEditCard: false,
-    haDialog: false,
-    cardElementEditor: false,
-    editorFound: false,
-  };
+): Promise<Page> {
+  const logged = new Set<Stage>();
+  let captureNow = false;
+  const stopListening = listenForEnter(() => {
+    captureNow = true;
+  });
 
-  while (Date.now() - startTime < timeout) {
-    try {
-      const { editorFound, parentHasLarge, stages } =
-        await checkElementAndParentReady(page);
+  try {
+    const startTime = Date.now();
+    while (Date.now() - startTime < timeout) {
+      const pages = await browser.pages();
+      for (const page of pages) {
+        const state = await getPageState(page);
+        if (!state) continue;
+        if (state.error) {
+          console.warn(`Page check failed: ${state.error}`);
+          continue;
+        }
 
-      // Log parent elements when first detected
-      if (stages.body && !loggedStages.body) {
-        console.log('✓ body - detected');
-        loggedStages.body = true;
+        (Object.keys(STAGE_MESSAGES) as Stage[]).forEach((stage) => {
+          if (state.stages[stage] && !logged.has(stage)) {
+            logged.add(stage);
+            console.log(STAGE_MESSAGES[stage]);
+          }
+        });
+
+        if (state.stages.editor && (state.stages.large || captureNow)) {
+          return page;
+        }
       }
-      if (stages.homeAssistant && !loggedStages.homeAssistant) {
+
+      if (captureNow && !logged.has('editor')) {
         console.log(
-          '✓ home-assistant - detected, navigate to the card edit page',
+          `${ELEMENT_SELECTOR} not found in any tab yet, open the card editor first.`,
         );
-        loggedStages.homeAssistant = true;
-      }
-      if (stages.dialogEditCard && !loggedStages.dialogEditCard) {
-        console.log('✓ hui-dialog-edit-card - detected');
-        loggedStages.dialogEditCard = true;
-      }
-      if (stages.haDialog && !loggedStages.haDialog) {
-        console.log('✓ ha-dialog - detected');
-        loggedStages.haDialog = true;
-      }
-      if (stages.cardElementEditor && !loggedStages.cardElementEditor) {
-        console.log('✓ hui-card-element-editor - detected');
-        loggedStages.cardElementEditor = true;
-      }
-      if (editorFound && !loggedStages.editorFound) {
-        console.log(
-          `✓ ${ELEMENT_SELECTOR} - detected, make editor large by clicking on the title`,
-        );
-        loggedStages.editorFound = true;
+        captureNow = false;
       }
 
-      if (editorFound && parentHasLarge) {
-        return;
-      }
-    } catch {
-      // Element not found yet, continue polling
+      await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
     }
-
-    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
+  } finally {
+    stopListening();
   }
 
   throw new Error(
-    `Timeout: ${ELEMENT_SELECTOR} element or parent hui-dialog-edit-card with 'large' attribute not found within ${timeout}ms`,
+    `Timeout: ${ELEMENT_SELECTOR} in a large edit dialog not found within ${timeout}ms`,
   );
 }
 
-/**
- * Capture screenshot of calendar-week-grid-card-editor element
- */
+interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const MAX_VIEWPORT_HEIGHT = 8000;
+
 async function captureEditorScreenshot(
   page: Page,
   outputPath: string,
 ): Promise<void> {
-  // Wait a bit for any animations/transitions to complete
+  await page.bringToFront();
+  // Let animations/transitions finish
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Change viewport to larger size for screenshot
-  await page.setViewport({
-    width: SCREENSHOT_VIEWPORT_WIDTH,
-    height: SCREENSHOT_VIEWPORT_HEIGHT,
-    deviceScaleFactor: DEVICE_SCALE_FACTOR,
-  });
-
-  // Wait a bit for viewport change to apply
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  // Find calendar-week-grid-card-editor and apply padding to .card-config in its shadow DOM
-  await page.evaluate((selector) => {
-    try {
-      // Find calendar-week-grid-card-editor
-      let editorElement: Element | null = null;
-      const rootsToCheck = [{ root: document, depth: 0 }];
-      const checkedRoots = new WeakSet();
-
-      while (rootsToCheck.length > 0 && !editorElement) {
-        const current = rootsToCheck.shift();
-        if (!current || current.depth > 20) continue;
-
-        let direct;
-        try {
-          direct = current.root.querySelector(selector);
-        } catch {
-          // Continue to next root
-        }
-
-        if (direct) {
-          editorElement = direct;
-          break;
-        }
-
-        let elements;
-        try {
-          elements = current.root.querySelectorAll('*');
-        } catch {
-          continue;
-        }
-
-        for (let i = 0; i < elements.length; i++) {
-          const el = elements[i];
-          if (!el) continue;
-
-          const tagName = el.tagName ? el.tagName.toLowerCase() : '';
-          if (tagName === selector.toLowerCase()) {
-            editorElement = el;
-            break;
-          }
-
-          if (el.shadowRoot && !checkedRoots.has(el.shadowRoot)) {
-            checkedRoots.add(el.shadowRoot);
-            rootsToCheck.push({
-              root: el.shadowRoot,
-              depth: current.depth + 1,
-            });
-          }
-        }
-      }
-
-      // If found, look for .card-config in its shadow root
-      if (
-        editorElement &&
-        editorElement instanceof HTMLElement &&
-        editorElement.shadowRoot
-      ) {
-        const cardConfig =
-          editorElement.shadowRoot.querySelector('.card-config');
-        if (
-          cardConfig &&
-          cardConfig instanceof HTMLElement &&
-          cardConfig.style
-        ) {
-          cardConfig.style.padding = '50px';
-        }
-      }
-    } catch {
-      // Ignore errors
-    }
-  }, ELEMENT_SELECTOR);
-
-  // Wait a bit for styles to apply
-  await new Promise((resolve) => setTimeout(resolve, 100));
-
-  // Find calendar-week-grid-card-editor
-  const screenshotData = await page.evaluate((selector) => {
-    try {
-      // First find calendar-week-grid-card-editor
-      let targetElement: Element | null = null;
-      const rootsToCheck = [{ root: document, depth: 0 }];
-      const checkedRoots = new WeakSet();
-
-      while (rootsToCheck.length > 0 && !targetElement) {
-        const current = rootsToCheck.shift();
-        if (!current || current.depth > 20) continue;
-
-        let direct;
-        try {
-          direct = current.root.querySelector(selector);
-        } catch {
-          // Continue to next root
-        }
-
-        if (direct) {
-          targetElement = direct;
-          break;
-        }
-
-        let elements;
-        try {
-          elements = current.root.querySelectorAll('*');
-        } catch {
-          continue;
-        }
-
-        for (let i = 0; i < elements.length; i++) {
-          const el = elements[i];
-          if (!el) continue;
-
-          const tagName = el.tagName ? el.tagName.toLowerCase() : '';
-          if (tagName === selector.toLowerCase()) {
-            targetElement = el;
-            break;
-          }
-
-          if (el.shadowRoot && !checkedRoots.has(el.shadowRoot)) {
-            checkedRoots.add(el.shadowRoot);
-            rootsToCheck.push({
-              root: el.shadowRoot,
-              depth: current.depth + 1,
-            });
-          }
-        }
-      }
-
-      if (!targetElement || !(targetElement instanceof HTMLElement)) {
-        return { found: false };
-      }
-
-      // Get bounding box of calendar-week-grid-card-editor
-      const rect = targetElement.getBoundingClientRect();
-      return {
-        found: true,
-        x: rect.x,
-        y: rect.y,
-        width: rect.width,
-        height: rect.height,
-      };
-
-      return { found: false };
-    } catch {
-      return { found: false };
-    }
-  }, ELEMENT_SELECTOR);
-
-  if (
-    screenshotData.found &&
-    typeof screenshotData.x === 'number' &&
-    typeof screenshotData.y === 'number' &&
-    typeof screenshotData.width === 'number' &&
-    typeof screenshotData.height === 'number' &&
-    screenshotData.width > 0 &&
-    screenshotData.height > 0
-  ) {
-    // Capture using coordinates
-    await page.screenshot({
-      path: outputPath,
-      clip: {
-        x: screenshotData.x,
-        y: screenshotData.y,
-        width: screenshotData.width,
-        height: screenshotData.height,
-      },
+  // Grow the viewport until the dialog shows the whole editor without
+  // scrolling, so the clip contains the editor and nothing else.
+  let height = SCREENSHOT_VIEWPORT_HEIGHT;
+  let rects: { full: Rect; visible: Rect } | null = null;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    await page.setViewport({
+      width: SCREENSHOT_VIEWPORT_WIDTH,
+      height,
+      deviceScaleFactor: DEVICE_SCALE_FACTOR,
     });
-    return;
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    rects = (await page.evaluate(PREPARE_SCRIPT)) as typeof rects;
+    if (!rects || rects.full.width <= 0 || rects.full.height <= 0) {
+      throw new Error(`Element ${ELEMENT_SELECTOR} not found or not visible`);
+    }
+    const missing = rects.full.height - rects.visible.height;
+    if (missing <= 1 || height >= MAX_VIEWPORT_HEIGHT) break;
+    height = Math.min(MAX_VIEWPORT_HEIGHT, Math.ceil(height + missing + 100));
   }
 
-  throw new Error(`Element ${ELEMENT_SELECTOR} not found`);
+  if (!rects) {
+    throw new Error(`Element ${ELEMENT_SELECTOR} not found`);
+  }
+  if (rects.full.height - rects.visible.height > 1) {
+    console.warn(
+      'Editor is taller than the dialog allows; the capture may be cut off.',
+    );
+  }
+
+  // Wait until the dialog stops moving (it animates after resizing)
+  let previous = '';
+  for (let i = 0; i < 10; i++) {
+    const current = JSON.stringify(await page.evaluate(PREPARE_SCRIPT));
+    if (current === previous) break;
+    previous = current;
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }
+
+  // Screenshot the editor's own content box. Puppeteer works out the
+  // element's position itself (scroll offsets, device scale), which manual
+  // clip coordinates got wrong and picked up the dialog around the editor.
+  const handle = await page.evaluateHandle(CONTENT_SCRIPT);
+  const element = handle.asElement() as ElementHandle<Element> | null;
+  if (!element) {
+    throw new Error(`Element ${ELEMENT_SELECTOR} not found`);
+  }
+  await element.screenshot({
+    path: outputPath as `${string}.png`,
+    captureBeyondViewport: false,
+  });
+  console.log(`Saved ${path.relative(projectRoot, outputPath)}`);
 }
 
-/**
- * Main execution function
- */
 async function main(): Promise<void> {
   console.log('Starting editor screenshot capture...');
-  console.log(`Waiting for ${ELEMENT_SELECTOR} element to appear...`);
-  console.log('Please navigate to your Home Assistant card edit page.');
-
   ensureOutputDir();
 
   const browserArgs = [
@@ -467,55 +324,54 @@ async function main(): Promise<void> {
     '--disable-software-rasterizer',
   ];
 
-  // Launch browser in non-headless mode so user can interact
+  // Non-headless so the user can log in and open the editor
   const browser = await puppeteer.launch({
-    headless: false, // Show browser window
+    headless: false,
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     args: browserArgs,
-    defaultViewport: null, // Use full window size
+    defaultViewport: null,
   });
 
   try {
-    const page = await browser.newPage();
-    // Open a blank page or you can navigate to a specific URL
-    // For Home Assistant, you might want to start at the login page
-    await page.goto('about:blank');
+    // Reuse the tab the browser opens with instead of adding a second one
+    const [firstPage] = await browser.pages();
+    const page = firstPage ?? (await browser.newPage());
+    const startUrl = process.env.HA_URL || process.argv[2];
+    if (startUrl) {
+      await page.goto(startUrl).catch(() => undefined);
+    }
 
     console.log('\nBrowser window opened.');
     console.log('Please:');
-    console.log('1. Navigate to your Home Assistant instance');
+    console.log(
+      `1. Navigate to your Home Assistant instance${startUrl ? '' : ' (or pass the URL: npm run screenshots:capture-editor -- http://homeassistant.local:8123)'}`,
+    );
     console.log('2. Log in if needed');
-    console.log('3. Go to the card edit page');
-    console.log('4. Make editor large by clicking on the title\n');
+    console.log('3. Open the card edit dialog');
+    console.log(
+      '4. Make the editor large by clicking on the dialog title (or press Enter here to capture)\n',
+    );
 
-    // Wait for the editor element to appear
-    await waitForEditorElement(page);
+    const editorPage = await waitForEditorPage(browser);
+    await captureEditorScreenshot(editorPage, OUTPUT_FILE);
 
-    // Generate output filename with timestamp
-    const outputFilename = `editor.png`;
-    const outputPath = path.join(OUTPUT_DIR, outputFilename);
-
-    // Capture screenshot
-    await captureEditorScreenshot(page, outputPath);
-
-    // Keep browser open briefly so user can see the result
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    // Keep the browser open briefly so the user can see the result
+    await new Promise((resolve) => setTimeout(resolve, 3000));
   } catch (error) {
     console.error('Error capturing screenshot:', error);
-    process.exit(1);
+    process.exitCode = 1;
   } finally {
     await browser.close();
     console.log('Done.');
+    process.exit();
   }
 }
 
-// Handle graceful shutdown
 process.on('SIGINT', () => {
   console.log('\nShutting down...');
   process.exit(0);
 });
 
-// Run main function
 main().catch((error) => {
   console.error('Fatal error:', error);
   process.exit(1);
