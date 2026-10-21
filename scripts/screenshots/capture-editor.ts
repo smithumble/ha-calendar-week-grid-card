@@ -245,7 +245,29 @@ interface Rect {
   height: number;
 }
 
+interface EditorRects {
+  full: Rect;
+  visible: Rect;
+}
+
 const MAX_VIEWPORT_HEIGHT = 8000;
+
+/**
+ * Sets the viewport height and returns the editor's full and visible rects
+ */
+async function measureEditor(page: Page, height: number): Promise<EditorRects> {
+  await page.setViewport({
+    width: SCREENSHOT_VIEWPORT_WIDTH,
+    height,
+    deviceScaleFactor: DEVICE_SCALE_FACTOR,
+  });
+  await new Promise((resolve) => setTimeout(resolve, 700));
+  const rects = (await page.evaluate(PREPARE_SCRIPT)) as EditorRects | null;
+  if (!rects || rects.full.width <= 0 || rects.full.height <= 0) {
+    throw new Error(`Element ${ELEMENT_SELECTOR} not found or not visible`);
+  }
+  return rects;
+}
 
 async function captureEditorScreenshot(
   page: Page,
@@ -256,28 +278,16 @@ async function captureEditorScreenshot(
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Grow the viewport until the dialog shows the whole editor without
-  // scrolling, so the clip contains the editor and nothing else.
+  // scrolling, so the capture contains the editor and nothing else.
   let height = SCREENSHOT_VIEWPORT_HEIGHT;
-  let rects: { full: Rect; visible: Rect } | null = null;
-  for (let attempt = 0; attempt < 6; attempt++) {
-    await page.setViewport({
-      width: SCREENSHOT_VIEWPORT_WIDTH,
-      height,
-      deviceScaleFactor: DEVICE_SCALE_FACTOR,
-    });
-    await new Promise((resolve) => setTimeout(resolve, 700));
-    rects = (await page.evaluate(PREPARE_SCRIPT)) as typeof rects;
-    if (!rects || rects.full.width <= 0 || rects.full.height <= 0) {
-      throw new Error(`Element ${ELEMENT_SELECTOR} not found or not visible`);
-    }
+  let rects = await measureEditor(page, height);
+  for (let attempt = 0; attempt < 5; attempt++) {
     const missing = rects.full.height - rects.visible.height;
     if (missing <= 1 || height >= MAX_VIEWPORT_HEIGHT) break;
     height = Math.min(MAX_VIEWPORT_HEIGHT, Math.ceil(height + missing + 100));
+    rects = await measureEditor(page, height);
   }
 
-  if (!rects) {
-    throw new Error(`Element ${ELEMENT_SELECTOR} not found`);
-  }
   if (rects.full.height - rects.visible.height > 1) {
     console.warn(
       'Editor is taller than the dialog allows; the capture may be cut off.',
